@@ -1,5 +1,4 @@
 @import "tailwindcss" source("../");
-@source "../../mdx-components.tsx";
 @source "../../prompts.config.ts";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";

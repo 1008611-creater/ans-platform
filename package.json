@@ -39,11 +39,6 @@
     "perf": "node scripts/perf-budget.mjs",
     "audit:security": "node scripts/security-audit.mjs",
     "audit:online": "node scripts/online-user-audit.mjs",
-    "book:pdf": "npx tsx scripts/generate-book-pdf.ts",
-    "book:pdf:all": "npx tsx scripts/generate-book-pdf.ts --all",
-    "book:pdf:convert": "npx tsx scripts/html-to-pdf.ts",
-    "book:pdf:print": "npx tsx scripts/generate-book-pdf.ts --print && npx tsx scripts/html-to-pdf.ts --print",
-    "book:pdf:print:all": "npx tsx scripts/generate-book-pdf.ts --all --print && npx tsx scripts/html-to-pdf.ts --all --print",
     "audit:live-agent": "node scripts/audit-live-agent.mjs",
     "report:i18n": "node scripts/report-i18n-gaps.mjs"
   },
