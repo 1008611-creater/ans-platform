@@ -12,12 +12,8 @@ const state = vi.hoisted(() => ({ pathname: "/", user: null as null | { username
 vi.mock("next/navigation", () => ({ usePathname: () => state.pathname }));
 vi.mock("next-auth/react", () => ({ useSession: () => ({ data: state.user ? { user: state.user } : null }) }));
 vi.mock("next-intl/server", () => ({ getLocale: async () => "zh", getTranslations: async () => (key: string) => key }));
-vi.mock("@/components/homepage/homepage-cta-link", () => ({
-  HomepageCtaLink: ({ href, children }: { href: string; children: React.ReactNode }) => <a href={href}>{children}</a>,
-}));
 vi.mock("@/components/catalog/project-card", () => ({ ProjectCard: ({ project }: { project: { slug: string } }) => <article><Link href={`/explore/${project.slug}`}>{project.slug}</Link></article> }));
 vi.mock("@/components/catalog/project-preview", () => ({ ProjectPreview: () => <div data-testid="project-preview" /> }));
-vi.mock("@/components/catalog/official-workflows", () => ({ OfficialWorkflows: () => <Link href="/workflows/toonflow">Toonflow</Link> }));
 vi.mock("@/components/homepage/project-coverflow", () => ({ ProjectCoverflow: ({ projects }: { projects: { href: string; title: string }[] }) => <Link data-testid="project-coverflow" href={projects[0].href}>{projects[0].title}</Link> }));
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import HomePage from "@/app/page";
