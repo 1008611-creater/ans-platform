@@ -25,7 +25,7 @@
 - [ ] 品牌：`ANS` 只写作 AI Never Stops；界面里叫 `Agent`，不出现 Pi Agent 等内部代号
 - [ ] 没有虚构的实时数据、用户、订单或统计（示例必须标明是参考范例）
 - [ ] 涉及计费或价格：展示的倍率与 `ANS_MODEL_BILLING_POLICY` 实际收费一致
-- [ ] 带数据库迁移：已登记进 `scripts/production-backup-verify.py` 白名单，上线前跑备份恢复门禁
+- [ ] 带数据库迁移：已在 `scripts/production-backup-verify.py` 的 `REVIEWED_MIGRATION_SHAS` 和 `APPROVED_PENDING_SEQUENCES` 两处都登记，上线前跑备份恢复门禁
 
 ## 验证
 
