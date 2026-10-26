@@ -155,9 +155,10 @@
     "codeShort": "⚡ 写代码模式"
   },
   "model": {
-    "flash": "⚡ DeepSeek-V4.1-Flash · 快速 (1x)",
-    "sol": "🧠 GPT-6.1-Sol · 深度推理 (0.16x)",
-    "astra": "🌟 GPT-6-Astra · 前端代码 (0.16x)"
+    "flash": "⚡ DeepSeek-V4.1-Flash · 快速",
+    "sol": "🧠 GPT-6.1-Sol · 深度推理",
+    "astra": "🌟 GPT-6-Astra · 前端代码",
+    "unavailable": "暂不可用"
   },
   "guide": {
     "title": "工作模式 3 步流"

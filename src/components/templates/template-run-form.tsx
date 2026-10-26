@@ -1,5 +1,6 @@
 "use client";
 
+import { usePausedRunModels } from "@/components/providers/run-model-pricing";
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -46,6 +47,7 @@ export function TemplateRunForm({
 }) {
   const router = useRouter();
   const billing = useTranslations("learning");
+  const pausedModels = usePausedRunModels();
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(formSchema.map((f) => [f.key, String(f.default ?? "")]))
   );
@@ -183,8 +185,8 @@ export function TemplateRunForm({
             </SelectTrigger>
             <SelectContent>
               {RUN_MODEL_OPTIONS.map((model) => (
-                <SelectItem key={model.key} value={model.key}>
-                  {model.label}
+                <SelectItem key={model.key} value={model.key} disabled={pausedModels.includes(model.key)}>
+                  {!pausedModels.includes(model.key) ? model.label : `${model.label} · ${billing("modelUnavailable")}`}
                 </SelectItem>
               ))}
             </SelectContent>

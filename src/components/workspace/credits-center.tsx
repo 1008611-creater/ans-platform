@@ -11,7 +11,7 @@ import { AccountContentBoundary } from "@/components/auth/account-content-bounda
 import { Input } from "@/components/ui/input";
 import { getCreditProducts, LEGACY_CREDIT_PRODUCT, type CreditProduct } from "@/lib/credits-catalog";
 import { RUN_MODEL_OPTIONS } from "@/lib/run-models";
-import { useRunModelMultipliers } from "@/components/providers/run-model-pricing";
+import { usePausedRunModels, useRunModelMultipliers } from "@/components/providers/run-model-pricing";
 import type { PersonalApiHistory } from "@/contracts/compute-benefits";
 import { Badge } from "@/components/ui/badge";
 
@@ -26,6 +26,7 @@ function CreditsCenterSession({ actorId, availablePoints, reservedPoints = 0, pe
   const t = useTranslations("product.vouchers");
   const historyText = useTranslations("product.quotaHistory");
   const multipliers = useRunModelMultipliers();
+  const paused = usePausedRunModels();
   const locale = useLocale();
   const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 6 });
   const dates = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Shanghai" });
@@ -99,7 +100,7 @@ function CreditsCenterSession({ actorId, availablePoints, reservedPoints = 0, pe
             </div>
             <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{model.key}</p>
           </div>
-          <p className="mt-4 text-sm font-medium">{multipliers[model.key] === undefined ? t("modelUnpriced") : t("modelMultiplier", { multiplier: multipliers[model.key]! })}</p>
+          <p className="mt-4 text-sm font-medium">{paused.includes(model.key) ? t("modelPaused") : multipliers[model.key] === undefined ? t("modelUnpriced") : t("modelMultiplier", { multiplier: multipliers[model.key]! })}</p>
         </Link>
       </li>)}</ul>
       <p className="mt-3 text-xs leading-6 text-muted-foreground">{t("modelRatesNote")}</p>

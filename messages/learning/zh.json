@@ -100,5 +100,6 @@
   "billingRun": "运行（最多预占 {points} 积分）",
   "billingReservation": "最多预占 {points} 积分",
   "goalQuestion": "这份项目主要用来做什么？",
-  "projectGuideQuestion": "不确定怎么开始？"
+  "projectGuideQuestion": "不确定怎么开始？",
+  "modelUnavailable": "暂不可用"
 }

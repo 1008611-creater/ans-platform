@@ -132,7 +132,8 @@
     "incomplete": "The reply was incomplete. No further call was made. Check the bill for actual usage.",
     "capacity": "The model service is temporarily busy and no reply was obtained. Check the usage record before starting another turn later.",
     "modelUnavailable": "This model's upstream is unavailable right now (HTTP 5xx). Nothing ran and nothing was charged. Switch to another model (for example DeepSeek V4.1 Flash) and try again.",
-    "unavailable": "No reply was obtained. There was no automatic retry; check usage if a request was submitted."
+    "unavailable": "No reply was obtained. There was no automatic retry; check usage if a request was submitted.",
+    "modelPaused": "This model is unavailable right now. Nothing ran and nothing was charged. Please pick another model."
   },
   "agentRoutes": {
     "aigc": {
@@ -376,5 +377,6 @@
     "trainerLine": "🪪 Trainer: {nickname} · joins the corner after sign-up",
     "defaultTrainer": "Future ANS creator"
   },
-  "guideWorkMode": "🛠️ Work Mode ↗"
+  "guideWorkMode": "🛠️ Work Mode ↗",
+  "agentModelUnavailable": "Unavailable"
 }
