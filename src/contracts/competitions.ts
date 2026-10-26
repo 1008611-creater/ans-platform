@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const competitionCreateSchema = z.object({
+const competitionFields = z.object({
   title: z.string().trim().min(3).max(120),
   organizer: z.string().trim().max(120).optional(),
   url: z.string().url().max(500).optional().or(z.literal("")),
@@ -11,9 +11,13 @@ export const competitionCreateSchema = z.object({
   maxTeams: z.number().int().min(1).max(10000).nullable().optional(),
   rewardXp: z.number().int().min(0).max(1000000).default(0),
   status: z.enum(["UPCOMING", "ONGOING", "ENDED"]).default("UPCOMING"),
-}).refine((value) => !value.startsAt || !value.endsAt || value.startsAt <= value.endsAt, {
-  path: ["endsAt"], message: "结束时间必须晚于开始时间。",
 });
+// Zod 4.6 rejects .partial() on a refined object, so the date rule is shared
+// by both schemas instead of being inherited through the create schema.
+const endsAfterStart = (value: { startsAt?: string; endsAt?: string }) => !value.startsAt || !value.endsAt || value.startsAt <= value.endsAt;
+const endsAfterStartIssue = { path: ["endsAt"], message: "结束时间必须晚于开始时间。" };
+
+export const competitionCreateSchema = competitionFields.refine(endsAfterStart, endsAfterStartIssue);
 
 export const competitionRegisterSchema = z.object({ teamId: z.string().trim().min(1).max(80) });
 
@@ -35,6 +39,6 @@ export const competitionReviewSchema = z.object({
 });
 
 
-export const competitionUpdateSchema = competitionCreateSchema.partial().refine((value) => Object.keys(value).length > 0, {
+export const competitionUpdateSchema = competitionFields.partial().refine(endsAfterStart, endsAfterStartIssue).refine((value) => Object.keys(value).length > 0, {
   message: "请至少提供一个需要修改的赛事字段。",
 });

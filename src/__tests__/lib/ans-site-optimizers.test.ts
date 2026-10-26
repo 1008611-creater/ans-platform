@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   COVER_STUDIO_PRESETS,
   buildCoverStudioSvg,
-  buildProjectVisualWalkthrough,
   detectIntentAndMatchTerms,
   generateRoadshowAndSocialPack,
   stripAiBuzzwords,
@@ -30,17 +29,6 @@ describe("ANS Site Optimizers (ans-skill-refactor)", () => {
     expect(briefZh).toContain("【2. 保留范围与不做项】");
     expect(briefZh).toContain("【3. 输入素材与依据约束】");
     expect(briefZh).toContain("【4. 可验证交付标准（含 ans-tone-guard 去 AI 味门禁）】");
-  });
-
-  it("builds a 4-step Script vs. Agent visual walkthrough and Blind A/B eval rows", () => {
-    const walkthrough = buildProjectVisualWalkthrough(
-      { slug: "agri-pest", category: "competition", subcategory: "agri-wall" },
-      "zh",
-    );
-    expect(walkthrough.nodes).toHaveLength(4);
-    expect(walkthrough.nodes[0].kind).toBe("script");
-    expect(walkthrough.nodes[2].kind).toBe("preview");
-    expect(walkthrough.evalRows.length).toBeGreaterThanOrEqual(3);
   });
 
   it("generates de-slopped roadshow pitch, README, social post, and 16:9 SVG cover", () => {

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Check, ExternalLink, FileCheck2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, ExternalLink, FileCheck2, Info } from "lucide-react";
+import { PROJECT_WORKFLOW_COST_POINTS } from "@/contracts/projects";
 import { catalogText, catalogSourceLabel } from "@/domain/catalog/content";
 import { projectStartHref, type CatalogProject } from "@/domain/catalog/projects";
 import type { ProjectGuide } from "@/domain/catalog/project-guide-types";
-import { buildProjectVisualWalkthrough } from "@/domain/vibehub/ans-site-optimizers";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { Button } from "@/components/ui/button";
 import { ProjectPreview } from "./project-preview";
@@ -23,9 +23,9 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
 }) {
   const [t, d, ct, locale] = await Promise.all([getTranslations("product"), getTranslations("product.projectDetail"), getTranslations("product.connections"), getLocale()]);
   const text = (field: Parameters<typeof catalogText>[2]) => catalogText(project, t, field, locale);
-  const isEn = locale.startsWith("en");
-  const walkthrough = buildProjectVisualWalkthrough(project, isEn ? "en" : "zh");
   const advice = guide ? (locale.startsWith("zh") ? guide.zh : guide.en) : undefined;
+  // The path section only exists with a guide; keep the visible numbering contiguous.
+  const sectionNo = (index: number) => String(advice ? index : index - 1).padStart(2, "0");
   const startHref = projectStartHref(project);
   const isGithub = project.source === "github";
   const primaryConnection = connections.offers[0] ?? null;
@@ -70,7 +70,7 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
           {isExternal ? <a href={primaryHref} target="_blank" rel="noopener noreferrer">{primaryLabel}<ArrowUpRight size={18} aria-hidden="true" /></a> : <Link href={primaryHref}>{primaryLabel}<ArrowRight size={18} aria-hidden="true" /></Link>}
         </Button>}
         <ProductConnectionsSection connections={otherActions} compact />
-        <div className={styles.startNote}><Check size={15} aria-hidden="true" /><span>{isEn ? "Sample preview & guide included · Online AI runs billed transparently by points" : "✅ 免费查看样本与实操指南 · 在线 AI 工作流按积分透明计费"}</span></div>
+        {!primaryConnection && startHref && <div className={styles.startNote}><Info size={15} aria-hidden="true" /><span>{t("cost", { points: PROJECT_WORKFLOW_COST_POINTS }) + " · " + t("costNote")}</span></div>}
         {project.creator && <p className={styles.creator}>{d("by", { name: project.creator })}</p>}
       </aside>
     </div>
@@ -82,56 +82,24 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
           {advice?.audience && <div className={styles.audience}><FileCheck2 size={19} aria-hidden="true" /><div><h3>{d("forWhom")}</h3><p>{advice.audience}</p></div></div>}
         </section>
         {advice && <section id="project-path" className={styles.section}>
-          <p className={styles.kicker}>02 / {d("path")}</p><h2>{d("firstResult")}</h2>
+          <p className={styles.kicker}>{sectionNo(2)} / {d("path")}</p><h2>{d("firstResult")}</h2>
           <ol className={styles.steps}>{steps.map((step, index) => <li key={step.title}>
             <span className={styles.stepNumber} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
             <div><h3>{step.title}</h3><p>{step.body}</p>{step.href && <a href={step.href} target="_blank" rel="noopener noreferrer" className="ans-text-link">{d("openStep")}<ExternalLink size={14} aria-hidden="true" /></a>}</div>
           </li>)}</ol>
         </section>}
-        <section id="project-visual-walkthrough" data-testid="project-visual-walkthrough" className={`${styles.section} space-y-4`}>
-          <div>
-            <p className={styles.kicker}>{walkthrough.eyebrow}</p>
-            <h2>{walkthrough.heading}</h2>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {walkthrough.nodes.map(node => (
-              <div key={node.step} className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card/75 p-4">
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs font-bold text-muted-foreground">STEP {node.step}</span>
-                    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-                      node.kind === "script"
-                        ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-200"
-                        : node.kind === "preview"
-                          ? "bg-amber-500/15 text-amber-800 dark:text-amber-200"
-                          : "bg-indigo-500/15 text-indigo-800 dark:text-indigo-200"
-                    }`}>
-                      {node.badge}
-                    </span>
-                  </div>
-                  <h3 className="text-sm font-bold text-foreground">{node.title}</h3>
-                  <p className="text-xs leading-5 text-muted-foreground">{node.detail}</p>
-                </div>
-                <div className="mt-3 flex items-center justify-between border-t border-border/60 pt-2 font-mono text-[11px] text-muted-foreground">
-                  <span>{isEn ? "Artifact" : "阶段产物"}</span>
-                  <code className="text-foreground">{node.artifact}</code>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
       </div>
       <aside className={styles.sideNote}>
         <section id="project-conditions">
-          <p className={styles.kicker}>03 / {isEn ? "DELIVERY & ACCESS" : "真实交付与直达入口"}</p>
-          <h2>{isEn ? "What You Get Right Now" : "现在点进去能拿到什么"}</h2>
+          <p className={styles.kicker}>{sectionNo(3)} / {d("conditions")}</p>
+          <h2>{d("beforeStarting")}</h2>
           <dl className={styles.requirements}>
             <div><dt>{d("prepare")}</dt><dd className="whitespace-pre-line">{text("inputs")}</dd></div>
           </dl>
           {methods.length > 0 && <details className={styles.methods}><summary>{d("tools")}</summary><dl>{methods.map(field => <div key={field}><dt>{t(`${field}Title`)}</dt><dd>{text(field)}</dd></div>)}</dl></details>}
         </section>
         <section id="project-sources" className="mt-8 pt-6 border-t">
-          <p className={styles.kicker}>04 / {d("sources")}</p>
+          <p className={styles.kicker}>{sectionNo(4)} / {d("sources")}</p>
           <ul className={styles.sources}>
             {guide?.experienceUrl && <li><a href={guide.experienceUrl} target="_blank" rel="noopener noreferrer"><span>{d("tryOnline")}</span><ArrowUpRight size={16} aria-hidden="true" /></a></li>}
             {project.sourceUrl && <li><a href={project.sourceUrl} target="_blank" rel="noopener noreferrer"><span>{d("original")}</span><span>{sourceName}<ArrowUpRight size={16} aria-hidden="true" /></span></a></li>}
