@@ -2,8 +2,9 @@
  * Minty 首访吉祥物的弹簧引擎（纯逻辑，无 DOM）。
  *
  * 手法参考 blessonism/grok-icon-study 的学习复刻：固定步长弹簧积分、姿势状态机、
- * 眼睛跟随指针、眨眼队列、点击反应。几何与造型一概不用——Minty 的身体与眼睛
- * 都是图像生成的成品图（public/first-visit/minty/），这里只算它们的位移 / 挤压 / 旋转。
+ * 视线跟随指针、眨眼队列、点击反应。几何与造型一概不用——Minty 就是仓库里的权威像素图集
+ * （public/mascot/pixel/dino-atlas.png，行与帧见同目录 manifest.json），一个像素都不重画。
+ * 这里只算两件事：整只精灵的位移 / 挤压 / 歪头，以及此刻该显示图集里的哪一格。
  */
 
 export interface Spring {
@@ -20,8 +21,6 @@ export const SPRING_TUNE = {
   y: [9, 0.55],
   tilt: [8, 0.5],
   squash: [15, 0.48],
-  gaze: [18, 0.9],
-  lid: [42, 1],
 } as const satisfies Record<string, SpringTune>;
 
 const FIXED_DT = 1 / 120;
@@ -40,66 +39,94 @@ export function stepSpring(s: Spring, [freq, damp]: SpringTune, dt: number) {
   }
 }
 
-export type MintyPose = "rise" | "idle" | "look" | "curious" | "hop" | "poke";
+/**
+ * 图集格子：[行, 列]，与 manifest.json 的 states.*.row / labels 下标一一对应。
+ * 图集实物是 8×8（1024px / 128px），只用 0–7 行。
+ */
+export type AtlasCell = readonly [row: number, col: number];
 
-/** 每个姿势停留时长（毫秒）。rise / hop / poke 是一次性动作，结束后回 idle。 */
+export const MINTY_CELLS = {
+  stand: [0, 0], // idle · 站立
+  blink: [0, 1], // idle · 眨眼
+  tilt: [0, 2], // idle · 歪头
+  wag: [0, 3], // idle · 摇尾
+  hop: [0, 7], // idle · 轻跳
+  jump: [6, 0], // action · 跳起
+  wave: [6, 1], // action · 挥手
+  heart: [6, 2], // action · 比心
+  cheer: [6, 3], // action · 欢呼
+  laugh: [4, 2], // emote · 大笑
+} as const satisfies Record<string, AtlasCell>;
+
+export type MintyCell = keyof typeof MINTY_CELLS;
+
+export type MintyPose = "rise" | "wave" | "idle" | "look" | "curious" | "wag" | "hop" | "poke";
+
+/** 每个姿势停留时长（毫秒）。rise / wave / hop / poke 是一次性动作，结束后回轮换。 */
 const POSE_MS: Record<MintyPose, readonly [number, number]> = {
-  rise: [900, 900],
+  rise: [700, 700],
+  wave: [1300, 1300],
   idle: [2600, 4800],
   look: [1400, 2200],
   curious: [1600, 2600],
+  wag: [1200, 1600],
   hop: [760, 760],
-  poke: [620, 620],
+  poke: [900, 900],
 };
 
-/** 空闲轮换：大部分时间安静呼吸，偶尔张望、歪头、蹦一下。 */
-const IDLE_ROTATION: readonly MintyPose[] = ["look", "idle", "curious", "idle", "hop", "idle", "look", "idle"];
+/** 空闲轮换：大部分时间安静呼吸，偶尔张望、歪头、摇尾巴、蹦一下。 */
+const IDLE_ROTATION: readonly MintyPose[] = ["idle", "look", "idle", "curious", "idle", "wag", "idle", "hop", "look", "idle"];
+
+/** 点一下轮流给的开心反应——只挑正向表情，不吓人、不哭。 */
+const POKE_CELLS: readonly MintyCell[] = ["laugh", "cheer", "heart"];
 
 export interface MintyFrame {
-  /** 身体位移（舞台宽度的比例，-1..1 ≈ 一个身位）。 */
+  /** 精灵位移（舞台宽度的比例，-1..1 ≈ 一个身位）。 */
   x: number;
   y: number;
-  /** 身体旋转，角度。 */
+  /** 精灵旋转，角度；视线跟随就靠它朝指针微倾。 */
   tilt: number;
   /** 纵向挤压：>1 拉长，<1 压扁；横向按体积守恒反算。 */
   squash: number;
-  /** 眼睛偏移（舞台宽度的比例）。 */
-  gazeX: number;
-  gazeY: number;
-  /** 眼皮：1 全睁，~0.08 闭眼。 */
-  lid: number;
+  /** 此刻显示的图集格。 */
+  cell: MintyCell;
   /** 地面影子缩放，离地越高越小。 */
   shadow: number;
 }
 
-/** 眼睛最大偏移（舞台宽度比例）——停在脸内，不出球。 */
-const GAZE_MAX_X = 0.035;
-const GAZE_MAX_Y = 0.024;
+/** 朝指针歪头的最大角度——只是「看向你」，不是摔倒。 */
+const GAZE_TILT = 6;
+/** 朝指针探身的最大位移（舞台宽度比例）。 */
+const GAZE_LEAN = 0.025;
+/** 眨眼那一格停留时长。 */
+const BLINK_MS = 140;
 
 export class MintyEngine {
   readonly bx = spring(0);
   readonly by = spring(0.55);
   readonly tilt = spring(0);
   readonly squash = spring(0.7);
-  readonly gx = spring(0);
-  readonly gy = spring(0);
-  readonly lid = spring(1);
 
   pose: MintyPose = "rise";
   private poseAt = 0;
   private poseUntil = 0;
   private rotation = 0;
+  private pokes = 0;
+  private pokeCell: MintyCell = POKE_CELLS[0];
   private blinkAt = 0;
-  private blinkQueue: { at: number; v: number }[] = [];
-  private lookTarget: [number, number] = [0, 0];
+  private blinkQueue: number[] = [];
+  private blinkUntil = 0;
+  private lookSide = 1;
   private pointer: [number, number] | null = null;
+  private now = 0;
   private last = -1;
   private random: () => number;
 
   constructor(now: number, random: () => number = Math.random) {
     this.random = random;
+    this.now = now;
     this.enter("rise", now);
-    this.blinkAt = now + 1400;
+    this.blinkAt = now + 2600;
   }
 
   /** 指针相对舞台中心的位置，按舞台半宽归一化；null = 指针不在。 */
@@ -107,11 +134,12 @@ export class MintyEngine {
     this.pointer = p;
   }
 
-  /** 点一下：压扁回弹 + 眨眼 + 小蹦。 */
+  /** 点一下：压扁回弹 + 换一个开心表情。 */
   poke(now: number) {
+    this.pokeCell = POKE_CELLS[this.pokes % POKE_CELLS.length];
+    this.pokes += 1;
     this.enter("poke", now);
     this.squash.v -= 2.2;
-    this.queueBlink(now + 40);
   }
 
   /** 推进到 now（毫秒），返回这一帧该画的姿态。 */
@@ -119,6 +147,7 @@ export class MintyEngine {
     if (this.last < 0) this.last = now;
     const dt = Math.min((now - this.last) / 1000, 0.1);
     this.last = now;
+    this.now = now;
 
     if (now >= this.poseUntil) this.advance(now);
     this.applyPose(now);
@@ -131,9 +160,6 @@ export class MintyEngine {
       stepSpring(this.by, SPRING_TUNE.y, h);
       stepSpring(this.tilt, SPRING_TUNE.tilt, h);
       stepSpring(this.squash, SPRING_TUNE.squash, h);
-      stepSpring(this.gx, SPRING_TUNE.gaze, h);
-      stepSpring(this.gy, SPRING_TUNE.gaze, h);
-      stepSpring(this.lid, SPRING_TUNE.lid, h);
     }
     return this.frame();
   }
@@ -144,12 +170,25 @@ export class MintyEngine {
       x: this.bx.x,
       y: this.by.x,
       tilt: this.tilt.x,
-      squash: clamp(this.squash.x, 0.78, 1.16),
-      gazeX: clamp(this.gx.x, -GAZE_MAX_X, GAZE_MAX_X),
-      gazeY: clamp(this.gy.x, -GAZE_MAX_Y, GAZE_MAX_Y),
-      lid: clamp(this.lid.x, 0.06, 1.1),
+      squash: clamp(this.squash.x, 0.82, 1.12),
+      cell: this.cell(),
       shadow: clamp(1 - lift * 4.5, 0.45, 1.1) * (this.by.x > 0.3 ? 0 : 1),
     };
+  }
+
+  private cell(): MintyCell {
+    const t = (this.now - this.poseAt) / 1000;
+    switch (this.pose) {
+      case "rise": return t < 0.4 ? "jump" : "stand";
+      case "wave": return "wave";
+      case "curious": return "tilt";
+      case "wag": return "wag";
+      case "hop": return t >= 0.1 && t < 0.4 ? "hop" : "stand";
+      case "poke": return t < 0.06 ? "stand" : this.pokeCell;
+      default:
+        // 眨眼用图集自己的「眨眼」格，只在站立格上换，别的表情保持原样。
+        return this.now < this.blinkUntil ? "blink" : "stand";
+    }
   }
 
   private enter(pose: MintyPose, now: number) {
@@ -157,12 +196,12 @@ export class MintyEngine {
     this.poseAt = now;
     const [a, b] = POSE_MS[pose];
     this.poseUntil = now + a + this.random() * (b - a);
-    if (pose === "look") {
-      this.lookTarget = [(this.random() * 2 - 1) * GAZE_MAX_X, (this.random() * 2 - 1) * GAZE_MAX_Y * 0.7];
-    }
+    if (pose === "look") this.lookSide = this.random() < 0.5 ? -1 : 1;
   }
 
   private advance(now: number) {
+    // 出场冒头后先打个招呼，再进空闲轮换。
+    if (this.pose === "rise") return this.enter("wave", now);
     const next = IDLE_ROTATION[this.rotation % IDLE_ROTATION.length];
     this.rotation += 1;
     this.enter(next, now);
@@ -172,41 +211,47 @@ export class MintyEngine {
     const t = (now - this.poseAt) / 1000;
     const breathe = Math.sin(now / 1000 * 2.1);
     const ptr = this.pointer;
-    let x = 0, y = 0, tilt = 0, squash = 1 + breathe * 0.012;
-    let gx = ptr ? ptr[0] * GAZE_MAX_X : 0;
-    let gy = ptr ? ptr[1] * GAZE_MAX_Y : 0;
+    // 视线跟随：整只朝指针微倾、微探身。
+    const px = ptr ? clamp(ptr[0], -1, 1) : 0;
+    let x = px * GAZE_LEAN, y = 0, tilt = px * GAZE_TILT, squash = 1 + breathe * 0.012;
 
     switch (this.pose) {
       case "rise": {
         // 从舞台下沿冒头：先压扁蓄力，再一下弹到位。弹簧负责过冲与回落。
-        if (t < 0.18) { y = 0.55; squash = 0.78; }
-        else { y = 0; squash = t < 0.36 ? 1.05 : 1; }
+        if (t < 0.12) { y = 0.55; squash = 0.84; }
+        else { y = 0; squash = t < 0.32 ? 1.05 : 1; }
+        tilt = 0;
         break;
       }
+      case "wave":
+        y = breathe * 0.006;
+        tilt += Math.sin(t * 7) * 2;
+        break;
       case "idle":
         y = breathe * 0.006;
-        tilt = Math.sin(now / 1000 * 0.7) * 1.2;
+        if (!ptr) tilt = Math.sin(now / 1000 * 0.7) * 1.2;
         break;
       case "look":
-        if (!ptr) [gx, gy] = this.lookTarget;
-        tilt = this.lookTarget[0] > 0 ? 3 : -3;
-        x = this.lookTarget[0] * 0.6;
+        if (!ptr) { tilt = this.lookSide * GAZE_TILT * 0.6; x = this.lookSide * GAZE_LEAN; }
         break;
       case "curious":
-        tilt = ptr ? clamp(ptr[0], -1, 1) * 9 : 8;
-        y = -0.012;
-        squash = 1.03;
+        // 「歪头」格本身已经歪了，弹簧只补一点同向的倾角，不叠加成摔倒。
+        tilt = ptr ? px * 4 : 3;
+        y = -0.01;
+        squash = 1.02;
         break;
-      case "hop": {
+      case "wag":
+        tilt += Math.sin(t * 9) * 1.5;
+        break;
+      case "hop":
         // 两段：蹲（压扁）→ 起跳（拉长 + 离地）→ 落地交还弹簧。
-        if (t < 0.12) { squash = 0.86; y = 0.01; }
-        else if (t < 0.34) { squash = 1.08; y = -0.1; }
+        if (t < 0.1) { squash = 0.88; y = 0.01; }
+        else if (t < 0.32) { squash = 1.06; y = -0.09; }
         else { squash = 1; y = 0; }
         break;
-      }
       case "poke":
-        if (t < 0.08) { squash = 0.8; }
-        else if (t < 0.3) { squash = 1.04; y = -0.08; tilt = 5; }
+        if (t < 0.06) { squash = 0.84; }
+        else if (t < 0.28) { squash = 1.04; y = -0.07; }
         else { squash = 1; y = 0; }
         break;
     }
@@ -215,23 +260,15 @@ export class MintyEngine {
     this.by.t = y;
     this.tilt.t = tilt;
     this.squash.t = squash;
-    this.gx.t = gx;
-    this.gy.t = gy;
-  }
-
-  private queueBlink(at: number) {
-    this.blinkQueue.push({ at, v: 0.06 }, { at: at + 80, v: 0.06 }, { at: at + 150, v: 1.06 }, { at: at + 260, v: 1 });
   }
 
   private updateBlink(now: number) {
     if (now >= this.blinkAt && this.blinkQueue.length === 0) {
-      this.queueBlink(now);
-      if (this.random() < 0.18) this.queueBlink(now + 330);
+      this.blinkQueue.push(now);
+      if (this.random() < 0.18) this.blinkQueue.push(now + 320);
       this.blinkAt = now + 2800 + this.random() * 4200;
     }
-    let key: number | null = null;
-    while (this.blinkQueue.length && now >= this.blinkQueue[0].at) key = this.blinkQueue.shift()!.v;
-    if (key !== null) this.lid.t = key;
+    while (this.blinkQueue.length && now >= this.blinkQueue[0]) this.blinkUntil = this.blinkQueue.shift()! + BLINK_MS;
   }
 }
 

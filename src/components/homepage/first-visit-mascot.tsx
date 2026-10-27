@@ -1,46 +1,35 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { MintyEngine } from "@/components/homepage/minty-engine";
+import { MINTY_CELLS, MintyEngine, type MintyCell } from "@/components/homepage/minty-engine";
 
 /**
- * 首访引导里的 Minty 舞台：图像生成的圆球成品图 + 弹簧引擎。
+ * 首访引导里的 Minty 舞台：仓库权威像素图集 + 弹簧引擎。
  *
- * 身体与眼睛是两层位图（眼睛从同一张成品图里切出，身体层已补好眼下皮肤），
- * 引擎只驱动整体位移 / 挤压 / 回弹 / 歪头，以及眼睛层的视线与眨眼。
+ * 图集原样使用（public/mascot/pixel/，8×8 格，每格 128px，@2x 为 256px），不重画、不改色。
+ * 引擎只做两件事：整只精灵的位移 / 挤压 / 回弹 / 微倾，以及按姿势换图集里的格子（站立、眨眼、歪头、挥手……）。
  * 纯装饰：aria-hidden、不可聚焦——绝不能抢焦点把舞台滚出视口。
  */
 
-/** 成品图切片坐标（px，基于 335×374 的身体图）。 */
-const ART = { w: 335, h: 374 } as const;
-const EYES = [
-  { src: "/first-visit/minty/eye-l.webp", x: 84, y: 152.5, w: 45, h: 46 },
-  { src: "/first-visit/minty/eye-r.webp", x: 205.5, y: 152.5, w: 45, h: 46 },
-] as const;
+export const MINTY_ATLAS = { x1: "/mascot/pixel/dino-atlas.png", x2: "/mascot/pixel/dino-atlas@2x.png", cols: 8, rows: 8 } as const;
 
-const pct = (n: number, of: number) => `${(n / of) * 100}%`;
+/** 角色在格子里的脚底位置（像素实测：站立格脚底在 116/128）。挤压、歪头都绕脚底。 */
+const FEET = 116 / 128;
+
+function cellPosition(cell: MintyCell) {
+  const [row, col] = MINTY_CELLS[cell];
+  return `${(col / (MINTY_ATLAS.cols - 1)) * 100}% ${(row / (MINTY_ATLAS.rows - 1)) * 100}%`;
+}
 
 export function FirstVisitMascot({ className }: { className?: string }) {
   const stage = useRef<HTMLDivElement>(null);
-  const body = useRef<HTMLDivElement>(null);
+  const sprite = useRef<HTMLDivElement>(null);
   const shadow = useRef<HTMLDivElement>(null);
-  const eyes = useRef<(HTMLDivElement | null)[]>([]);
   const engine = useRef<MintyEngine | null>(null);
   const [animated, setAnimated] = useState(false);
-  // 三层图都到位才开演：否则慢网下弹簧先跑完，出场那一下只剩一片影子。
-  const [loaded, setLoaded] = useState(0);
-  const ready = loaded >= 1 + EYES.length;
-  const countArt = (img: HTMLImageElement) => {
-    if (img.dataset.counted) return;
-    img.dataset.counted = "1";
-    setLoaded(n => n + 1);
-  };
-  // 水合前已从缓存加载完的图不会再触发 onLoad，挂上时补记一次。
-  const artRef = (img: HTMLImageElement | null) => {
-    if (img?.complete && img.naturalWidth > 0) queueMicrotask(() => countArt(img));
-  };
+  // 图集到位才开演：否则慢网下弹簧先跑完，出场那一下只剩一片影子。
+  const [atlas, setAtlas] = useState<string | null>(null);
 
   useEffect(() => {
     const query = window.matchMedia?.("(prefers-reduced-motion: reduce)");
@@ -51,13 +40,23 @@ export function FirstVisitMascot({ className }: { className?: string }) {
   }, []);
 
   useEffect(() => {
+    const src = window.devicePixelRatio > 1 ? MINTY_ATLAS.x2 : MINTY_ATLAS.x1;
+    const img = new window.Image();
+    let live = true;
+    img.onload = () => { if (live) setAtlas(src); };
+    img.src = src;
+    return () => { live = false; img.onload = null; };
+  }, []);
+
+  useEffect(() => {
     const el = stage.current;
-    if (!animated || !ready || !el) return;
+    if (!animated || !atlas || !el) return;
     const minty = new MintyEngine(performance.now());
     engine.current = minty;
     let width = el.clientWidth;
     let rect = el.getBoundingClientRect();
     let rectAt = 0;
+    let shown: MintyCell | null = null;
     const resize = new ResizeObserver(() => { width = el.clientWidth; });
     resize.observe(el);
 
@@ -78,16 +77,19 @@ export function FirstVisitMascot({ className }: { className?: string }) {
     const loop = (now: number) => {
       const f = minty.tick(now);
       const sx = 1 / Math.sqrt(f.squash);
-      if (body.current) {
-        body.current.style.transform =
+      const node = sprite.current;
+      if (node) {
+        node.style.transform =
           `translate3d(${(f.x * width).toFixed(2)}px, ${(f.y * width).toFixed(2)}px, 0) rotate(${f.tilt.toFixed(2)}deg) scale(${sx.toFixed(4)}, ${f.squash.toFixed(4)})`;
+        if (f.cell !== shown) {
+          node.style.backgroundPosition = cellPosition(f.cell);
+          node.dataset.cell = f.cell;
+          shown = f.cell;
+        }
       }
       if (shadow.current) {
         shadow.current.style.transform = `translateX(${(f.x * width).toFixed(2)}px) scale(${(f.shadow * sx).toFixed(3)}, ${f.shadow.toFixed(3)})`;
         shadow.current.style.opacity = String(Math.min(1, f.shadow));
-      }
-      for (const eye of eyes.current) {
-        if (eye) eye.style.transform = `translate3d(${(f.gazeX * width).toFixed(2)}px, ${(f.gazeY * width).toFixed(2)}px, 0) scaleY(${f.lid.toFixed(3)})`;
       }
       raf = requestAnimationFrame(loop);
     };
@@ -100,7 +102,7 @@ export function FirstVisitMascot({ className }: { className?: string }) {
       document.documentElement.removeEventListener("pointerleave", onLeave);
       engine.current = null;
     };
-  }, [animated, ready]);
+  }, [animated, atlas]);
 
   return (
     <div
@@ -113,26 +115,24 @@ export function FirstVisitMascot({ className }: { className?: string }) {
     >
       <div
         ref={shadow}
-        className="absolute bottom-[7%] left-[22%] h-[7%] w-[56%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(18,33,28,0.22),rgba(18,33,28,0))]"
+        className="absolute bottom-[6%] left-[24%] h-[6%] w-[52%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(18,33,28,0.2),rgba(18,33,28,0))]"
         style={animated ? { opacity: 0 } : undefined}
       />
+      {/* 格子比舞台宽：角色只占格子约 56% 宽，放大到舞台约七成宽；脚底落在舞台 92% 高处。 */}
       <div
-        ref={body}
-        className="absolute bottom-[9%] left-[13%] w-[74%] origin-bottom will-change-transform"
-        style={{ aspectRatio: `${ART.w} / ${ART.h}`, transform: animated ? "translate3d(0, 55%, 0)" : undefined }}
-      >
-        <Image src="/first-visit/minty/body.webp" alt="" width={ART.w} height={ART.h} ref={artRef} onLoad={e => countArt(e.currentTarget)} priority unoptimized draggable={false} className="pointer-events-none absolute inset-0 h-full w-full" />
-        {EYES.map((eye, i) => (
-          <div
-            key={eye.src}
-            ref={node => { eyes.current[i] = node; }}
-            className="absolute will-change-transform"
-            style={{ left: pct(eye.x, ART.w), top: pct(eye.y, ART.h), width: pct(eye.w, ART.w), height: pct(eye.h, ART.h) }}
-          >
-            <Image src={eye.src} alt="" width={eye.w} height={eye.h} ref={artRef} onLoad={e => countArt(e.currentTarget)} unoptimized draggable={false} className="pointer-events-none h-full w-full" />
-          </div>
-        ))}
-      </div>
+        ref={sprite}
+        data-testid="first-visit-mascot-sprite"
+        data-cell="stand"
+        className="pointer-events-none absolute bottom-[-2%] left-[-14%] aspect-square w-[128%] bg-no-repeat will-change-transform"
+        style={{
+          transformOrigin: `50% ${FEET * 100}%`,
+          backgroundImage: atlas ? `url(${atlas})` : undefined,
+          backgroundSize: `${MINTY_ATLAS.cols * 100}% ${MINTY_ATLAS.rows * 100}%`,
+          backgroundPosition: cellPosition("stand"),
+          // 与引擎初值 y = 0.55 个舞台宽对齐（格子宽是舞台的 1.28 倍）。
+          transform: animated ? "translate3d(0, 43%, 0)" : undefined,
+        }}
+      />
     </div>
   );
 }
