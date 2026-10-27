@@ -4,10 +4,11 @@ import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { FirstVisitMascot } from "@/components/homepage/first-visit-mascot";
+import { FirstVisitRoutes } from "@/components/homepage/first-visit-routes";
 
 /**
- * 吉祥物格的验收台：用站内同一套 Dialog 装上 Minty 舞台。
- * 分流卡是下一格的事，这里只放无文案的占位块，用来复现「打开后自动聚焦第一张卡 → 舞台被滚走」那个坑。
+ * 首访引导的验收台：站内同一套 Dialog，装上兔兔龙舞台和五张分流卡。
+ * 点任意一张卡：弹窗退场，人落到对应页面。触发规则（首访 / 已看标记 / 登录 / ?campaign=1）是后面的格，这里总是弹。
  */
 export function FirstVisitMascotPreview() {
   const t = useTranslations("preview.firstVisit");
@@ -34,19 +35,10 @@ export function FirstVisitMascotPreview() {
             </div>
             <FirstVisitMascot className="-mr-2 w-[112px] [@media(max-height:700px)]:w-[92px] sm:mr-0 sm:w-[176px]" />
           </header>
-          <div className="grid gap-2 border-t border-[#12211C]/8 px-6 py-5 sm:px-8 sm:py-6 [@media(max-height:700px)]:gap-1.5 [@media(max-height:700px)]:py-4">
-            {[1, 2, 3, 4, 5].map(n => (
-              <button
-                key={n}
-                type="button"
-                aria-label={t("cardSlot", { n })}
-                className="flex min-h-[60px] flex-col justify-center gap-2 rounded-2xl border border-[#12211C]/8 bg-white/70 px-4 [@media(max-height:700px)]:min-h-12"
-              >
-                <span className="h-2.5 w-2/5 rounded-full bg-[#12211C]/10" />
-                <span className="h-3 w-3/5 rounded-full bg-[#12211C]/15" />
-              </button>
-            ))}
-          </div>
+          <FirstVisitRoutes
+            onNavigate={() => setOpen(false)}
+            className="border-t border-[#12211C]/8 px-5 py-5 sm:px-8 sm:py-6 [@media(max-height:700px)]:py-4"
+          />
         </DialogContent>
       </Dialog>
     </main>

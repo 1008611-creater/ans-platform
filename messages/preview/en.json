@@ -58,8 +58,30 @@
   "firstVisit": {
     "title": "AI Never Stops",
     "tagline": "Whatever you want to build, someone here is already building it.",
-    "cardSlot": "Card slot {n}",
     "reopen": "Open again",
-    "close": "Close"
+    "close": "Close",
+    "routes": {
+      "label": "Pick where you want to go",
+      "explore": {
+        "need": "I want to see what people make",
+        "result": "Browse real projects"
+      },
+      "learn": {
+        "need": "I want to learn from zero",
+        "result": "Learn by building a website"
+      },
+      "team": {
+        "need": "I want to build with classmates",
+        "result": "Team up, claim compute"
+      },
+      "compete": {
+        "need": "I want to enter a competition",
+        "result": "AgriHackathon: pick a track"
+      },
+      "publish": {
+        "need": "I already built something",
+        "result": "Share it, shown after review"
+      }
+    }
   }
 }
