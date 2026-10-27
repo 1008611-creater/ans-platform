@@ -54,5 +54,12 @@
   "send": "发送",
   "thinking": "正在处理…",
   "chatEmpty": "它已经读过这个项目的介绍，可以直接问。",
-  "back": "返回项目广场"
+  "back": "返回项目广场",
+  "firstVisit": {
+    "title": "AI Never Stops",
+    "tagline": "你想做的，这里都有人正在做",
+    "cardSlot": "分流卡位置 {n}",
+    "reopen": "再弹一次",
+    "close": "关闭"
+  }
 }

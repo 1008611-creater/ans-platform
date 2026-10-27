@@ -54,5 +54,12 @@
   "send": "Send",
   "thinking": "Working…",
   "chatEmpty": "It has already read this project. Just ask.",
-  "back": "Back to projects"
+  "back": "Back to projects",
+  "firstVisit": {
+    "title": "AI Never Stops",
+    "tagline": "Whatever you want to build, someone here is already building it.",
+    "cardSlot": "Card slot {n}",
+    "reopen": "Open again",
+    "close": "Close"
+  }
 }
