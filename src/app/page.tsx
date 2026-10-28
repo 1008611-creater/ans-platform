@@ -13,6 +13,7 @@ import { CatalogPagination } from "@/components/catalog/catalog-pagination";
 import { RevealDetails } from "@/components/catalog/reveal-details";
 import { ProjectCoverflow } from "@/components/homepage/project-coverflow";
 import { HomeCampaignModal } from "@/components/homepage/home-campaign-modal";
+import { HomeWelcomeModal } from "@/components/homepage/home-welcome-modal";
 import styles from "./home.module.css";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,7 @@ export default async function HomePage({ searchParams }: { searchParams?: Promis
   const isEn = locale.startsWith("en");
   return <div className={`ans-product-shell ans-home-page ${styles.page}`}>
     <HomeCampaignModal locale={locale} />
+    <HomeWelcomeModal />
     <section className={styles.hero} aria-labelledby="home-title">
       <div className={`ans-product-container ${styles.intro}`}>
         <div className={styles.copy}>
