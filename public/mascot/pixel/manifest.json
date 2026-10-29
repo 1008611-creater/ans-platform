@@ -1,249 +1,114 @@
 {
- "atlas": "dino-atlas.png",
+ "atlas": "first-visit-atlas.png",
+ "atlas2x": "first-visit-atlas@2x.png",
  "cell": 128,
- "cols": 8,
- "rows": 8,
- "states": {
-  "idle": {
+ "cols": 5,
+ "rows": 2,
+ "source": {
+  "atlas": "dino-atlas.png",
+  "commit": "8349f7c1",
+  "note": "首访舞台用到的 10 格，从权威 8×8 图集原样裁出（逐像素一致，不重画、不改色）。完整图集见该提交。"
+ },
+ "frames": {
+  "stand": {
    "row": 0,
-   "frames": 8,
-   "durationMs": 260,
-   "labels": [
-    "站立",
-    "眨眼",
-    "歪头",
-    "摇尾",
-    "举手",
-    "坐下",
-    "打哈欠",
-    "轻跳"
+   "col": 0,
+   "state": "idle",
+   "label": "站立",
+   "source": [
+    0,
+    0
    ]
   },
-  "walk": {
+  "blink": {
+   "row": 0,
+   "col": 1,
+   "state": "idle",
+   "label": "眨眼",
+   "source": [
+    0,
+    1
+   ]
+  },
+  "tilt": {
+   "row": 0,
+   "col": 2,
+   "state": "idle",
+   "label": "歪头",
+   "source": [
+    0,
+    2
+   ]
+  },
+  "wag": {
+   "row": 0,
+   "col": 3,
+   "state": "idle",
+   "label": "摇尾",
+   "source": [
+    0,
+    3
+   ]
+  },
+  "hop": {
+   "row": 0,
+   "col": 4,
+   "state": "idle",
+   "label": "轻跳",
+   "source": [
+    0,
+    7
+   ]
+  },
+  "jump": {
    "row": 1,
-   "frames": 8,
-   "durationMs": 110,
-   "labels": [
-    "走1",
-    "走2",
-    "走3",
-    "走4",
-    "走5",
-    "走6",
-    "走7",
-    "走8"
+   "col": 0,
+   "state": "action",
+   "label": "跳起",
+   "source": [
+    6,
+    0
    ]
   },
-  "run": {
-   "row": 2,
-   "frames": 8,
-   "durationMs": 90,
-   "labels": [
-    "跑1",
-    "跑2",
-    "跑3",
-    "跑4",
-    "跑5",
-    "跑6",
-    "跑7",
-    "跑8"
+  "wave": {
+   "row": 1,
+   "col": 1,
+   "state": "action",
+   "label": "挥手",
+   "source": [
+    6,
+    1
    ]
   },
-  "work": {
-   "row": 3,
-   "frames": 8,
-   "durationMs": 400,
-   "labels": [
-    "摸鱼",
-    "搬砖",
-    "敲键盘",
-    "开会打盹",
-    "接电话",
-    "喝水",
-    "举牌",
-    "被追跑"
+  "heart": {
+   "row": 1,
+   "col": 2,
+   "state": "action",
+   "label": "比心",
+   "source": [
+    6,
+    2
    ]
   },
-  "emote": {
-   "row": 4,
-   "frames": 8,
-   "durationMs": 600,
-   "labels": [
-    "爆哭",
-    "气鼓鼓",
-    "大笑",
-    "懵圈",
-    "无语",
-    "震惊",
-    "摆烂",
-    "比心"
+  "cheer": {
+   "row": 1,
+   "col": 3,
+   "state": "action",
+   "label": "欢呼",
+   "source": [
+    6,
+    3
    ]
   },
-  "react": {
-   "row": 5,
-   "frames": 8,
-   "durationMs": 600,
-   "labels": [
-    "敬礼",
-    "求求",
-    "笑滚",
-    "裂开",
-    "流汗",
-    "磕头",
-    "探头",
-    "狂吃"
-   ]
-  },
-  "action": {
-   "row": 6,
-   "frames": 8,
-   "durationMs": 300,
-   "labels": [
-    "跳起",
-    "挥手",
-    "比心",
-    "欢呼",
-    "举方块",
-    "躺睡",
-    "背对",
-    "回头"
-   ]
-  },
-  "meme": {
-   "row": 7,
-   "frames": 8,
-   "durationMs": 450,
-   "labels": [
-    "暴富",
-    "暗中观察",
-    "石化",
-    "没电",
-    "加载中",
-    "冒烟",
-    "发光",
-    "缩成团"
-   ]
-  },
-  "daily": {
-   "row": 8,
-   "frames": 8,
-   "durationMs": 400,
-   "labels": [
-    "起床",
-    "刷牙",
-    "吃早饭",
-    "通勤",
-    "打卡",
-    "午休",
-    "下班",
-    "睡觉"
-   ]
-  },
-  "spring": {
-   "row": 9,
-   "frames": 8,
-   "durationMs": 400,
-   "labels": [
-    "贴春联",
-    "挂灯笼",
-    "收红包",
-    "抱拳拜年",
-    "吃饺子",
-    "放鞭炮",
-    "舞狮",
-    "守岁"
-   ]
-  },
-  "holiday": {
-   "row": 10,
-   "frames": 8,
-   "durationMs": 400,
-   "labels": [
-    "中秋月饼",
-    "端午粽子",
-    "儿童节气球",
-    "万圣南瓜",
-    "圣诞树",
-    "生日蛋糕",
-    "情人节比心",
-    "618购物车"
-   ]
-  },
-  "office": {
-   "row": 11,
-   "frames": 8,
-   "durationMs": 400,
-   "labels": [
-    "工位",
-    "举手提问",
-    "白板讲解",
-    "开会点头",
-    "交报告",
-    "摸鱼被抓",
-    "深夜加班",
-    "摸鱼成功"
-   ]
-  },
-  "stream": {
-   "row": 12,
-   "frames": 8,
-   "durationMs": 400,
-   "labels": [
-    "举相机",
-    "打板开拍",
-    "直播比心",
-    "剪辑中",
-    "上传进度",
-    "数据暴涨",
-    "掉粉震惊",
-    "破万庆祝"
-   ]
-  },
-  "device": {
-   "row": 13,
-   "frames": 8,
-   "durationMs": 400,
-   "labels": [
-    "充电",
-    "断网",
-    "加载中",
-    "报错",
-    "修电脑",
-    "宕机冒烟",
-    "重启恢复",
-    "信号满格"
-   ]
-  },
-  "abstract": {
-   "row": 14,
-   "frames": 8,
-   "durationMs": 400,
-   "labels": [
-    "大脑爆炸",
-    "血压升高",
-    "灵魂出窍",
-    "原地蒸发",
-    "像素方块",
-    "头顶问号",
-    "头顶灯泡",
-    "数据狂飙"
-   ]
-  },
-  "duo": {
-   "row": 15,
-   "frames": 8,
-   "durationMs": 400,
-   "labels": [
-    "递文件",
-    "被敲头",
-    "被摸头",
-    "躲身后",
-    "举牌加油",
-    "递咖啡",
-    "一起比心",
-    "一起欢呼"
+  "laugh": {
+   "row": 1,
+   "col": 4,
+   "state": "emote",
+   "label": "大笑",
+   "source": [
+    4,
+    2
    ]
   }
- },
- "atlas2x": "dino-atlas@2x.png"
+ }
 }

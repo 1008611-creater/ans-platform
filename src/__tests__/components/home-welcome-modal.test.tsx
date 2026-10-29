@@ -54,11 +54,49 @@ it("本地已有已看标记：不弹", async () => {
   await expectNoModal();
 });
 
-it("已登录：不弹，并记下已看（登出后回首页也不再打扰）", async () => {
+it("已登录：不弹，也不记已看（弹过才算看过）", async () => {
   session.status = "authenticated";
   mount();
   await expectNoModal();
+  expect(readFirstVisitGuideSeen()).toBe(false);
+});
+
+it("登录访问后登出，再来首页：引导照常弹出，弹出时才记已看", async () => {
+  session.status = "authenticated";
+  const signedIn = mount();
+  await expectNoModal();
+  signedIn.unmount();
+
+  session.status = "unauthenticated";
+  mount();
+  await screen.findByTestId("home-welcome-modal", undefined, { timeout: 3000 });
   expect(readFirstVisitGuideSeen()).toBe(true);
+});
+
+it("同一页里会话从已登录变成登出（不刷新）：引导弹出", async () => {
+  session.status = "authenticated";
+  const view = mount();
+  await expectNoModal();
+  session.status = "unauthenticated";
+  view.rerender(
+    <NextIntlClientProvider locale="zh" messages={{ preview: zh }}>
+      <HomeWelcomeModal />
+    </NextIntlClientProvider>,
+  );
+  await screen.findByTestId("home-welcome-modal", undefined, { timeout: 3000 });
+  expect(readFirstVisitGuideSeen()).toBe(true);
+});
+
+it("升起前就登录了：这次不弹，也不记已看", async () => {
+  const view = mount();
+  session.status = "authenticated";
+  view.rerender(
+    <NextIntlClientProvider locale="zh" messages={{ preview: zh }}>
+      <HomeWelcomeModal />
+    </NextIntlClientProvider>,
+  );
+  await expectNoModal();
+  expect(readFirstVisitGuideSeen()).toBe(false);
 });
 
 it("登录状态还没确定：先不弹", async () => {

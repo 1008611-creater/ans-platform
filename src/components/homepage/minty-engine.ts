@@ -3,7 +3,7 @@
  *
  * 手法参考 blessonism/grok-icon-study 的学习复刻：固定步长弹簧积分、姿势状态机、
  * 视线跟随指针、眨眼队列、点击反应。几何与造型一概不用——Minty 就是仓库里的权威像素图集
- * （public/mascot/pixel/dino-atlas.png，行与帧见同目录 manifest.json），一个像素都不重画。
+ * （public/mascot/pixel/first-visit-atlas.png，帧见同目录 manifest.json），一个像素都不重画。
  * 这里只算两件事：整只精灵的位移 / 挤压 / 歪头，以及此刻该显示图集里的哪一格。
  */
 
@@ -40,22 +40,22 @@ export function stepSpring(s: Spring, [freq, damp]: SpringTune, dt: number) {
 }
 
 /**
- * 图集格子：[行, 列]，与 manifest.json 的 states.*.row / labels 下标一一对应。
- * 图集实物是 8×8（1024px / 128px），只用 0–7 行。
+ * 图集格子：[行, 列]，与 manifest.json 的 frames.*.row / col 一一对应。
+ * 首访图集只装舞台用到的 10 格（5×2，每格 128px），从权威 8×8 图集原样裁出；注释里是原图集的格位。
  */
 export type AtlasCell = readonly [row: number, col: number];
 
 export const MINTY_CELLS = {
-  stand: [0, 0], // idle · 站立
-  blink: [0, 1], // idle · 眨眼
-  tilt: [0, 2], // idle · 歪头
-  wag: [0, 3], // idle · 摇尾
-  hop: [0, 7], // idle · 轻跳
-  jump: [6, 0], // action · 跳起
-  wave: [6, 1], // action · 挥手
-  heart: [6, 2], // action · 比心
-  cheer: [6, 3], // action · 欢呼
-  laugh: [4, 2], // emote · 大笑
+  stand: [0, 0], // idle · 站立（原 0,0）
+  blink: [0, 1], // idle · 眨眼（原 0,1）
+  tilt: [0, 2], // idle · 歪头（原 0,2）
+  wag: [0, 3], // idle · 摇尾（原 0,3）
+  hop: [0, 4], // idle · 轻跳（原 0,7）
+  jump: [1, 0], // action · 跳起（原 6,0）
+  wave: [1, 1], // action · 挥手（原 6,1）
+  heart: [1, 2], // action · 比心（原 6,2）
+  cheer: [1, 3], // action · 欢呼（原 6,3）
+  laugh: [1, 4], // emote · 大笑（原 4,2）
 } as const satisfies Record<string, AtlasCell>;
 
 export type MintyCell = keyof typeof MINTY_CELLS;

@@ -7,12 +7,12 @@ import { MINTY_CELLS, MintyEngine, type MintyCell } from "@/components/homepage/
 /**
  * 首访引导里的 Minty 舞台：仓库权威像素图集 + 弹簧引擎。
  *
- * 图集原样使用（public/mascot/pixel/，8×8 格，每格 128px，@2x 为 256px），不重画、不改色。
+ * 图集是权威像素图集里舞台用到的 10 格原样裁出（public/mascot/pixel/，5×2 格，每格 128px，@2x 为 256px），不重画、不改色。
  * 引擎只做两件事：整只精灵的位移 / 挤压 / 回弹 / 微倾，以及按姿势换图集里的格子（站立、眨眼、歪头、挥手……）。
  * 纯装饰：aria-hidden、不可聚焦——绝不能抢焦点把舞台滚出视口。
  */
 
-export const MINTY_ATLAS = { x1: "/mascot/pixel/dino-atlas.png", x2: "/mascot/pixel/dino-atlas@2x.png", cols: 8, rows: 8 } as const;
+export const MINTY_ATLAS = { x1: "/mascot/pixel/first-visit-atlas.png", x2: "/mascot/pixel/first-visit-atlas@2x.png", cols: 5, rows: 2 } as const;
 
 /** 角色在格子里的脚底位置（像素实测：站立格脚底在 116/128）。挤压、歪头都绕脚底。 */
 const FEET = 116 / 128;

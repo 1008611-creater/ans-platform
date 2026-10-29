@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { inflateSync } from "node:zlib";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { FirstVisitMascot, MINTY_ATLAS } from "@/components/homepage/first-visit-mascot";
@@ -26,19 +27,63 @@ it("弹簧收敛到目标且不发散", () => {
   expect(s.x).toBe(1);
 });
 
-it("用到的每一格都在权威图集里，行号与 manifest 标签一致", () => {
+/** 解出 8 位 RGBA、非隔行 PNG 的像素（首访图集就是这种格式），只为数格子里有没有画。 */
+function decodeRgba(file: string) {
+  const png = readFileSync(join(process.cwd(), "public/mascot/pixel", file));
+  const [width, height] = [png.readUInt32BE(16), png.readUInt32BE(20)];
+  expect([png[24], png[25], png[28]]).toEqual([8, 6, 0]);
+  const chunks: Buffer[] = [];
+  for (let at = 8; at < png.length; ) {
+    const length = png.readUInt32BE(at);
+    if (png.toString("ascii", at + 4, at + 8) === "IDAT") chunks.push(png.subarray(at + 8, at + 8 + length));
+    at += length + 12;
+  }
+  const raw = inflateSync(Buffer.concat(chunks));
+  const stride = width * 4;
+  const pixels = Buffer.alloc(stride * height);
+  for (let y = 0; y < height; y++) {
+    const filter = raw[y * (stride + 1)];
+    for (let x = 0; x < stride; x++) {
+      const v = raw[y * (stride + 1) + 1 + x];
+      const a = x >= 4 ? pixels[y * stride + x - 4] : 0;
+      const b = y > 0 ? pixels[(y - 1) * stride + x] : 0;
+      const c = x >= 4 && y > 0 ? pixels[(y - 1) * stride + x - 4] : 0;
+      const p = a + b - c;
+      const paeth = Math.abs(p - a) <= Math.abs(p - b) && Math.abs(p - a) <= Math.abs(p - c) ? a : Math.abs(p - b) <= Math.abs(p - c) ? b : c;
+      pixels[y * stride + x] = (v + [0, a, b, (a + b) >> 1, paeth][filter]) & 0xff;
+    }
+  }
+  return { width, height, alpha: (x: number, y: number) => pixels[y * stride + x * 4 + 3] };
+}
+
+it("首访图集只装舞台用到的格子，每一格都在、都有画，标签与权威图集一致", () => {
   const manifest = JSON.parse(readFileSync(join(process.cwd(), "public/mascot/pixel/manifest.json"), "utf8")) as {
+    atlas: string;
+    atlas2x: string;
     cell: number;
-    states: Record<string, { row: number; labels: string[] }>;
+    cols: number;
+    rows: number;
+    frames: Record<string, { row: number; col: number; label: string }>;
   };
-  const png = readFileSync(join(process.cwd(), "public/mascot/pixel/dino-atlas.png"));
-  const [w, h] = [png.readUInt32BE(16), png.readUInt32BE(20)];
-  expect([w / manifest.cell, h / manifest.cell]).toEqual([MINTY_ATLAS.cols, MINTY_ATLAS.rows]);
-  const label = (row: number, col: number) => Object.values(manifest.states).find(s => s.row === row)?.labels[col];
+  expect(MINTY_ATLAS.x1).toBe(`/mascot/pixel/${manifest.atlas}`);
+  expect(MINTY_ATLAS.x2).toBe(`/mascot/pixel/${manifest.atlas2x}`);
+  expect([MINTY_ATLAS.cols, MINTY_ATLAS.rows]).toEqual([manifest.cols, manifest.rows]);
+  // 不多不少：舞台用到的格子就是图集里的全部格子。
+  expect(Object.keys(manifest.frames).sort()).toEqual(Object.keys(MINTY_CELLS).sort());
+  expect(Object.keys(MINTY_CELLS)).toHaveLength(manifest.cols * manifest.rows);
+
   const expected = { stand: "站立", blink: "眨眼", tilt: "歪头", wag: "摇尾", hop: "轻跳", jump: "跳起", wave: "挥手", heart: "比心", cheer: "欢呼", laugh: "大笑" };
-  for (const [name, [row, col]] of Object.entries(MINTY_CELLS)) {
-    expect(row).toBeLessThan(MINTY_ATLAS.rows);
-    expect(label(row, col)).toBe(expected[name as keyof typeof expected]);
+  for (const [file, scale] of [[manifest.atlas, 1], [manifest.atlas2x, 2]] as const) {
+    const atlas = decodeRgba(file);
+    const cell = manifest.cell * scale;
+    expect([atlas.width, atlas.height]).toEqual([manifest.cols * cell, manifest.rows * cell]);
+    for (const [name, [row, col]] of Object.entries(MINTY_CELLS)) {
+      expect(manifest.frames[name]).toMatchObject({ row, col, label: expected[name as keyof typeof expected] });
+      let painted = 0;
+      for (let y = row * cell; y < (row + 1) * cell; y += scale) for (let x = col * cell; x < (col + 1) * cell; x += scale) if (atlas.alpha(x, y) > 200) painted++;
+      // 角色约占格子三成面积；空格或错位的格子会远低于这个数。
+      expect(painted, `${file} · ${name}`).toBeGreaterThan(128 * 128 * 0.15);
+    }
   }
 });
 

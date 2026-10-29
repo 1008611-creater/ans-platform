@@ -42,7 +42,7 @@ function campaignRequested() {
 
 /**
  * 首页首访引导的触发规则：只对未登录、本地没有已看标记的访客弹一次。
- * 已登录不弹，并顺手记下已看——登出后回到首页也算回访者，不再打扰。
+ * 已看标记只在引导真正弹给未登录访客的那一刻写（弹过才算看过）；已登录不弹，也不写——登出后第一次来首页照常弹。
  */
 export function HomeWelcomeModal() {
   const { status } = useSession();
@@ -50,8 +50,7 @@ export function HomeWelcomeModal() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (status === "loading") return;
-    if (status === "authenticated") { markFirstVisitGuideSeen(); return; }
+    if (status !== "unauthenticated") return;
     if (readFirstVisitGuideSeen() || campaignRequested()) return;
 
     void loadDialog();
