@@ -24,8 +24,8 @@ type SearchParams = Promise<{ c?: string | string[]; tab?: string | string[] }>;
 
 const tabClass = (active: boolean) => `border-b-2 px-1 pb-2 text-sm font-semibold transition-colors ${active ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`;
 
-export default async function CommunityPage({ searchParams }: { searchParams?: SearchParams } = {}) {
-  const params = (await searchParams) ?? {};
+export default async function CommunityPage({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams;
   const session = await auth();
   const t = await getTranslations("product.communityPage");
   const userId = session?.user?.id;

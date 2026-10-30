@@ -39,13 +39,13 @@ it("shows the public feed to visitors without loading private growth", async () 
 it("shows an honest empty state instead of padding the feed", async () => {
   mocks.auth.mockResolvedValue(null);
   mocks.feed.mockResolvedValue({ feed: [], noteCount: 0, repoCount: 0 });
-  render(await CommunityPage());
+  render(await CommunityPage({ searchParams: Promise.resolve({}) }));
   expect(screen.queryByTestId("community-feed")).not.toBeInTheDocument();
   expect(screen.getByText("empty")).toBeInTheDocument();
 });
 it("gives members a real check-in record beside the feed", async () => {
   mocks.auth.mockResolvedValue({ user: { id: "self", username: "real-member" } });
-  render(await CommunityPage());
+  render(await CommunityPage({ searchParams: Promise.resolve({}) }));
   expect(mocks.growth).toHaveBeenCalledExactlyOnceWith("self");
   expect(screen.getByTestId("community-checkin-card")).toBeInTheDocument();
   expect(screen.getByRole("img", { name: "checkInLabel" }).querySelectorAll(".bg-emerald-500")).toHaveLength(1);
@@ -63,6 +63,6 @@ it("restores the full growth tab without loading the feed", async () => {
 it("does not manufacture growth for a removed or unavailable account", async () => {
   mocks.auth.mockResolvedValue({ user: { id: "self", username: "real-member" } });
   mocks.growth.mockResolvedValue(null);
-  await expect(CommunityPage()).rejects.toThrow("NOT_FOUND");
+  await expect(CommunityPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("NOT_FOUND");
   expect(mocks.growthPanel).not.toHaveBeenCalled();
 });
