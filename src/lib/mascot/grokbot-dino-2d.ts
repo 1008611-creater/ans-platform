@@ -178,14 +178,22 @@ export function stepSpring(
   dt: number,
 ): void {
   const omega = freqHz * Math.PI * 2;
+  // 半隐式欧拉只在 ζ·ω·h ≤ 1 且 ω·h < 2 时稳定；眨眼这类 26Hz 的硬弹簧在 1/120 步长下会发散成 NaN，
+  // 所以按刚度再细分步长。
+  const maxStep = Math.min(FIXED_STEP, 0.5 / (omega * Math.max(damping, 1)));
   let remaining = clamp(dt, 0, 0.1);
   while (remaining > 1e-6) {
-    const step = Math.min(FIXED_STEP, remaining);
+    const step = Math.min(maxStep, remaining);
     spring.v +=
       (-omega * omega * (spring.x - spring.target) - 2 * damping * omega * spring.v) *
       step;
     spring.x += spring.v * step;
     remaining -= step;
+  }
+  // 万一目标值本身异常，也不把 NaN 写进 SVG 属性。
+  if (!Number.isFinite(spring.x) || !Number.isFinite(spring.v)) {
+    spring.x = Number.isFinite(spring.target) ? spring.target : 0;
+    spring.v = 0;
   }
 }
 
