@@ -99,6 +99,9 @@ function CreditsCenterSession({ actorId, availablePoints, reservedPoints = 0, pe
               <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">⚡ 试玩 →</span>
             </div>
             <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{model.key}</p>
+            <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+              {model.key === "deepseek-v4.1-flash" ? "🟢 双活算力池 · McGrox + 火山 Coding Plan" : "🟢 已连通 · Cockpit McGrox Sub2API"}
+            </p>
           </div>
           <p className="mt-4 text-sm font-medium">{paused.includes(model.key) ? t("modelPaused") : multipliers[model.key] === undefined ? t("modelUnpriced") : t("modelMultiplier", { multiplier: multipliers[model.key]! })}</p>
         </Link>

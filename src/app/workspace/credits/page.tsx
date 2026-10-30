@@ -9,6 +9,7 @@ import { AccountContentBoundary } from "@/components/auth/account-content-bounda
 import { ComputeBenefits } from "@/components/workspace/compute-benefits";
 import { CreditsCenter } from "@/components/workspace/credits-center";
 import { CreditGiftClaim } from "@/components/workspace/credit-gift-claim";
+import { SwissOnboardingBanner } from "@/components/workspace/swiss-onboarding-guide";
 import { readCreditGiftOffer } from "@/server/quota/gift-offer";
 import { getCreditProducts } from "@/lib/credits-catalog";
 import { readPersonalApiHistory } from "@/server/quota/api-history";
@@ -57,7 +58,7 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
   const userId = session?.user?.id ?? null;
   const actorId = userId ?? "guest-preview";
   const voiceText = await getTranslations("product.voiceUsage");
-  const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
+  const numbers = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
   const dates = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Shanghai" });
   let history: typeof GUEST_CREDITS_HISTORY | Awaited<ReturnType<typeof readQuotaHistory>> | undefined =
     userId ? undefined : GUEST_CREDITS_HISTORY;
@@ -83,8 +84,15 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
         ])
       : [null, [], undefined];
 
-  const roundedAvailable = history ? Math.round(Number(history.availablePoints) * 100) / 100 : 0;
-  const roundedReserved = history ? Math.round(Number(history.reservedPoints ?? 0) * 100) / 100 : 0;
+  const roundedAvailable = history ? Math.round(Number(history.availablePoints) * 10) / 10 : 0;
+  const roundedReserved = history ? Math.round(Number(history.reservedPoints ?? 0) * 10) / 10 : 0;
+  const roundedApiHistory = Array.isArray(apiHistory)
+    ? apiHistory.map(item => ({
+        ...item,
+        authorizedPoints: Math.round(Number(item.authorizedPoints) * 10) / 10,
+        settledPoints: item.settledPoints === null ? null : Math.round(Number(item.settledPoints) * 10) / 10,
+      }))
+    : apiHistory;
 
   return (
     <AccountContentBoundary actorId={actorId}>
@@ -139,6 +147,7 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
               </Button>
             </div>
           </header>
+          <SwissOnboardingBanner pageKey="credits" showGatewayCard />
           {!history ? (
             <p role="alert" className="rounded-[var(--radius)] border p-5">
               {t(invalid ? "invalid" : "unavailable")}
@@ -152,7 +161,7 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
                 availablePoints={roundedAvailable}
                 reservedPoints={roundedReserved}
                 pendingCount={history.pendingCount}
-                apiHistory={apiHistory}
+                apiHistory={roundedApiHistory}
                 products={getCreditProducts(process.env)}
               />
               {userId && process.env.ANS_COMPUTE_BENEFITS_ENABLED === "1" && (
