@@ -159,6 +159,13 @@ model User {
   resolvedXpRewardReviews XpRewardReviewCase[] @relation("XpRewardReviewResolver")
   artifactReactions ArtifactReaction[]
   artifactComments ArtifactComment[]
+  communityPosts CommunityPost[] @relation("CommunityPostAuthor")
+  communityPostsHelped CommunityPost[] @relation("CommunityPostHelper")
+  communityReplies CommunityReply[]
+  communityPostLikes CommunityPostLike[]
+  communityHelpOffers CommunityHelpOffer[]
+  communityTeamApplications CommunityTeamApplication[]
+  communityPostReports CommunityPostReport[]
   artifactReports ArtifactReport[] @relation("ArtifactReportAuthor")
   marketListings MarketListing[] @relation("MarketSeller")
   marketCheckouts MarketExternalCheckout[]
@@ -1118,6 +1125,7 @@ model Team {
   competitions TeamCompetition[]
   runs         Run[]
   projects     Project[]
+  communityPosts CommunityPost[]
 
   @@map("teams")
 }
@@ -1181,6 +1189,7 @@ model Competition {
   teams       TeamCompetition[]
   runs        Run[]
   agriWorkspace AgriWorkspace?
+  communityPosts CommunityPost[]
   agriPersonalTasks AgriPersonalTask[]
   agriTaskReceipts AgriTaskCommandReceipt[]
 
@@ -3339,4 +3348,147 @@ model AgriRankingPublication {
   @@unique([competitionId, actorId, idempotencyKey])
   @@index([competitionId, stage, createdAt(sort: Desc), id(sort: Desc)], map: "agri_ranking_latest")
   @@map("agri_ranking_publications")
+}
+enum CommunityPostKind {
+  NOTE
+  TEXT
+  STALL
+}
+
+enum CommunityStallKind {
+  SEEK
+  OFFER
+  SWAP
+  TEAM
+}
+
+enum CommunityBoard {
+  TEAM
+  CAREER
+  RESEARCH
+  AIGC
+  CAMPUS
+}
+
+enum CommunityPostStatus {
+  OPEN
+  RESOLVED
+  CLOSED
+  HIDDEN
+}
+
+enum CommunityApplicationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+/// 社区帖子：图文笔记、一句话、集市摊位（求 / 出 / 换 / 组队）。摊位到期或解决后收起。
+model CommunityPost {
+  id            String              @id @default(cuid())
+  authorId      String
+  author        User                @relation("CommunityPostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  kind          CommunityPostKind
+  stall         CommunityStallKind?
+  board         CommunityBoard
+  title         String?             @db.VarChar(80)
+  body          String              @db.VarChar(2000)
+  images        String[]
+  /// 组队摊位：[{ "name": "前端", "slots": 1 }]，已入队人数按通过的申请计算。
+  roles         Json?
+  competitionId String?
+  competition   Competition?        @relation(fields: [competitionId], references: [id], onDelete: SetNull)
+  teamId        String?
+  team          Team?               @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  status        CommunityPostStatus @default(OPEN)
+  expiresAt     DateTime?
+  helperId      String?
+  helper        User?               @relation("CommunityPostHelper", fields: [helperId], references: [id], onDelete: SetNull)
+  resolvedAt    DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  replies       CommunityReply[]
+  likes         CommunityPostLike[]
+  helpOffers    CommunityHelpOffer[]
+  applications  CommunityTeamApplication[]
+  reports       CommunityPostReport[]
+
+  @@index([status, createdAt])
+  @@index([board, status, createdAt])
+  @@index([authorId, createdAt])
+  @@map("community_posts")
+}
+
+model CommunityReply {
+  id        String        @id @default(cuid())
+  postId    String
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body      String        @db.VarChar(1000)
+  createdAt DateTime      @default(now())
+  deletedAt DateTime?
+
+  @@index([postId, createdAt])
+  @@map("community_replies")
+}
+
+model CommunityPostLike {
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+
+  @@id([userId, postId])
+  @@index([postId])
+  @@map("community_post_likes")
+}
+
+/// 「我能帮」/「我想要」：发帖人从这里选出帮到自己的人。
+model CommunityHelpOffer {
+  id        String        @id @default(cuid())
+  postId    String
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String?       @db.VarChar(200)
+  createdAt DateTime      @default(now())
+
+  @@unique([postId, userId])
+  @@map("community_help_offers")
+}
+
+/// 组队帖的入队申请；队长同意后直接成为队伍成员。
+model CommunityTeamApplication {
+  id          String                     @id @default(cuid())
+  postId      String
+  post        CommunityPost              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  applicantId String
+  applicant   User                       @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  role        String                     @db.VarChar(20)
+  message     String?                    @db.VarChar(300)
+  status      CommunityApplicationStatus @default(PENDING)
+  decidedAt   DateTime?
+  createdAt   DateTime                   @default(now())
+
+  @@unique([postId, applicantId])
+  @@index([postId, status])
+  @@map("community_team_applications")
+}
+
+model CommunityPostReport {
+  id         String               @id @default(cuid())
+  postId     String
+  post       CommunityPost        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reporterId String
+  reporter   User                 @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  reason     String               @db.VarChar(20)
+  details    String?              @db.VarChar(500)
+  status     ArtifactReportStatus @default(PENDING)
+  createdAt  DateTime             @default(now())
+
+  @@unique([postId, reporterId])
+  @@index([status, createdAt])
+  @@map("community_post_reports")
 }
