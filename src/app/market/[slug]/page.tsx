@@ -176,15 +176,25 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
         <dl className={styles.facts}>
           <div><dt>{td("deliverablesCount")}</dt><dd>{td("itemsCount", { count: listing.deliverables.length })}</dd></div>
         </dl>
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {runnable && runnable.available ? (
             <Button asChild className="h-auto min-h-11 w-full whitespace-normal py-3 text-center"><a href={`#${purchaseAnchor}`}>{td("prepareRun")}<ChevronRight aria-hidden="true" /></a></Button>
           ) : purchasable && isFree ? (
-            <Button asChild className="h-auto min-h-11 w-full whitespace-normal py-3 text-center"><a href={freeUrl} target="_blank" rel="noopener noreferrer">{p("realProject.visitProduct")}<ArrowUpRight aria-hidden="true" /></a></Button>
+            <Button asChild className="h-auto min-h-11 w-full whitespace-normal py-3 text-center"><a href={freeUrl} target="_blank" rel="noopener noreferrer">{listing.usageUrl || listing.previewUrl ? "🔗 打开在线体验 / 应用" : listing.githubUrl ? "📦 访问 GitHub 开源仓库" : p("realProject.visitProduct")}<ArrowUpRight aria-hidden="true" /></a></Button>
           ) : purchasable ? (
             <Button asChild className="h-auto min-h-11 w-full whitespace-normal py-3 text-center"><a href={`#${purchaseAnchor}`}>{isOwner ? tp("ownProject") : `⚡ 立即用 ${points} 积分购买`}<ChevronRight aria-hidden="true" /></a></Button>
           ) : (
             <Button disabled variant="outline" className="h-auto min-h-11 w-full whitespace-normal py-3 text-center">🔒 交付包内测中 · 暂未开放购买</Button>
+          )}
+          {listing.previewUrl && listing.previewUrl !== freeUrl && (
+            <Button asChild variant="outline" className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center">
+              <a href={listing.previewUrl} target="_blank" rel="noopener noreferrer">🖥️ 查看演示预览 <ArrowUpRight aria-hidden="true" /></a>
+            </Button>
+          )}
+          {listing.githubUrl && listing.githubUrl !== freeUrl && (
+            <Button asChild variant="outline" className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center">
+              <a href={listing.githubUrl} target="_blank" rel="noopener noreferrer">📦 查看 GitHub 源码仓库 <ArrowUpRight aria-hidden="true" /></a>
+            </Button>
           )}
           {session?.user?.id ? <MarketAccountBoundary actorId={session.user.id}><MarketStar listingId={offer.id} initialCount={offer.starCount ?? 0} initialStarred={offer.starred ?? false} /></MarketAccountBoundary> : <Button asChild variant="outline" className="h-auto min-h-10 w-full whitespace-normal py-2.5 text-center"><Link href={loginHref}><Star aria-hidden="true" />{tp("loginToStar", { count: offer.starCount ?? 0 })}</Link></Button>}
           {!runnable && purchasable && !(isFree && freeUrl === listing.usageUrl) && listing.usageUrl && !listing.usageUrl.includes("/workspace/models") && <ProjectUsageEntry usageUrl={listing.usageUrl} />}
