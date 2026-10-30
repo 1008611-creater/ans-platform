@@ -331,24 +331,6 @@ export async function runAgentLoop(
 - **Q1：「你们和直接调通用 ChatGPT / DeepSeek 有什么本质区别？」**  
   👉 **标准答法**：通用模型缺乏特定作物的生育期农事约束与本地植保规程，容易给出违规用药建议；我们构建了经过农大植保教材校验的结构化知识图谱与边缘传感器联动系统。
 `,
-
-  "cau-agri-smart-greenhouse-agent": `# 📦 交付包：中国农大智慧温室病虫害巡检与环控处方 Agent 全套方案
-
-> **状态**：✅ ANS 官方自动秒发（已永久解锁）  
-> **适用场景**：设施农业番茄/黄瓜/草莓温室病虫害早期视觉预警与环控联动。
-
----
-
-## 1. 多模态叶片诊断 + 环控联调 System Prompt
-
-\`\`\`markdown
-你是由中国农业大学智慧农业团队研发的「设施温室植保与环控首席 Agent」。
-请根据输入的【叶片异常特征】与【当前棚内温湿度/EC/pH】，输出：
-1. 疑似病害/生理性缺素Top-2鉴别诊断及置信度；
-2. 未来24小时通风、遮阳与滴灌水肥调控参数；
-3. 绿色防控与低毒生物农药推荐清单（严格遵循安全间隔期）。
-\`\`\`
-`,
 };
 
 export function getOfficialDeliveryMarkdown(slug: string, title: string, deliverables: string[] = []): string {

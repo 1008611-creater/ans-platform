@@ -198,13 +198,17 @@ const OFFICIAL_MARKET_LISTINGS = [
 
 /** status is a seed directive, not part of the listing payload. */
 function splitStatus(item) {
-  const { status = "PUBLISHED", ...payload } = item;
+  const { status = "WITHDRAWN", ...payload } = item;
   return { status, payload };
 }
 
 async function main() {
   const prisma = new PrismaClient();
   try {
+    await prisma.marketListing.updateMany({
+      where: { slug: "cau-agri-smart-greenhouse-agent" },
+      data: { status: "WITHDRAWN" },
+    });
     const seller = await prisma.user.findFirst({
       where: { deletedAt: null, flagged: false },
       orderBy: { createdAt: "asc" },

@@ -1,17 +1,12 @@
 import type { MarketOrderAction, MarketOrderStatus } from "@/contracts/marketplace";
 import { nextOrderStatus } from "./order";
 
-export const VERIFIED_DELIVERABLE_SLUGS = new Set([
-  "lab-weekly-git-report-automation",
-  "aigc-agri-short-drama-storyboard",
-  "agri-anova-stats-plot-pack",
-  "cau-sci-paper-polisher-kit",
-  "nextjs-agri-agent-dashboard-starter",
-  // open-pi-agent-rag-toolchain removed: its delivery does not match the listing yet.
-]);
+// Official static resource listings are publicly listed/sold only once their delivery matches the listing.
+export const VERIFIED_DELIVERABLE_SLUGS: ReadonlySet<string> = new Set<string>([]);
 
 export function isMarketOfferPurchasable(offer: {
   slug?: string;
+  official?: boolean;
   listing: {
     fulfillment?: string;
     priceMinor?: number;
@@ -20,6 +15,7 @@ export function isMarketOfferPurchasable(offer: {
 }): boolean {
   if (offer.listing.execution) return true;
   if (offer.listing.fulfillment === "service") return false;
+  if (offer.official) return Boolean(offer.slug && VERIFIED_DELIVERABLE_SLUGS.has(offer.slug));
   if ((offer.listing.priceMinor ?? 0) === 0) return true;
   return Boolean(offer.slug && VERIFIED_DELIVERABLE_SLUGS.has(offer.slug));
 }
