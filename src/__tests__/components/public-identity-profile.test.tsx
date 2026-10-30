@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { cloneElement, isValidElement, type ReactNode } from "react";
-import UserProfilePage, { generateMetadata } from "@/app/[username]/page";
+import UserProfilePage, { generateMetadata } from "@/app/(full)/[username]/page";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { getGrowthProfile } from "@/server/growth/service";

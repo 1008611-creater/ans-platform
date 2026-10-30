@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { AgriWall } from "@/components/competitions/agri-wall";
 import homeStyles from "../home.module.css";
 import styles from "./explore.module.css";
+import { RouteMessages } from "@/components/providers/route-messages";
+import { PUBLIC_PAGE_MESSAGE_PATHS } from "@/i18n/client-messages";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata() {
@@ -23,7 +25,7 @@ export async function generateMetadata() {
   return { title: t("nav.explore"), description: t("exploreBody") };
 }
 
-export default async function ExplorePage({ searchParams }: { searchParams: Promise<CatalogBrowseQuery> }) {
+async function exploreContent(searchParams: Promise<CatalogBrowseQuery>) {
   const [params, t, locale, catalog] = await Promise.all([searchParams, getTranslations("product"), getLocale(), listPublishedCatalog()]);
   const { hero, showcase } = homepageProjects(catalog);
   const browse = browseCatalog(catalog, params, project => [catalogText(project, t, "title", locale), catalogText(project, t, "summary", locale), t(`categories.${project.category}`), t(`children.${project.subcategory}`)].join(" "));
@@ -84,4 +86,8 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
     <CatalogPagination page={browse.page} pages={browse.pages} href={page => filterHref({}, page)} labels={{ navigation: t("catalogBrowse.pagination"), previous: t("catalogBrowse.previous"), next: t("catalogBrowse.next"), page: page => t("catalogBrowse.page", { page }) }} />
     </>}
   </div></div>;
+}
+
+export default async function ExplorePage({ searchParams }: { searchParams: Promise<CatalogBrowseQuery> }) {
+  return <RouteMessages paths={PUBLIC_PAGE_MESSAGE_PATHS.explore}>{await exploreContent(searchParams)}</RouteMessages>;
 }

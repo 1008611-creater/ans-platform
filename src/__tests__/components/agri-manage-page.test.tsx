@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render } from "@testing-library/react";
-import Page from "@/app/competitions/agrihackathon/manage/page";
+import Page from "@/app/competitions/(full)/agrihackathon/manage/page";
 const mocks = vi.hoisted(() => ({ manager: vi.fn() }));
 vi.mock("next-intl/server", () => ({ getTranslations: async () => (key: string) => key }));
 vi.mock("@/components/competitions/agri-workspace-manager", () => ({ AgriWorkspaceManager: (props: unknown) => { mocks.manager(props); return null; } }));

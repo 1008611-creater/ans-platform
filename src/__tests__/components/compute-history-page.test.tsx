@@ -9,7 +9,7 @@ vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("next-intl/server", () => ({ getTranslations: async () => createTranslator({ locale: "zh", messages: zh, namespace: "computeHistory" }) }));
 vi.mock("@/components/workspace/compute-history", () => ({ ComputeHistory: mocks.view }));
 vi.mock("next/link", () => ({ default: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props} /> }));
-import ComputeHistoryPage, { generateMetadata } from "@/app/workspace/compute/page";
+import ComputeHistoryPage, { generateMetadata } from "@/app/(full)/workspace/compute/page";
 import { ComputeError } from "@/server/compute/policy";
 beforeEach(() => {
  vi.resetAllMocks(); mocks.auth.mockResolvedValue({ user: { id: "authenticated-member" } });

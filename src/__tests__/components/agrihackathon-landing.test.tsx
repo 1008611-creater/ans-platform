@@ -3,7 +3,7 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import zh from "../../../messages/zh.json";
 import agriWall from "../../../messages/agri-wall/zh.json";
 import product from "../../../messages/product/zh.json";
-import AgriHackathonPage from "@/app/competitions/agrihackathon/page";
+import AgriHackathonPage from "@/app/competitions/(full)/agrihackathon/page";
 
 const mocks = vi.hoisted(() => ({ find: vi.fn(), guide: vi.fn() }));
 vi.mock("@/server/competitions/service", () => ({ findAgriHackathonCompetition: mocks.find }));

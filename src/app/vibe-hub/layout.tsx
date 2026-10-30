@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { VibeHubFooter } from "./footer";
 import { VibeHubShell } from "./shell";
+import { RouteMessages } from "@/components/providers/route-messages";
 
 export const metadata: Metadata = {
   title: { default: "ANS VibeHub", template: "%s | ANS VibeHub" },
@@ -12,5 +13,5 @@ export const metadata: Metadata = {
 };
 
 export default function VibeHubLayout({ children }: { children: React.ReactNode }) {
-  return <Suspense><VibeHubShell>{children}<VibeHubFooter /></VibeHubShell></Suspense>;
+  return <RouteMessages><Suspense><VibeHubShell>{children}<VibeHubFooter /></VibeHubShell></Suspense></RouteMessages>;
 }

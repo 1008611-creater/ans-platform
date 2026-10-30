@@ -3,7 +3,7 @@ const m = vi.hoisted(() => ({ share: vi.fn() }));
 vi.mock("@/server/competitions/agrihackathon/share", () => ({ readAgriWallShare: m.share }));
 vi.mock("next-intl/server", () => ({ getTranslations: async () => (key: string) => key }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NOT_FOUND"); } }));
-import { generateMetadata } from "@/app/competitions/agrihackathon/wall/[slug]/page";
+import { generateMetadata } from "@/app/competitions/(full)/agrihackathon/wall/[slug]/page";
 const props = { params: Promise.resolve({ slug: "field-project" }) };
 beforeEach(() => vi.resetAllMocks());
 describe("event share metadata", () => {

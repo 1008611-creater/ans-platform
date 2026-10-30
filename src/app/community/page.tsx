@@ -9,6 +9,8 @@ import { CommunityPanel } from "@/components/community/community-panel";
 import { ProfileGrowthPanel } from "@/components/growth/profile-growth-panel";
 import { PageHeading } from "@/components/layout/page-heading";
 import { Button } from "@/components/ui/button";
+import { RouteMessages } from "@/components/providers/route-messages";
+import { PUBLIC_PAGE_MESSAGE_PATHS } from "@/i18n/client-messages";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +19,7 @@ export async function generateMetadata() {
   return { title: `${t("title")} · ANS`, description: t("description") };
 }
 
-export default async function CommunityPage() {
+async function communityContent() {
   const session = await auth();
   if (!session?.user?.id) {
     const t = await getTranslations("product.communityPage");
@@ -94,4 +96,8 @@ export default async function CommunityPage() {
       </AccountContentBoundary>
     </div>
   );
+}
+
+export default async function CommunityPage() {
+  return <RouteMessages paths={PUBLIC_PAGE_MESSAGE_PATHS.community}>{await communityContent()}</RouteMessages>;
 }

@@ -365,9 +365,9 @@ for (const file of brandCheckFiles) {
 // 8. 封面质量门禁（严禁将未获批的批量扁平 /catalog/oil-v1/*.svg 直接绑回主站外层卡片）
 const coverGateFiles = [
   "src/domain/catalog/projects.ts",
-  "src/app/showcase/page.tsx",
+  "src/app/(full)/showcase/page.tsx",
   "src/components/marketplace/offer-card.tsx",
-  "src/app/hubs/[slug]/page.tsx",
+  "src/app/hubs/(full)/[slug]/page.tsx",
   "src/app/vibe-hub/guides/guides-client.tsx",
   "src/app/vibe-hub/courses/course-directory.tsx",
 ];

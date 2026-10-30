@@ -11,6 +11,7 @@ vi.mock("@/server/catalog/service", async () => {
 const state = vi.hoisted(() => ({ pathname: "/", user: null as null | { username: string } }));
 vi.mock("next/navigation", () => ({ usePathname: () => state.pathname }));
 vi.mock("next-auth/react", () => ({ useSession: () => ({ data: state.user ? { user: state.user } : null }) }));
+vi.mock("@/components/providers/route-messages", () => ({ RouteMessages: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock("next-intl/server", () => ({ getLocale: async () => "zh", getTranslations: async () => (key: string) => key }));
 vi.mock("@/components/catalog/project-card", () => ({ ProjectCard: ({ project }: { project: { slug: string } }) => <article><Link href={`/explore/${project.slug}`}>{project.slug}</Link></article> }));
 vi.mock("@/components/catalog/project-preview", () => ({ ProjectPreview: () => <div data-testid="project-preview" /> }));
