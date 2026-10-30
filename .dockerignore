@@ -70,3 +70,6 @@ prisma/migrations/**/migration_lock.toml
 
 # Production source snapshots must never enter the image, even if exported locally again.
 deployment-snapshots
+
+# 手机 App 外壳源码，与网站镜像无关
+mobile

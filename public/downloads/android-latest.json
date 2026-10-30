@@ -1,0 +1,8 @@
+{
+  "versionCode": 130,
+  "versionName": "1.3.0",
+  "file": "/downloads/ANS-1.3.0.apk",
+  "downloadUrl": "https://ans.cauai.fun/api/app/download",
+  "sizeBytes": 189923,
+  "notes": "换成正式签名；支持一次选多个文件和拍照上传；断网时可重试。"
+}
