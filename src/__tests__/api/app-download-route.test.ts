@@ -21,7 +21,7 @@ describe("GET /api/app/download", () => {
     });
     const res = await GET(req);
     expect(res.status).toBe(302);
-    expect(res.headers.get("location")).toBe(`https://ans.cauai.fun${manifest.file}`);
+    expect(res.headers.get("location")).toBe(manifest.file);
     expect(res.headers.get("cache-control")).toBe("no-store");
   });
 
@@ -31,7 +31,12 @@ describe("GET /api/app/download", () => {
     });
     const res = await GET(req);
     expect(res.status).toBe(302);
-    expect(res.headers.get("location")).toBe("https://ans.cauai.fun/app");
+    expect(res.headers.get("location")).toBe("/app");
+  });
+
+  it("never leaks the container's internal host into the redirect", async () => {
+    const res = await GET(new NextRequest("https://0.0.0.0:3000/api/app/download?platform=android"));
+    expect(res.headers.get("location")).toBe(manifest.file);
   });
 
   it("returns 404 when no Android release is published", async () => {

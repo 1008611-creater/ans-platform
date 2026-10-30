@@ -116,6 +116,64 @@ function CreditsCenterSession({ actorId, availablePoints, reservedPoints = 0, pe
           { href: "/workspace/compute", title: "aigcTitle", body: "aigcBody", icon: ReceiptText },
         ] as const).map(({ href, title, body, icon: Icon }) => <Link key={title} href={href} className="inline-flex items-center gap-1.5 rounded-full border bg-muted/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted/80 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"><Icon className="size-3.5 shrink-0 text-primary" aria-hidden="true" /><span>{t(title)}</span><span className="sr-only">{t(body)}</span><ArrowRight className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" /></Link>)}
       </nav>
+      <div className="mt-4 rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.04] p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-bold text-white">
+              🎬 官方 AIGC 创作者画布 (hb.cauai.fun)
+            </span>
+            <span className="text-xs text-muted-foreground">
+              已并入拍我AI (Pai.video · 15,180 尊享视频池) + 火山方舟 + OpenLux · 与 ANS 算力积分实时互通
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <a
+              href="/api/canvas/sso"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white transition hover:bg-emerald-500"
+            >
+              🎨 免密打开无限画布 ↗
+            </a>
+            <Link
+              href="/workflows/easel"
+              className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-background px-3 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-300"
+            >
+              查看画布工作台 →
+            </Link>
+          </div>
+        </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          {[
+            { name: "PixVerse V6", id: "pixverse-v6", rate: "15点/5秒", tag: "拍我尊享池" },
+            { name: "PixVerse C1", id: "pixverse-c1", rate: "15点/5秒", tag: "影视全流程" },
+            { name: "Seedance 2.5", id: "pai-seedance-2.5", rate: "25点/5秒", tag: "拍我+火山双活" },
+            { name: "Kling 4.0 可灵", id: "pai-kling-4.0", rate: "20点/5秒", tag: "拍我尊享池" },
+            { name: "Wan 3.0 万相", id: "pai-wan-3.0", rate: "15点/5秒", tag: "拍我尊享池" },
+            { name: "Image 2.5 Sunburst", id: "image2.5sunburst", rate: "2点/张", tag: "OpenLux生图" },
+          ].map((item) => (
+            <a
+              key={item.id}
+              href="/api/canvas/sso"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col justify-between rounded-xl border bg-card p-2.5 text-xs transition hover:border-emerald-500/50"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="font-semibold text-foreground">{item.name}</span>
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
+                </div>
+                <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">{item.id}</p>
+              </div>
+              <div className="mt-2 flex items-center justify-between border-t pt-1.5 text-[11px]">
+                <span className="font-medium text-primary">{item.rate}</span>
+                <span className="text-[10px] text-emerald-700 dark:text-emerald-300">{item.tag}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
     </section>
     {apiHistory !== undefined && <section aria-labelledby="credits-api-history-heading" className="rounded-3xl border bg-card p-6 sm:p-8">
       <h2 id="credits-api-history-heading" className="flex items-center gap-2 font-semibold"><ReceiptText className="size-5 text-primary" aria-hidden="true" />{t("apiHistoryTitle")}</h2>

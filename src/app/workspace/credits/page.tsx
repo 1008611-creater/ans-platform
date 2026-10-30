@@ -135,6 +135,9 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
                 <Link href="/workspace/benefits">🎁 免费领 100~150 积分</Link>
               </Button>
               <Button asChild variant="outline" size="sm">
+                <a href="/api/canvas/sso" target="_blank" rel="noopener noreferrer">🎨 AIGC 无限画布 ↗</a>
+              </Button>
+              <Button asChild variant="outline" size="sm">
                 <Link href="/workspace/models">⚡ 模型演练场</Link>
               </Button>
               <Button asChild variant="outline" size="sm">
