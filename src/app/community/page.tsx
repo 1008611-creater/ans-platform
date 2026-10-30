@@ -60,12 +60,13 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
         <>
           <nav className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" aria-label={t("channelsLabel")}>
             {COMMUNITY_CHANNELS.map((id) => <Link key={id} href={id === "all" ? "/community" : `/community?c=${id}`} aria-current={id === channel ? "page" : undefined}
-              className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm transition-colors ${id === channel ? "bg-foreground font-semibold text-background" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+              className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm transition-colors ${id === channel ? "bg-foreground font-semibold text-background" : "bg-muted text-foreground/80 hover:text-foreground"}`}>
               {t(`channels.${id}`)}
             </Link>)}
           </nav>
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
-            <section aria-label={t(`channels.${channel}`)}>
+            <section aria-labelledby="community-feed-heading">
+              <h2 id="community-feed-heading" className="sr-only">{t(`channels.${channel}`)}</h2>
               {feed.feed.length > 0 ? <CommunityFeed items={feed.feed} /> : (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed px-5 py-6 text-sm text-muted-foreground">
                   <span>{t("empty")}</span>

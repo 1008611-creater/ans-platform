@@ -41,8 +41,8 @@ function NoteCard({ item, labels }: { item: Extract<CommunityFeedItem, { type: "
       <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
         <span className="flex min-w-0 items-center gap-1.5"><Avatar name={item.author.name} src={item.author.avatar} /><span className="truncate">{item.author.name}</span></span>
         <span className="flex shrink-0 items-center gap-2.5">
-          <span className="flex items-center gap-0.5" aria-label={`${item.likes} ${labels.likes}`}><Heart className="h-3.5 w-3.5" aria-hidden="true" />{item.likes}</span>
-          {item.comments > 0 && <span className="flex items-center gap-0.5" aria-label={`${item.comments} ${labels.comments}`}><MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />{item.comments}</span>}
+          <span className="flex items-center gap-0.5"><Heart className="h-3.5 w-3.5" aria-hidden="true" />{item.likes}<span className="sr-only"> {labels.likes}</span></span>
+          {item.comments > 0 && <span className="flex items-center gap-0.5"><MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />{item.comments}<span className="sr-only"> {labels.comments}</span></span>}
         </span>
       </div>
     </div>
