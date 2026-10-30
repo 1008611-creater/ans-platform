@@ -65,7 +65,7 @@ const PUBLIC_PAGES = [
 
 /** 需要登录的页面：只有拿到冒烟账号时才会被扫描。 */
 const PRIVATE_PAGES = [
-  ["/community", "社区成长", "社区成长"],
+  ["/community", "社区", "农客松与竞赛"],
   ["/workspace", "工作台", null],
   [`/@${SEED_USERNAME}`, "个人主页与成长系统", "XP"],
   ["/collection", "我的收藏", null],
@@ -226,7 +226,7 @@ async function main() {
       }
 
       if (seed.created) {
-        await scanPage(page, axeSource, store, failures, baseUrl, "/community", "移动端 社区成长", "社区成长");
+        await scanPage(page, axeSource, store, failures, baseUrl, "/community", "移动端 社区", "农客松与竞赛");
         scanned += 1;
         await scanPage(page, axeSource, store, failures, baseUrl, "/workspace", "移动端 工作台", null);
         scanned += 1;

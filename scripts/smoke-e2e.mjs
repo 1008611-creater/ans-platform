@@ -118,7 +118,7 @@ async function runDesktop(page, { baseUrl, seed }, checks, problems) {
   await visit("/", "首页");
   await visit("/explore", "项目广场");
   await visit("/hubs", "Hub 目录", "想从哪个方向开始？");
-  await visit("/community", "社区成长");
+  await visit("/community", "社区", "农客松与竞赛");
   await visit("/competitions", "赛事活动");
   await visit("/market", "市场");
   for (const [retired, expectedDestination] of [["/prompts", "/explore"], ["/templates", "/hubs"]]) {
@@ -147,7 +147,7 @@ async function runDesktop(page, { baseUrl, seed }, checks, problems) {
     checks.push({ label: "登录", pathname: "/login", status: 200, matched: loggedIn, newProblems: 0 });
     if (!loggedIn) pageProblems.push("登录失败：提交后仍停留在 /login");
     if (loggedIn) {
-      await visit("/community", "社区成长（已登录）", "社区成长");
+      await visit("/community", "社区（已登录）", "农客松与竞赛");
       await visit("/workspace", "工作台（已登录）");
       await visit("/collection", "我的收藏", "我的收藏");
       await visit("/workflows/runs", "运行记录", "运行记录");
@@ -170,7 +170,7 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
     ["/", "移动端 首页"],
     ["/explore", "移动端 项目广场"],
     ["/hubs", "移动端 Hub 目录"],
-    ["/community", "移动端 社区成长"],
+    ["/community", "移动端 社区"],
     ["/competitions", "移动端 赛事活动"],
     ["/market", "移动端 市场"],
     ["/workflows", "移动端 旧工作流跳转"],
