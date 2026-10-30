@@ -186,6 +186,53 @@ export default async function ProjectsPage({
         </div>
       </div>
 
+      {/* Official Featured Live SaaS Project Card */}
+      <section aria-label="ANS 官方精选上线项目" className="rounded-2xl border border-emerald-500/30 bg-emerald-500/[0.04] p-4 sm:p-5">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <a
+              href="https://waihu.cauai.fun"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative aspect-video w-full shrink-0 overflow-hidden rounded-xl border bg-slate-950 sm:w-52"
+            >
+              <Image
+                unoptimized
+                src="/catalog/gitglow-v1/ans-ecommerce-outbound.webp"
+                width={640}
+                height={360}
+                alt="ANS 电商智能外呼系统 · 全自动催付邀评与买家 360° 画像平台"
+                className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+              />
+            </a>
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className="bg-emerald-600 text-white hover:bg-emerald-500">🟢 官方真实上线项目</Badge>
+                <span className="text-xs font-medium text-muted-foreground">企业服务与电商增长 · 支持 ANS 账号一键登录</span>
+              </div>
+              <h2 className="text-base font-bold text-foreground">
+                <a href="https://waihu.cauai.fun" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600 hover:underline dark:hover:text-emerald-400">
+                  ANS 电商智能外呼系统 · 全自动催付邀评与买家 360° 画像平台
+                </a>
+              </h2>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                帮电商商家全自动搞定未付款催付、物流异常提醒、签收好评返现邀约与老客复购召回，内置全店买家 360° 价值分层与黄金接听时段洞察。
+              </p>
+            </div>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <Button asChild size="sm" className="bg-emerald-600 text-white hover:bg-emerald-500">
+              <a href="https://waihu.cauai.fun" target="_blank" rel="noopener noreferrer">
+                直达体验 (waihu.cauai.fun) ↗
+              </a>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/explore/ans-ecommerce-outbound">项目指南 →</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Onboarding Quick Templates (Collapsed on-demand reference cards) */}
       <details aria-label="3 大快速立项卡片" className="group rounded-2xl border border-dashed border-border/80 bg-muted/15 p-4">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold tracking-tight text-foreground">
