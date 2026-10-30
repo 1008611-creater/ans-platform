@@ -3,6 +3,45 @@ import type { CatalogEntry } from "@/contracts/catalog-content";
 // Verified project sources; GitGlow layouts use real project material or project typography.
 export const REAL_CATALOG_PROJECTS = [
   {
+    "slug": "ans-ecommerce-outbound",
+    "marketSlugs": ["ans-ecommerce-outbound-saas"],
+    "category": "business",
+    "subcategory": "services",
+    "goal": "portfolio",
+    "preview": "site",
+    "source": "official",
+    "sourceUrl": "https://waihu.cauai.fun",
+    "content": {
+      "zh": {
+        "title": "ANS 电商智能外呼系统 · 全自动催付邀评与买家 360° 画像平台",
+        "summary": "帮电商商家全自动搞定未付款催付、物流异常提醒、签收好评返现邀约与老客复购召回，内置全店买家 360° 价值分层与黄金接听时段洞察。",
+        "sample": "waihu.cauai.fun",
+        "output": "全天候自动执行拍下未付催付、签收晒图邀评、售后安抚挽单与大促老客召回；自动生成全店买家 360° 画像（5大价值分层 + 黄金接听时段锁定 + 高频退货号自动排集省话费）",
+        "inputs": "支持 ANS (AI Never Stops) 账号一键登录，新商家默认零数据态配 4 步交互式新手引导，内置四大金牌客服声音在线试听与挂机利益点短信自动补发",
+        "decisions": "先按新手引导试听四大金牌客服声音并启用场景触达规则，再结合买家 360° 价值分层与黄金接听时段发起精准外呼",
+        "model": "内置四大金牌电商客服声音在线试听与实时对话演练。",
+        "prompt": "内置 12 大电商全链路自动化触达话术模板，支持按店铺优惠券与利益点自由配置。",
+        "skill": "进入系统即可通过 4 步新手引导快速上手，支持 ANS 账号一键登录。",
+        "sourceNote": "ANS (AI Never Stops) 官方电商智能外呼与买家 360° 画像平台。"
+      },
+      "en": {
+        "title": "ANS E-Commerce Outbound System · Automated Follow-Up & 360° Buyer Insights",
+        "summary": "Automates unpaid order follow-ups, delivery alerts, review invitations, and repeat-buyer winback with built-in 360° buyer value segmentation and golden call-window analytics.",
+        "sample": "waihu.cauai.fun",
+        "output": "24/7 automated order payment reminders, review invitations, after-sales care, and 360° buyer segmentation (5 value tiers + golden call window + high-return filtering)",
+        "inputs": "One-click ANS (AI Never Stops) sign-in, clean zero-data starter state with 4-step interactive onboarding, 4 customer service voices, and automatic follow-up SMS",
+        "decisions": "Preview the 4 customer service voices, enable scenario rules, and launch targeted campaigns during peak answer windows",
+        "model": "Includes 4 e-commerce customer service voices with live interactive call rehearsal.",
+        "prompt": "Includes 12 full-lifecycle e-commerce outreach script templates customizable to store incentives.",
+        "skill": "Sign in with your ANS account and follow the 4-step interactive onboarding guide.",
+        "sourceNote": "Official ANS (AI Never Stops) e-commerce smart outbound and 360° buyer insight platform."
+      }
+    },
+    "outerCoverUrl": "/catalog/ans-pro-v1/ans-ecommerce-outbound.webp",
+    "coverUrl": "/catalog/gitglow-v1/ans-ecommerce-outbound.webp",
+    "coverNote": "真实线上界面截图（waihu.cauai.fun）· GitGlow 双层浮窗版式"
+  },
+  {
     "slug": "ans-3d-showcase",
     "workflowSlugs": ["ans-portfolio-website"],
     "category": "web",

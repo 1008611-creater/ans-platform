@@ -350,4 +350,51 @@ describe("ANS OIDC HTTP flow", () => {
     expect(response.status).toBe(401);
     expect(await response.json()).toEqual({ error: "invalid_token" });
   });
+
+  it("supports built-in waihu-outbound client with multiple redirect_uris, optional nonce, and client_secret_post", async () => {
+    const verifier = randomBytes(32).toString("base64url");
+    const state = randomBytes(24).toString("base64url");
+    const waihuRedirect = "https://waihu.cauai.fun/api/auth/oidc/callback";
+    const params = new URLSearchParams({
+      response_type: "code",
+      client_id: "waihu-outbound",
+      redirect_uri: waihuRedirect,
+      scope: "openid profile email",
+      state,
+      code_challenge: hash(verifier),
+      code_challenge_method: "S256",
+    });
+    const authRes = await http(`/api/oidc/authorize?${params}`);
+    expect(authRes.status).toBe(302);
+    const callbackUrl = new URL(authRes.headers.get("location")!);
+    expect(`${callbackUrl.origin}${callbackUrl.pathname}`).toBe(waihuRedirect);
+    const code = callbackUrl.searchParams.get("code")!;
+    expect(code).toBeTruthy();
+
+    const tokenRes = await http("/api/oidc/token", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: waihuRedirect,
+        client_id: "waihu-outbound",
+        client_secret: "waihu_ans_oidc_secret_2026_niuniu_outbound_key_99a8b7c6",
+        code_verifier: verifier,
+      }),
+    });
+    expect(tokenRes.status).toBe(200);
+    const tokens = await tokenRes.json();
+    expect(tokens.access_token).toBeTruthy();
+
+    const userinfoRes = await http("/api/oidc/userinfo", {
+      headers: { authorization: `Bearer ${tokens.access_token}` },
+    });
+    expect(userinfoRes.status).toBe(200);
+    expect(await userinfoRes.json()).toMatchObject({
+      sub: "user_fixture_01",
+      preferred_username: "fixture-user",
+      email: "fixture@example.test",
+    });
+  });
 });

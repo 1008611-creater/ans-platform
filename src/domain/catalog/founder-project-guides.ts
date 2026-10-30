@@ -1,6 +1,42 @@
 import type { ProjectGuide } from "./project-guide-types";
 
 export const FOUNDER_PROJECT_GUIDES: readonly ProjectGuide[] = [{
+  slug: "ans-ecommerce-outbound",
+  sourceUrl: "https://waihu.cauai.fun",
+  checkedAt: "2026-10-30",
+  evidence: [
+    { label: "ANS 电商智能外呼系统 / Live SaaS", href: "https://waihu.cauai.fun" },
+    { label: "ANS 市场官方交付页 / Market Product", href: "https://ans.cauai.fun/market/ans-ecommerce-outbound-saas" },
+  ],
+  zh: {
+    audience: "希望自动化完成未付款订单催付、物流签收提醒、晒图好评邀约、售后安抚挽回与全店买家 360° 画像分层的电商商家及运营团队。",
+    difficulty: "支持 ANS (AI Never Stops) 账号一键免密登录，新商家默认零数据态配 4 步交互式新手引导，3 分钟即可上手。",
+    access: "ANS 官方线上 SaaS 生产环境（waihu.cauai.fun），点击即可直达体验。",
+    cost: "支持免费进入线上环境试听四大金牌客服声音与体验 4 步新手引导。",
+    result: "全天候自动执行拍下未付催付、签收晒图邀评与大促老客召回，自动生成全店买家 360° 画像（5 大价值分层 + 黄金接听时段锁定 + 高频退货号自动排集省话费）。",
+    steps: [
+      { title: "使用 ANS 账号一键登录", body: "打开系统点击右上角「ANS 账号登录」，免密同步身份；新商家默认进入零数据干净工作台并开启 4 步新手引导。", href: "https://waihu.cauai.fun" },
+      { title: "试听四大金牌客服声音并演练对话", body: "在外呼场景与声音模块在线试听甜美亲切、知性干练、活力大促、温和售后四大金牌客服声音，并测试多轮实时应答。" },
+      { title: "查看全店买家 360° 画像与黄金接听时段", body: "进入「用户画像洞察」，查看超级 VIP、高频复购、高潜首单待转化、沉睡唤醒与售后敏感 5 大分层及全天黄金接听时段热力图。", href: "https://waihu.cauai.fun" },
+      { title: "开启 12 大全链路自动化触达与挂机短信", body: "勾选催付、发货预警、签收邀评等自动化规则，配置通话结束后自动补发的利益点短链短信，实时追踪转化 ROI。" },
+    ],
+    cautions: ["新注册商家账号默认展示零数据初始态，内置演示数据仅对系统管理员账户开放。", "正式发起外呼与短信触达前，请先在店铺设置中确认接听时段与频次防打扰规则。"],
+  },
+  en: {
+    audience: "E-commerce merchants and operations teams automating unpaid order follow-ups, delivery notifications, review invitations, and 360° buyer segmentation.",
+    difficulty: "One-click ANS (AI Never Stops) sign-in with a clean zero-data workspace and a 4-step interactive onboarding guide.",
+    access: "Official ANS live SaaS production environment (waihu.cauai.fun).",
+    cost: "Free live preview of the 4 customer service voices and interactive onboarding guide.",
+    result: "24/7 automated payment reminders, review invitations, repeat-buyer winback, and 360° buyer value segmentation with golden call-window analytics.",
+    steps: [
+      { title: "Sign in with your ANS account", body: "Click 'ANS Login' in the top bar for passwordless SSO; new merchants start with a clean zero-data workspace and 4-step onboarding.", href: "https://waihu.cauai.fun" },
+      { title: "Preview the 4 customer service voices", body: "Audition the 4 gold-standard e-commerce customer service voices and rehearse live multi-turn conversations." },
+      { title: "Explore 360° Buyer Insights", body: "Open Buyer Insights to inspect the 5 value tiers, incentive sensitivity, and golden answer-rate time windows.", href: "https://waihu.cauai.fun" },
+      { title: "Activate 12 automated outreach rules", body: "Enable order payment follow-up, delivery alerts, review invitations, and post-call SMS links to track conversion ROI." },
+    ],
+    cautions: ["New merchant accounts start in a clean zero-data state; built-in demo data is reserved for administrator accounts.", "Verify store quiet hours and frequency caps before launching live outbound campaigns."],
+  },
+}, {
   slug: "ans-3d-showcase",
   sourceUrl: "https://ans.cauai.fun/showcase/ans-3d/index.html",
   checkedAt: "2026-10-19",
