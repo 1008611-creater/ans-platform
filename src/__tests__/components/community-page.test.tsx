@@ -2,43 +2,52 @@ import { beforeEach, expect, it, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import CommunityPage from "@/app/community/page";
 
-const mocks = vi.hoisted(() => ({ auth: vi.fn(), redirect: vi.fn(), growth: vi.fn(), growthPanel: vi.fn(), communityPanel: vi.fn(), feed: vi.fn() }));
+const mocks = vi.hoisted(() => ({ auth: vi.fn(), redirect: vi.fn(), growth: vi.fn(), growthPanel: vi.fn(), communityPanel: vi.fn(), feed: vi.fn(), compose: vi.fn(), stalls: vi.fn() }));
 vi.mock("next-auth/react", () => ({ useSession: () => ({ status: "authenticated", data: { user: { id: "self" } } }) }));
 vi.mock("@/lib/auth", () => ({ auth: mocks.auth }));
 vi.mock("@/server/growth/service", () => ({ getGrowthProfile: mocks.growth }));
 vi.mock("@/server/community/feed", () => ({
-  COMMUNITY_CHANNELS: ["all", "aigc"],
-  parseCommunityChannel: (value: unknown) => value === "aigc" ? "aigc" : "all",
+  COMMUNITY_CHANNELS: ["all", "team"],
+  parseCommunityChannel: (value: unknown) => value === "team" ? "team" : "all",
+  parseCommunitySort: (value: unknown) => value === "open" ? "open" : "latest",
   listCommunityFeed: mocks.feed,
 }));
+vi.mock("@/server/community/posts", () => ({ getComposeOptions: mocks.compose, listMyStalls: mocks.stalls }));
+vi.mock("@/components/community/post-compose", () => ({ PostCompose: () => <button type="button">compose</button> }));
 vi.mock("next-intl/server", () => ({ getTranslations: async () => (key: string) => key }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect, notFound: () => { throw new Error("NOT_FOUND"); }, useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/components/community/community-feed", () => ({ CommunityFeed: ({ items }: { items: unknown[] }) => <ul data-testid="community-feed">{items.map((_, i) => <li key={i} />)}</ul> }));
 vi.mock("@/components/community/community-panel", () => ({ CommunityPanel: (props: unknown) => { mocks.communityPanel(props); return <div data-testid="community-history" />; } }));
 vi.mock("@/components/growth/profile-growth-panel", () => ({ ProfileGrowthPanel: (props: unknown) => { mocks.growthPanel(props); return <div data-testid="complete-growth" />; } }));
 const profile = { xp: 125, communityPoints: 20, checkInStreak: 2, avatarFrameKey: "mint", chatBubbleKey: "mint", growthDay: "2026-10-16", recentEvents: [], checkIns: [{ id: "today", day: "2026-10-16" }] };
-const note = { type: "note", id: "v1" };
+const note = { type: "post", id: "p1" };
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.redirect.mockImplementation(() => { throw new Error("REDIRECT"); });
   mocks.growth.mockResolvedValue(profile);
-  mocks.feed.mockResolvedValue({ feed: [note], noteCount: 1, repoCount: 0 });
+  mocks.feed.mockResolvedValue({ feed: [note] });
+  mocks.compose.mockResolvedValue({ teams: [], competitions: [] });
+  mocks.stalls.mockResolvedValue([]);
 });
 afterEach(cleanup);
 it("shows the public feed to visitors without loading private growth", async () => {
   mocks.auth.mockResolvedValue(null);
-  render(await CommunityPage({ searchParams: Promise.resolve({ c: "aigc" }) }));
+  render(await CommunityPage({ searchParams: Promise.resolve({ c: "team", sort: "open" }) }));
   expect(mocks.growth).not.toHaveBeenCalled();
   expect(mocks.growthPanel).not.toHaveBeenCalled();
-  expect(mocks.feed).toHaveBeenCalledExactlyOnceWith("aigc");
+  expect(mocks.compose).not.toHaveBeenCalled();
+  expect(mocks.feed).toHaveBeenCalledExactlyOnceWith("team", "open");
   expect(screen.getByTestId("community-feed").children).toHaveLength(1);
   expect(screen.getByTestId("community-guest-preview")).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "publish" })).toHaveAttribute("href", "/explore/submit");
+  expect(screen.getByRole("link", { name: "publish" })).toHaveAttribute("href", "/login?callbackUrl=/community");
+  // 切换排序时保留当前板块。
+  expect(screen.getByRole("link", { name: "sortLatest" })).toHaveAttribute("href", "/community?c=team");
+  expect(screen.getByRole("link", { name: "sortOpen" })).toHaveAttribute("aria-current", "page");
   expect(screen.queryByRole("link", { name: "growth" })).not.toBeInTheDocument();
 });
 it("shows an honest empty state instead of padding the feed", async () => {
   mocks.auth.mockResolvedValue(null);
-  mocks.feed.mockResolvedValue({ feed: [], noteCount: 0, repoCount: 0 });
+  mocks.feed.mockResolvedValue({ feed: [] });
   render(await CommunityPage({ searchParams: Promise.resolve({}) }));
   expect(screen.queryByTestId("community-feed")).not.toBeInTheDocument();
   expect(screen.getByText("empty")).toBeInTheDocument();
@@ -50,6 +59,16 @@ it("gives members a real check-in record beside the feed", async () => {
   expect(screen.getByTestId("community-checkin-card")).toBeInTheDocument();
   expect(screen.getByRole("img", { name: "checkInLabel" }).querySelectorAll(".bg-emerald-500")).toHaveLength(1);
   expect(screen.getByRole("link", { name: "viewGrowth" })).toHaveAttribute("href", "/community?tab=growth");
+  expect(screen.getByRole("button", { name: "compose" })).toBeInTheDocument();
+});
+it("lists the member's own open posts with what is waiting for them", async () => {
+  mocks.auth.mockResolvedValue({ user: { id: "self", username: "real-member" } });
+  mocks.stalls.mockResolvedValue([{ id: "s1", title: "农客松缺前端", stall: "TEAM", pending: 3 }, { id: "s2", title: "求部署教程", stall: "SEEK", pending: 0 }]);
+  render(await CommunityPage({ searchParams: Promise.resolve({}) }));
+  expect(mocks.stalls).toHaveBeenCalledExactlyOnceWith("self");
+  const card = screen.getByTestId("community-my-stalls");
+  expect(card.querySelector('a[href="/community/posts/s1"]')).toHaveTextContent("myStallTeam");
+  expect(card.querySelector('a[href="/community/posts/s2"]')).toHaveTextContent("myStallNone");
 });
 it("restores the full growth tab without loading the feed", async () => {
   mocks.auth.mockResolvedValue({ user: { id: "self", username: "real-member" } });

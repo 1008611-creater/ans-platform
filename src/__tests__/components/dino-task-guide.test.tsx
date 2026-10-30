@@ -134,7 +134,8 @@ describe("Dino follows the actual portfolio workflow", () => {
     expect(phase()).toBe(expected);
     const dialog = await openGuide();
     expect(within(dialog).getByText(text.task[expected])).toBeInTheDocument();
-    expect(dialog.textContent).not.toMatch(/\d+%/);
+    // 只查任务区：灵魂插件的「搭话 xx%」是按设置算出的真实概率，不是任务进度。
+    expect(dialog.querySelector(".ans-companion-task")?.textContent).not.toMatch(/\d+%/);
     if (status === "QUEUED" || status === "RUNNING") expect(within(dialog).queryByRole("button", { name: text.taskAction })).not.toBeInTheDocument();
   });
 
