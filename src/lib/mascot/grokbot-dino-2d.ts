@@ -402,14 +402,256 @@ export const GROK_SHAPE_META: readonly {
   labelEn: string;
   armLiftL: number;
   armLiftR: number;
+  cells: readonly (readonly [number, number])[];
 }[] = [
-  { id: "tutulong", icon: "🦖", labelZh: "标准萌姿", labelEn: "Standard Pose", armLiftL: 0.04, armLiftR: 0.04 },
-  { id: "blob", icon: "🫧", labelZh: "软糯团子", labelEn: "Mochi Sit", armLiftL: 0.0, armLiftR: 0.0 },
-  { id: "squircle", icon: "🙌", labelZh: "举手欢呼", labelEn: "Cheer Up", armLiftL: 1.08, armLiftR: 1.08 },
-  { id: "cloud", icon: "☁️", labelZh: "趴趴小憩", labelEn: "Cozy Loaf", armLiftL: -0.04, armLiftR: -0.04 },
-  { id: "crystal", icon: "💻", labelZh: "极客专注", labelEn: "Geek Focus", armLiftL: 0.36, armLiftR: 0.42 },
-  { id: "star", icon: "⭐", labelZh: "闪耀跳跃", labelEn: "Star Jump", armLiftL: 1.18, armLiftR: 1.18 },
+  {
+    id: "tutulong",
+    icon: "🦖",
+    labelZh: "标准萌姿",
+    labelEn: "Standard Pose",
+    armLiftL: 0.04,
+    armLiftR: 0.04,
+    cells: [
+      [0, 0],
+      [0, 1],
+      [0, 2],
+      [0, 4],
+    ],
+  },
+  {
+    id: "blob",
+    icon: "🫧",
+    labelZh: "软糯团子",
+    labelEn: "Mochi Loaf",
+    armLiftL: 0.0,
+    armLiftR: 0.0,
+    cells: [
+      [0, 5],
+      [3, 0],
+      [4, 6],
+    ],
+  },
+  {
+    id: "squircle",
+    icon: "🙌",
+    labelZh: "举手欢呼",
+    labelEn: "Cheer Heart",
+    armLiftL: 1.08,
+    armLiftR: 1.08,
+    cells: [
+      [6, 3],
+      [4, 7],
+      [6, 2],
+      [0, 7],
+    ],
+  },
+  {
+    id: "cloud",
+    icon: "☁️",
+    labelZh: "趴趴小憩",
+    labelEn: "Cozy Nap",
+    armLiftL: -0.04,
+    armLiftR: -0.04,
+    cells: [
+      [6, 5],
+      [3, 3],
+      [7, 7],
+    ],
+  },
+  {
+    id: "crystal",
+    icon: "💻",
+    labelZh: "极客搬砖",
+    labelEn: "Geek Code",
+    armLiftL: 0.36,
+    armLiftR: 0.42,
+    cells: [
+      [3, 2],
+      [3, 1],
+      [3, 4],
+      [7, 4],
+    ],
+  },
+  {
+    id: "star",
+    icon: "⭐",
+    labelZh: "燃魂闪耀",
+    labelEn: "Star Burst",
+    armLiftL: 1.18,
+    armLiftR: 1.18,
+    cells: [
+      [7, 6],
+      [7, 5],
+      [7, 0],
+      [6, 0],
+    ],
+  },
 ];
+
+/**
+ * 权威正版「兔兔龙」64格表情包图集（`public/mascot/pixel/dino-atlas.png`，8×8，每格 128px）
+ * 脚底锚点 = 格内 (64, 117) -> transformOrigin = "50% 91.4%"
+ * 严格遵循 `tutuDragon.js` 铁律：只从 `dino-atlas.png` 整格裁切绘制，不画任何山寨恐龙矢量线条！
+ */
+export const TUTULONG_FOOT_ORIGIN = "50% 91.4%";
+
+export const TUTULONG_STATE_CELLS: Record<
+  DinoState,
+  {
+    mode: "choreo" | "cycle";
+    fps: number;
+    cells: readonly (readonly [number, number])[];
+  }
+> = {
+  idle: {
+    mode: "choreo",
+    fps: 1,
+    cells: [
+      [0, 0], // stand
+      [0, 1], // wink/blink
+      [0, 2], // curious tilt
+      [0, 3], // tail wag
+      [0, 4], // friendly wave
+    ],
+  },
+  walk: {
+    mode: "cycle",
+    fps: 10,
+    cells: [
+      [1, 0],
+      [1, 1],
+      [1, 2],
+      [1, 3],
+      [1, 4],
+      [1, 5],
+      [1, 6],
+      [1, 7],
+    ],
+  },
+  run: {
+    mode: "cycle",
+    fps: 14,
+    cells: [
+      [2, 0],
+      [2, 1],
+      [2, 2],
+      [2, 3],
+      [2, 4],
+      [2, 5],
+      [2, 6],
+      [2, 7],
+    ],
+  },
+  work: {
+    mode: "choreo",
+    fps: 0.6,
+    cells: [
+      [3, 2], // code on laptop
+      [3, 1], // carry bricks
+      [3, 4], // phone
+      [7, 4], // loading
+    ],
+  },
+  emote: {
+    mode: "choreo",
+    fps: 0.7,
+    cells: [
+      [4, 7], // holding heart
+      [6, 2], // heart hands
+      [4, 2], // big laugh
+      [4, 5], // starry eyes
+    ],
+  },
+  react: {
+    mode: "choreo",
+    fps: 0.7,
+    cells: [
+      [5, 7], // eating popcorn
+      [4, 3], // question ?
+      [3, 5], // drink water
+      [5, 6], // peek from wall
+    ],
+  },
+  action: {
+    mode: "choreo",
+    fps: 0.9,
+    cells: [
+      [6, 3], // hooray hands up
+      [6, 0], // happy jump
+      [0, 7], // cheer jump
+      [6, 1], // clap
+    ],
+  },
+  meme: {
+    mode: "choreo",
+    fps: 0.8,
+    cells: [
+      [7, 6], // holy sparkle
+      [7, 5], // super saiyan fire
+      [7, 0], // coin eyes
+      [6, 4], // holding toast
+    ],
+  },
+};
+
+export function resolveGrokAtlasCell(params: {
+  state: DinoState;
+  shape: GrokShapeId;
+  pinnedCell: readonly [number, number] | null;
+  isBlinking: boolean;
+  isWinking: boolean;
+  pointerNormX: number;
+  pointerActive: boolean;
+  tSec: number;
+  choreoIndex: number;
+}): readonly [number, number] {
+  const {
+    state,
+    shape,
+    pinnedCell,
+    isBlinking,
+    isWinking,
+    pointerNormX,
+    pointerActive,
+    tSec,
+    choreoIndex,
+  } = params;
+
+  if (pinnedCell) return pinnedCell;
+
+  // 步行与奔跑采用 8 帧连续循环
+  const stateSpec = TUTULONG_STATE_CELLS[state] ?? TUTULONG_STATE_CELLS.idle;
+  if (stateSpec.mode === "cycle") {
+    const idx = Math.floor(tSec * stateSpec.fps) % stateSpec.cells.length;
+    return stateSpec.cells[idx] ?? [1, 0];
+  }
+
+  // 单眼 Wink 或自然眨眼时，优先切到 [0, 1] 眨眼/Wink 精灵帧
+  if (isWinking || (state === "idle" && shape === "tutulong" && isBlinking)) {
+    return [0, 1];
+  }
+
+  // 如果用户选定了非默认姿态预设（如软糯团子、欢呼、小憩、极客、闪耀），在闲置时展示该姿态的专属正版表情包帧
+  if (state === "idle" && shape !== "tutulong") {
+    const meta = GROK_SHAPE_META.find((m) => m.id === shape);
+    if (meta && meta.cells.length > 0) {
+      return meta.cells[choreoIndex % meta.cells.length] ?? meta.cells[0];
+    }
+  }
+
+  // 默认待机时：保持 [0, 0] 正版站姿，随鼠标追光灵动切换歪头 [0, 2] / 招手 [0, 4] / 摇尾 [0, 3]
+  if (state === "idle") {
+    if (pointerActive && Math.abs(pointerNormX) > 0.42) {
+      return pointerNormX < 0 ? [0, 2] : [0, 4];
+    }
+    const idleMod = choreoIndex % 6;
+    if (idleMod === 3) return [0, 2];
+    if (idleMod === 5) return [0, 4];
+    return [0, 0];
+  }
+
+  return stateSpec.cells[choreoIndex % stateSpec.cells.length] ?? [0, 0];
+}
 
 /**
  * 构建 48 点闭合眼睛轮廓：以兔兔龙标志性的圆润黑亮大眼睛（±1.88u, -7.35u -> cx = 89.92 / 150.08, cy = 94.40）为基准，
