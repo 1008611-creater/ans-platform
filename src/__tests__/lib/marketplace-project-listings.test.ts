@@ -37,4 +37,11 @@ describe("project listing payloads and published reads", () => {
     m.read.mockResolvedValue(null); await expect(getMarketListing(listing.slug)).rejects.toMatchObject({ code: "NOT_FOUND", status: 404 });
     expect(m.read).toHaveBeenCalledWith(expect.objectContaining({ where: { slug: listing.slug, status: "PUBLISHED", seller: { deletedAt: null, flagged: false } } }));
   });
+  it("hides unverified official static listings from public reads while keeping seller reads intact", async () => {
+    m.read.mockResolvedValue([{ id: "unverified-official", slug: "cau-agri-smart-greenhouse-agent", official: true, status: "PUBLISHED", currentVersion: 1, publishedVersion: 1, seller: { id: "seller", username: "seller", nickname: null, avatar: null }, _count: { stars: 0 }, stars: [], versions: [{ version: 1, payload: listing }] }]);
+    expect(await listMarketListings(undefined, "viewer")).toEqual([]);
+    expect(await listMarketListings("seller", "seller")).toHaveLength(1);
+    m.read.mockResolvedValue({ id: "unverified-official", slug: "cau-agri-smart-greenhouse-agent", official: true, status: "PUBLISHED", currentVersion: 1, publishedVersion: 1, seller: { id: "seller", username: "seller", nickname: null, avatar: null }, _count: { stars: 0 }, stars: [], versions: [{ version: 1, payload: listing }] });
+    await expect(getMarketListing("cau-agri-smart-greenhouse-agent")).rejects.toMatchObject({ code: "NOT_FOUND", status: 404 });
+  });
 });

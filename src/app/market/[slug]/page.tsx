@@ -82,12 +82,6 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
   const purchaseAnchor = runnable ? "market-run" : purchasable ? "market-purchase" : "market-deliverables";
 
   return <div className="ans-product-shell"><div className="ans-product-container ans-page-content ans-market-page">
-    <nav aria-label={t("navigation")} className="ans-market-nav">
-      <Link className="ans-subcategory" href="/market">{t("browse")}</Link>
-      <Link className="ans-subcategory" href="/explore">{t("exploreProjects")}</Link>
-      <Link className="ans-subcategory" href="/vibe-hub/guides">VibeHub 指南</Link>
-      <Link className="ans-subcategory" href="/workspace">{t("workspace")}</Link>
-    </nav>
     <nav className={styles.breadcrumb} aria-label={td("breadcrumb")}>
       <Link href="/market" className="inline-flex items-center gap-2"><ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />{tp("backToMarket")}</Link>
       <ChevronRight aria-hidden="true" className="h-3 w-3" /><span>{p("categories." + listing.category)}</span>

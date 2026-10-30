@@ -33,6 +33,13 @@ async function main() {
     { maxWait: 30000, timeout: 60000 },
   );
 
+  await prisma.marketListing
+    .updateMany({
+      where: { slug: "cau-agri-smart-greenhouse-agent", status: { not: "WITHDRAWN" } },
+      data: { status: "WITHDRAWN" },
+    })
+    .catch(() => null);
+
   console.log("[agri-bootstrap] Done.");
 }
 

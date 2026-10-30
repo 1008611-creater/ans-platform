@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { marketListingInputSchema, marketListingRevisionSchema } from "@/contracts/marketplace";
 import { PROJECT_CATEGORIES } from "@/domain/catalog/projects";
 import { MarketRuleError } from "@/domain/marketplace/order";
+import { VERIFIED_DELIVERABLE_SLUGS } from "@/domain/marketplace/presentation";
 import { marketTransaction, requireMarketActor, requireMarketModerator } from "./shared";
 import { requireMarketCoverOwnership } from "./media-access";
 
@@ -148,6 +149,11 @@ function isListingStarred(listing: { stars?: unknown[] }): boolean {
   return Array.isArray(listing.stars) && listing.stars.length > 0;
 }
 
+function isPubliclyVisibleOfficialListing(official: boolean, slug: string, payload: { execution?: unknown }): boolean {
+  if (!official) return true;
+  return Boolean(payload.execution) || VERIFIED_DELIVERABLE_SLUGS.has(slug);
+}
+
 async function queryMarketListings(sellerId?: string, viewerId?: string) {
   if (sellerId) await requireMarketActor(db, sellerId);
   const listings = await db.marketListing.findMany({
@@ -158,7 +164,9 @@ async function queryMarketListings(sellerId?: string, viewerId?: string) {
   return listings.flatMap((listing) => {
     const version = listing.versions.find((item) => item.version === (sellerId ? listing.currentVersion : listing.publishedVersion));
     if (!version) return [];
-    return [{ id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: isListingStarred(listing), listing: marketListingInputSchema.parse(version.payload), submittedAt: version.submittedAt?.toISOString() ?? null, reviewedAt: version.reviewedAt?.toISOString() ?? null, reviewNote: sellerId ? version.reviewNote : null }];
+    const parsed = marketListingInputSchema.parse(version.payload);
+    if (!sellerId && !isPubliclyVisibleOfficialListing(listing.official, listing.slug, parsed)) return [];
+    return [{ id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: isListingStarred(listing), listing: parsed, submittedAt: version.submittedAt?.toISOString() ?? null, reviewedAt: version.reviewedAt?.toISOString() ?? null, reviewNote: sellerId ? version.reviewNote : null }];
   });
 }
 
@@ -185,7 +193,9 @@ export async function listPublishedMarketListingsBySeller(sellerId: string, view
   return listings.flatMap((listing) => {
     const version = listing.versions.find((item) => item.version === listing.publishedVersion);
     if (!version) return [];
-    return [{ id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: isListingStarred(listing), listing: marketListingInputSchema.parse(version.payload), submittedAt: null, reviewedAt: null, reviewNote: null }];
+    const parsed = marketListingInputSchema.parse(version.payload);
+    if (!isPubliclyVisibleOfficialListing(listing.official, listing.slug, parsed)) return [];
+    return [{ id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: isListingStarred(listing), listing: parsed, submittedAt: null, reviewedAt: null, reviewNote: null }];
   });
 }
 
@@ -241,6 +251,8 @@ async function readPublishedMarketListing(slug: string, viewerId: string | undef
   if (recipe) {
     const binding = payload.execution;
     if (!version.reviewedAt || !binding || binding.workflowId !== recipe.workflow.id || binding.versionId !== recipe.version.id || binding.version !== recipe.version.version || binding.definitionHash !== recipe.recipe.definitionHash) throw new MarketRuleError("NOT_FOUND", 404);
+  } else if (!isPubliclyVisibleOfficialListing(listing.official, listing.slug, payload)) {
+    throw new MarketRuleError("NOT_FOUND", 404);
   }
   return { id: listing.id, slug: listing.slug, official: listing.official, status: listing.status, version: version.version, seller: listing.seller, starCount: listing._count.stars, starred: isListingStarred(listing), listing: payload, submittedAt: null, reviewedAt: null, reviewNote: null };
 }
@@ -285,6 +297,7 @@ export async function listRelatedPublishedMarketListings(input: { slugs?: string
     const version = row.versions.find(item => item.version === row.publishedVersion);
     if (!version?.reviewedAt) return [];
     const listing = marketListingInputSchema.parse(version.payload);
+    if (!isPubliclyVisibleOfficialListing(row.official, row.slug, listing)) return [];
     // Historical versions select candidates only; the current reviewed snapshot decides linkage.
     if (!slugs.includes(row.slug) && (!listing.execution || !workflowIds.includes(listing.execution.workflowId))) return [];
     return [{ id: row.id, slug: row.slug, official: row.official, status: row.status, version: version.version,
