@@ -1,46 +1,23 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { NextResponse, type NextRequest } from "next/server";
+import { readAndroidRelease } from "@/lib/mobile-app/android-release";
 
+// 固定入口：始终跳到当前最新的安卓安装包。旧版 App 和外部海报二维码都指向这里。
+// 安装包本身走静态文件，支持断点续传和 CDN 缓存；带版本号的文件名保证换版后不会拿到旧缓存。
 export async function GET(request: NextRequest) {
-  const paramPlatform = request.nextUrl.searchParams.get("platform")?.toLowerCase();
+  const platform = request.nextUrl.searchParams.get("platform")?.toLowerCase();
   const ua = request.headers.get("user-agent") || "";
+  const isIos = platform === "ios" || (!platform && /iPhone|iPad|iPod/i.test(ua));
 
-  const isIos =
-    paramPlatform === "ios" ||
-    (!paramPlatform && /iPhone|iPad|iPod/i.test(ua));
-
+  // iPhone 没有安装包，回到安装页看「添加到主屏幕」的步骤。
   if (isIos) {
-    try {
-      const filePath = join(process.cwd(), "public", "downloads", "ans-ios.mobileconfig");
-      const buffer = await readFile(filePath);
-      return new NextResponse(new Uint8Array(buffer), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/x-apple-aspen-config",
-          "Content-Disposition": 'attachment; filename="ANS-iOS-App.mobileconfig"',
-          "Content-Length": String(buffer.byteLength),
-          "Cache-Control": "no-store",
-        },
-      });
-    } catch {
-      return NextResponse.json({ error: "iOS installer not found" }, { status: 404 });
-    }
+    return NextResponse.redirect(new URL("/app", request.url), 302);
   }
 
-  try {
-    const filePath = join(process.cwd(), "public", "downloads", "ans-mobile.apk");
-    const buffer = await readFile(filePath);
-    return new NextResponse(new Uint8Array(buffer), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/vnd.android.package-archive",
-        "Content-Disposition": 'attachment; filename="ANS-Mobile-v1.2.apk"',
-        "Content-Length": String(buffer.byteLength),
-        "Cache-Control": "public, max-age=300",
-      },
-    });
-  } catch {
-    return NextResponse.json({ error: "Android APK installer not found" }, { status: 404 });
+  const release = await readAndroidRelease();
+  if (!release) {
+    return NextResponse.json({ error: "Android APK is not published yet" }, { status: 404 });
   }
+  const response = NextResponse.redirect(new URL(release.file, request.url), 302);
+  response.headers.set("Cache-Control", "no-store");
+  return response;
 }

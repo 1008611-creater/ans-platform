@@ -1,22 +1,28 @@
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { MobileAppInstaller } from "@/components/mobile/mobile-app-installer";
+import { formatApkSize, readAndroidRelease } from "@/lib/mobile-app/android-release";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const isEn = locale === "en";
   return {
-    title: isEn ? "Mobile App" : "手机端 App 安装",
+    title: isEn ? "Mobile App" : "手机 App",
     description: isEn
-      ? "Install the ANS (AI Never Stops) mobile App to your phone home screen for full-screen access, while using the web workspace on desktop."
-      : "将 ANS (AI Never Stops) 安装到手机桌面开启全屏独立 App 体验；电脑端直接使用网页工作台。",
+      ? "Get the ANS (AI Never Stops) app on Android or add it to your iPhone home screen. On a computer, use the website."
+      : "安卓下载 ANS (AI Never Stops) App，iPhone 添加到主屏幕；电脑上直接用网页版。",
   };
 }
 
-export default function MobileAppPage() {
+export default async function MobileAppPage() {
+  const release = await readAndroidRelease();
   return (
     <div className="container py-6 sm:py-10">
-      <MobileAppInstaller />
+      <MobileAppInstaller
+        androidRelease={
+          release ? { versionName: release.versionName, sizeLabel: formatApkSize(release.sizeBytes) } : null
+        }
+      />
     </div>
   );
 }

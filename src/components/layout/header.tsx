@@ -49,7 +49,6 @@ import { setLocale } from "@/lib/i18n/client";
 import { useBranding } from "@/components/providers/branding-provider";
 import { analyticsAuth, analyticsSettings } from "@/lib/analytics";
 import { PRIMARY_NAVIGATION, isPrimaryNavigationActive } from "@/domain/navigation/primary";
-import type { BeforeInstallPromptEvent } from "@/components/mobile/mobile-app-installer";
 
 const languages = [
   { code: "zh", name: "中文" },
@@ -84,12 +83,6 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
-    const captureInstallPrompt = (event: Event) => {
-      event.preventDefault();
-      window.__ansInstallPrompt = event as BeforeInstallPromptEvent;
-    };
-    window.addEventListener("beforeinstallprompt", captureInstallPrompt);
-    return () => window.removeEventListener("beforeinstallprompt", captureInstallPrompt);
   }, []);
 
   const handleLogout = useCallback(async function logout() {
