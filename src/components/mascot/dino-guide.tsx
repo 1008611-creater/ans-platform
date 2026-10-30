@@ -24,6 +24,9 @@ import { useCompanionSize } from "./use-companion-size";
 import { getFormSnapshot, subscribeMascotStore, writeForm } from "@/lib/mascot/client-store";
 import { CompanionQuestPin, CompanionSanctuaryBar } from "./companion-sanctuary-bar";
 import { MascotStageDeck } from "./mascot-stage-deck";
+import { DinoSoulToolbar } from "./dino-soul-plugins";
+import { buildSoulTurnAugmentation } from "@/domain/mascot/soul-plugins";
+import { getSoulPluginsSnapshot, settleSoulTurn } from "@/lib/mascot/soul-store";
 import "./companion.css";
 
 const CompanionReply = lazy(() => import("./companion-reply").then(module => ({ default: module.CompanionReply })));
@@ -55,14 +58,17 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   const [open, setOpen] = useState(false), [showLatest, setShowLatest] = useState(false), [unread, setUnread] = useState(false);
   const [requestedTab, setRequestedTab] = useState<"none" | "pi" | "pet" | "wardrobe" | "secrets" | "adopt" | null>(null);
   const [speech, setSpeech] = useState<SpeechRequest | null>(null), [voiceStatus, setVoiceStatus] = useState("idle");
-  const sequence = useRef(0), welcomed = useRef(false), focusTarget = useRef<string | null>(null), list = useRef<HTMLDivElement>(null);
+  const sequence = useRef(0), welcomed = useRef(false), focusTarget = useRef<string | null>(null), list = useRef<HTMLDivElement>(null), lastAgentInput = useRef("");
   const scrollState = useRef<Record<Mode, { top: number; follow: boolean; lastId: number | undefined }>>({ agent: { top: 0, follow: true, lastId: undefined }, guide: { top: 0, follow: true, lastId: undefined } });
   const titleId = useId(), taskId = useId(), composer = useRef<HTMLTextAreaElement>(null);
   const agent = useCompanionAgent(actor, pathname, locale, (text, links) => {
     updateThread("agent", current => ({ ...current, messages: [...current.messages, { id: ++sequence.current, role: "guide" as const, text }].slice(-40), recommendations: links.length ? links : pageActions(pathname, ui) }));
+    settleSoulTurn(lastAgentInput.current, text, "user");
+    const soulSnap = getSoulPluginsSnapshot();
     // The iframe receives a public acknowledgement only, never the user's private reply.
-    setSpeech({ id: ++sequence.current, text: ui("agentSpokenReady") });
+    setSpeech({ id: ++sequence.current, text: soulSnap.enabled["dsh-tts-bridge"] && soulSnap.ttsBridge.autoRead ? text.slice(0, 220) : ui("agentSpokenReady") });
   }, text => {
+    lastAgentInput.current = text;
     scrollState.current.agent.follow = true;
     updateThread("agent", current => ({ ...current, draft: current.draft.trim() === text ? "" : current.draft, messages: [...current.messages, { id: ++sequence.current, role: "user" as const, text }].slice(-40) }));
     setUndo(null);
@@ -193,8 +199,18 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   function submit(event?: FormEvent, quick?: string) {
     event?.preventDefault(); const input = (quick ?? draft).trim().slice(0, 1200); if (!input || blocked) return;
     scrollState.current[mode].follow = true; setUnread(false); setUndo(null);
-    if (mode === "agent") { updateThread("agent", current => ({ ...current, recommendations: null })); void agent.ask(messages, input); return; }
+    const soulSnap = getSoulPluginsSnapshot();
+    const soulAug = buildSoulTurnAugmentation(soulSnap, input);
+    if (mode === "agent") {
+      updateThread("agent", current => ({ ...current, recommendations: null }));
+      const historyWithSoul = soulAug.agentContextPrefix
+        ? [...messages, { id: -1, role: "guide" as const, text: soulAug.agentContextPrefix.trim() }]
+        : messages;
+      void agent.ask(historyWithSoul, input);
+      return;
+    }
     const reply = guideReply(input, ui), id = ++sequence.current, responseId = ++sequence.current;
+    settleSoulTurn(input, reply.text, "user");
     updateThread("guide", current => ({ draft: quick ? current.draft : "", messages: [...current.messages, { id, role: "user" as const, text: input }, { id: responseId, role: "guide" as const, text: reply.text }].slice(-40), recommendations: reply.actions }));
     setSpeech({ id: ++sequence.current, text: reply.text });
   }
@@ -311,6 +327,33 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
           onSwitchToWorkMode={switchToWorkMode}
         />
         <MascotStageDeck />
+        <DinoSoulToolbar
+          onInjectAssistantMessage={(text, speakAloud) => {
+            scrollState.current[mode].follow = true;
+            updateThread(mode, current => ({
+              ...current,
+              messages: [...current.messages, { id: ++sequence.current, role: "guide" as const, text }].slice(-40),
+            }));
+            if (speakAloud || prefs.voice) {
+              setSpeech({ id: ++sequence.current, text });
+            }
+          }}
+          onSendUserSticker={sticker => {
+            scrollState.current[mode].follow = true;
+            const userLine = `${sticker.kaomoji} 【${sticker.title}】`;
+            const dinoLine = `收到你的斗图「${sticker.badge}」！兔兔龙也回你一张：(✧ω✧)✨ 贴贴充能～`;
+            updateThread(mode, current => ({
+              ...current,
+              messages: [
+                ...current.messages,
+                { id: ++sequence.current, role: "user" as const, text: userLine },
+                { id: ++sequence.current, role: "guide" as const, text: dinoLine },
+              ].slice(-40),
+            }));
+            settleSoulTurn(userLine, dinoLine, "user");
+          }}
+          onSpeakText={text => setSpeech({ id: ++sequence.current, text })}
+        />
         {!actor && <Link className="ans-companion-signin" href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}>{ui("agentSignIn")}<ArrowUpRight aria-hidden="true" /></Link>}
         {undo?.mode === mode && <div className="ans-companion-undo" role="status"><span>{ui("conversationCleared")}</span><button type="button" onClick={restoreConversation}>{ui("undoClear")}</button></div>}
         <div className="ans-companion-reading">
