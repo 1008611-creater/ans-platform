@@ -1,7 +1,20 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DinoAvatar } from "@/components/mascot/dino-avatar";
-import { writeForm, writePixelState } from "@/lib/mascot/client-store";
+import {
+  dispatchGrokBotCommand,
+  writeForm,
+  writeGrokShape,
+  writePixelState,
+  writeRenderStyle2d,
+} from "@/lib/mascot/client-store";
+import {
+  GROK_EXPRESSIONS,
+  GROK_SHAPE_RINGS,
+  createSpring,
+  projectEyeOnSphere,
+  stepSpring,
+} from "@/lib/mascot/grokbot-dino-2d";
 import { resetSitePreferences, updateSitePreferences } from "@/lib/site-preferences";
 
 vi.mock("next/image", () => ({ default: ({ className }: { className?: string }) => <span data-testid="static-mascot" className={className} /> }));
@@ -342,6 +355,64 @@ describe("DinoAvatar frame lifecycle", () => {
     expect(screen.getByTestId("mascot-pixel-avatar")).toHaveAttribute("data-pixel-state", "emote");
     act(() => {
       writePixelState("idle");
+      writeForm("3d");
+    });
+  });
+
+  it("renders GrokBot 2D procedural damped-spring SVG engine with spherical eye projection and shape morphing", () => {
+    const view = mount();
+    act(() => writeForm("2d"));
+    const avatar = screen.getByTestId("mascot-pixel-avatar");
+    expect(avatar).toHaveAttribute("data-render-style", "grok");
+    expect(avatar).toHaveAttribute("data-grok-shape", "tutulong");
+    expect(view.container.querySelector("svg.ans-dino-grok-svg")).not.toBeNull();
+
+    act(() => {
+      writeGrokShape("crystal");
+      dispatchGrokBotCommand({ kind: "morph", effect: "radar" });
+    });
+    expect(avatar).toHaveAttribute("data-grok-shape", "crystal");
+    expect(avatar).toHaveAttribute("data-grok-morph", "radar");
+
+    // Verify 120Hz damped spring solver converges toward target
+    const spring = createSpring(0);
+    spring.target = 10;
+    stepSpring(spring, 8, 0.85, 0.1);
+    expect(spring.x).toBeGreaterThan(0);
+
+    // Verify spherical eye projection foreshortens and hides back-facing eyes on 180 deg turn
+    const frontProj = projectEyeOnSphere({
+      ring: GROK_EXPRESSIONS.happy[0],
+      shapeRing: GROK_SHAPE_RINGS.tutulong,
+      turnAngle: 0,
+      gazeX: 4,
+      gazeY: -2,
+      eyeOpen: 1,
+      eyeScale: 1,
+      pulse: 1,
+    });
+    expect(frontProj.visible).toBe(true);
+    const backProj = projectEyeOnSphere({
+      ring: GROK_EXPRESSIONS.happy[0],
+      shapeRing: GROK_SHAPE_RINGS.tutulong,
+      turnAngle: Math.PI,
+      gazeX: 0,
+      gazeY: 0,
+      eyeOpen: 1,
+      eyeScale: 1,
+      pulse: 1,
+    });
+    expect(backProj.visible).toBe(false);
+
+    // Toggle to classic 64-frame pixel sheet and back to Grok 2D
+    act(() => writeRenderStyle2d("pixel"));
+    expect(avatar).toHaveAttribute("data-render-style", "pixel");
+    expect(view.container.querySelector("svg.ans-dino-grok-svg")).toBeNull();
+
+    act(() => {
+      writeRenderStyle2d("grok");
+      writeGrokShape("tutulong");
+      dispatchGrokBotCommand({ kind: "morph", effect: "none" });
       writeForm("3d");
     });
   });

@@ -822,13 +822,13 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
   border-color: rgba(98, 224, 255, 0.72);
   box-shadow: 0 0 16px rgba(132, 120, 255, 0.44);
 }
-.ans-dino-pixel-stage[data-species="cyber_gold"] .ans-dino-pixel {
+.ans-dino-pixel-stage[data-species="cyber_gold"] .ans-dino-pixel:not(.ans-dino-grok) {
   filter: sepia(0.28) saturate(1.45) hue-rotate(-14deg) drop-shadow(0 2px 6px rgba(255, 196, 64, 0.28));
 }
-.ans-dino-pixel-stage[data-species="sakura_mochi"] .ans-dino-pixel {
+.ans-dino-pixel-stage[data-species="sakura_mochi"] .ans-dino-pixel:not(.ans-dino-grok) {
   filter: hue-rotate(195deg) saturate(1.18) brightness(1.04) drop-shadow(0 2px 6px rgba(255, 138, 194, 0.28));
 }
-.ans-dino-pixel-stage[data-species="aurora_ice"] .ans-dino-pixel {
+.ans-dino-pixel-stage[data-species="aurora_ice"] .ans-dino-pixel:not(.ans-dino-grok) {
   filter: hue-rotate(38deg) saturate(1.22) brightness(1.04) drop-shadow(0 2px 6px rgba(98, 224, 255, 0.28));
 }
 .ans-dino-avatar .ans-dino-pixel {
@@ -846,6 +846,18 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
   transform-origin: 50% 90%;
   transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), filter 220ms ease;
   animation: ans-dino-atlas-row 3.2s steps(1, end) infinite;
+}
+.ans-dino-avatar .ans-dino-pixel.ans-dino-grok {
+  background-image: none !important;
+  animation: none !important;
+  image-rendering: auto;
+  filter: drop-shadow(0 6px 14px rgba(16, 42, 34, 0.24));
+}
+.ans-dino-grok-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
 }
 .ans-dino-pixel-stage[data-bounce="hop"] {
   animation: ans-dino-bounce-hop 560ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -913,6 +925,27 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex-wrap: wrap;
+}
+.ans-mascot-stage-deck-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.ans-mascot-substyle-segmented > button[aria-pressed="true"] {
+  background: color-mix(in oklch, var(--primary) 16%, var(--background));
+  color: var(--primary);
+}
+.ans-mascot-grok-bar {
+  padding-top: 2px;
+}
+.ans-mascot-grok-divider {
+  width: 1px;
+  height: 14px;
+  background: var(--border);
+  flex-shrink: 0;
+  margin-inline: 2px;
 }
 .ans-mascot-stage-deck-title {
   font-size: 11px;

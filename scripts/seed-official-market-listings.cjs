@@ -7,6 +7,32 @@ const { PrismaClient } = require("@prisma/client");
 
 const OFFICIAL_MARKET_LISTINGS = [
   {
+    slug: "ans-ecommerce-outbound-saas",
+    status: "PUBLISHED",
+    title: "ANS 电商智能外呼系统（全链路自动催付/邀评 + 360° 买家画像版）",
+    summary: "帮电商商家全自动搞定未付款催付、物流异常提醒、签收好评返现邀约与老客复购召回，内置全店买家 360° 价值分层与黄金接听时段洞察。",
+    description:
+      "面向电商商家的全链路智能语音触达与买家 360° 画像增长系统（在线生产环境：https://waihu.cauai.fun）。\n\n支持 ANS (AI Never Stops) 统一账号一键免密登录，新商家默认零数据干净初始态并配备 4 步交互式新手引导。内置四大金牌电商客服声音在线试听与实时对话演练、12 大电商全链路自动化触达场景（下单未付催付、发货派送提醒、签收晒图邀评、售后安抚挽回、挂机利益点短信自动补发），以及全店买家 360° 价值分层（5 大核心人群 + 黄金接听时段锁定 + 高频退货号自动排集省话费）。",
+    category: "business",
+    subcategory: "services",
+    fulfillment: "resource",
+    priceMinor: 0,
+    currency: "CNY",
+    deliveryDays: 1,
+    revisionLimit: 2,
+    computeIncluded: false,
+    deliverables: [
+      "在线直达体验：https://waihu.cauai.fun（新商家 3 分钟快速上手引导 + ANS 账号一键登录）",
+      "四大金牌电商客服声音在线试听与实时对话演练",
+      "12 大电商全链路自动化触达场景（催付、发货、签收邀评、售后挽回、挂机短信联动）",
+    ],
+    licenseTerms: "ANS (AI Never Stops) 官方认证 SaaS 服务与专属部署交付，支持 ANS 账号一键免密登录直接体验。",
+    coverUrl: "https://ans.cauai.fun/catalog/gitglow-v1/ans-ecommerce-outbound.webp",
+    usageUrl: "https://waihu.cauai.fun",
+    previewUrl: "https://waihu.cauai.fun",
+    sourceUrl: "https://waihu.cauai.fun",
+  },
+  {
     slug: "cau-sci-paper-polisher-kit",
     title: "农学 SCI 论文摘要与文献综述精修工作台",
     summary: "面向智慧农业、植物保护、生物育种与资环方向，一键生成高水平英文 Abstract、Graphical Abstract 提示词与近五年文献对比矩阵。",
