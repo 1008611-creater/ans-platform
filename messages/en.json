@@ -1183,8 +1183,8 @@
       "scaleValue": "1–5",
       "phases": "Core loop",
       "phasesValue": "5 steps",
-      "deliverables": "Total prize pool",
-      "deliverablesValue": "¥3,300+"
+      "deliverables": "Compute & credits",
+      "deliverablesValue": "Compute Center"
     },
     "tracksTitle": "Three tracks",
     "tracksDescription": "People, Discovery, and Action. Build first and lock in the best-fitting track upon submission.",
@@ -1362,42 +1362,42 @@
     "readPublishedRules": "Read published rules",
     "bindProject": "Link your project",
     "claimCompute": "Claim compute credits",
-    "pipelineSectionLabel": "00 / ALL-IN-ONE FLOW",
-    "pipelineTitle": "5-Step Competition Loop",
-    "pipelineDescription": "Read rules, prepare compute, submit builds, rally Stars, and check rankings.",
+    "pipelineSectionLabel": "00 / PRIMARY FLOW (CLICK 01 → 05 IN ORDER)",
+    "pipelineTitle": "5-Step Contestant Track",
+    "pipelineDescription": "Click 01 → 05 in sequence to pick a track, claim compute, submit code, rally Stars, and view rankings.",
     "pipeline": {
       "rules": {
         "step": "STEP 01",
-        "title": "Read rules & pick a track",
-        "description": "Explore People, Discovery, and Action tracks alongside the 100-point rubric and open-source checklist.",
+        "title": "Pick track & rules",
+        "description": "3 tracks, chosen at submission. Build your prototype first.",
         "cta": "View tracks & rules",
         "href": "#tracks"
       },
       "compute": {
         "step": "STEP 02",
-        "title": "Prepare compute & prototype",
-        "description": "Redeem personal vouchers in Compute Center; team competition grants are claimed by the captain in STEP 03 Stage Submissions.",
+        "title": "Claim compute",
+        "description": "Redeem personal vouchers here; team grants are claimed in Step 03.",
         "cta": "Open compute center",
         "href": "/workspace/credits"
       },
       "submit": {
         "step": "STEP 03",
-        "title": "Register · Host code · Submit",
-        "description": "Mandatory judging channel: bind team, claim team compute grant, host source archive/Git snapshot, and submit stage materials (private by default).",
+        "title": "Register & submit code",
+        "description": "Mandatory channel: bind team, claim grant, and submit code/Git snapshot (private by default).",
         "cta": "Host code & submit",
         "href": "/competitions/agrihackathon/submissions"
       },
       "star": {
         "step": "STEP 04",
-        "title": "Publish to wall & rally Stars",
-        "description": "Optionally publish to the Wall and rally Stars (valid votes count for 20% preliminary weight and Popularity Award).",
+        "title": "Wall & Star rally",
+        "description": "Optionally publish to the Wall to rally Stars (20% prelim weight + Popularity Award).",
         "cta": "Open project wall",
         "href": "/explore?category=competition&subcategory=agri-wall"
       },
       "ranking": {
         "step": "STEP 05",
-        "title": "Finalists & final rankings",
-        "description": "Track Top 10 Finalists (80% jury + 20% public score), Demo Day presentations, and final awards.",
+        "title": "Finalists & rankings",
+        "description": "View Top 10 Finalists and Demo Day final standings.",
         "cta": "View Finalists & rankings",
         "href": "/competitions/agrihackathon/showcase"
       }

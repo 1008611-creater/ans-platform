@@ -4,6 +4,10 @@ import zh from "../../../messages/zh.json";
 import agriWall from "../../../messages/agri-wall/zh.json";
 import product from "../../../messages/product/zh.json";
 import AgriHackathonPage from "@/app/competitions/agrihackathon/page";
+import { AgriContestantFlowBar } from "@/components/competitions/agri-contestant-flow-bar";
+import { WorkspaceNavigationProvider } from "@/components/providers/workspace-navigation";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), replace: vi.fn() }) }));
 
 const mocks = vi.hoisted(() => ({ find: vi.fn(), guide: vi.fn() }));
 vi.mock("@/server/competitions/service", () => ({ findAgriHackathonCompetition: mocks.find }));
@@ -83,5 +87,27 @@ it("renders the 5-step unified competition loop, GitGlow visual cards, and direc
   for (const link of screen.getAllByRole("link", { name: zh.agriHackathon.pipeline.submit.cta })) expect(link).toHaveAttribute("href", "/competitions/agrihackathon/submissions");
   expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.star.cta })).toHaveAttribute("href", "/explore?category=competition&subcategory=agri-wall");
   expect(screen.getByRole("link", { name: zh.agriHackathon.pipeline.ranking.cta })).toHaveAttribute("href", "/competitions/agrihackathon/showcase");
+  const pipelineHeading = container.querySelector("#agri-pipeline-heading")!;
+  const rulesPending = container.querySelector("#agri-rules-pending")!;
+  const tracksSection = container.querySelector("#tracks")!;
+  expect(pipelineHeading.compareDocumentPosition(rulesPending) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(pipelineHeading.compareDocumentPosition(tracksSection) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+});
+
+it("renders the sequential 1-to-5 contestant flow bar across sub-pages with active step indicator", () => {
+  const nav = (key: string) => key.split(".").reduce<unknown>((v, k) => (v as Record<string, unknown>)[k], product.agrihackathon) as string;
+  render(
+    <WorkspaceNavigationProvider>
+      <AgriContestantFlowBar current="submissions" backHref="/competitions/agrihackathon" backLabel="返回农客松" nav={nav} />
+    </WorkspaceNavigationProvider>,
+  );
+  const currentLink = screen.getByRole("link", { name: product.agrihackathon.crossNav.submissions });
+  expect(currentLink).toHaveAttribute("aria-current", "step");
+  expect(screen.getByRole("link", { name: product.agrihackathon.crossNav.hub })).toHaveAttribute("href", "/competitions/agrihackathon");
+  expect(screen.getByRole("link", { name: product.agrihackathon.crossNav.credits })).toHaveAttribute("href", "/workspace/credits");
+  expect(screen.getByRole("link", { name: product.agrihackathon.crossNav.bindWall })).toHaveAttribute("href", "/explore/agrihackathon/submit");
+  expect(screen.getByRole("link", { name: product.agrihackathon.crossNav.wall })).toHaveAttribute("href", "/explore?category=competition&subcategory=agri-wall");
+  expect(screen.getByRole("link", { name: product.agrihackathon.crossNav.showcase })).toHaveAttribute("href", "/competitions/agrihackathon/showcase");
+  expect(screen.getByRole("link", { name: product.agrihackathon.crossNav.tasks })).toHaveAttribute("href", "/competitions/agrihackathon/tasks");
 });
 

@@ -44,7 +44,7 @@ function Field({ label, children }: { label: string; children: (id: string) => R
 function time(value: string, locale: string) { return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-GB", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value)); }
 function emptyDraft(): AgriStageDraft { return { projectId: "", artifactVersionId: null, repository: null, demoUrl: null, summary: "", materials: { schemaVersion: 1, items: [] } }; }
 export function AgriSubmissions({ initialSelection }: { initialSelection?: { teamCompetitionId: string; stage: "PRELIMINARY" | "FINAL" } } = {}) {
-  const t = useTranslations("product.agriSubmissions"); const { data, status, update } = useSession();
+  const t = useTranslations("product.agriSubmissions"); const wall = useTranslations("agriWall"); const { data, status, update } = useSession();
   const [invalid, setInvalid] = useState(false);
   const invalidate = useCallback(() => { clearSubmissionRecoveries(); setInvalid(true); }, []);
   useEffect(() => { if (status === "unauthenticated") clearSubmissionRecoveries(); }, [status]);
@@ -55,10 +55,10 @@ export function AgriSubmissions({ initialSelection }: { initialSelection?: { tea
         <div className="flex flex-col justify-between gap-4 rounded-2xl border border-emerald-500/25 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent p-5 sm:flex-row sm:items-center">
           <div className="space-y-1">
             <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
-              初赛 / 决赛双阶段工程提交 · SHA-256 密码学存证
+              {t("chooseTeam")}
             </Badge>
             <p className="text-sm text-muted-foreground">
-              登录后选择已报名的参赛战队，即可上传源码包、绑定 GitHub 仓库与在线演示地址。
+              {t("privacy")}
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
@@ -66,46 +66,10 @@ export function AgriSubmissions({ initialSelection }: { initialSelection?: { tea
               <Link href="/login?callbackUrl=%2Fcompetitions%2Fagrihackathon%2Fsubmissions">{t("login")}</Link>
             </Button>
             <Button asChild variant="outline" className="rounded-xl">
-              <Link href="/teams">创建 / 加入战队 →</Link>
+              <Link href="/teams">{wall("openTeams")}</Link>
             </Button>
           </div>
         </div>
-        <details className="group rounded-2xl border border-dashed border-border/80 bg-muted/15 p-4">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-foreground">
-            <span>📖 查看提交与五维度评审规范（代码包 · SHA-256 存证 · 盲审标准）</span>
-            <span className="text-xs font-normal text-muted-foreground group-open:hidden">▾</span>
-            <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">收起 ▴</span>
-          </summary>
-          <div className="mt-4 grid gap-4 md:grid-cols-3">
-            {[
-              {
-                tag: "01 · 工程与代码包规范",
-                title: "GitHub 仓库 + 10MB 源码快照",
-                desc: "支持关联 GitHub 仓库 Commit Hash、在线 Demo 链接与可复现运行说明。",
-              },
-              {
-                tag: "02 · 密码学防篡改锁定",
-                title: "SHA-256 哈希指纹与版本封存",
-                desc: "每次提交自动计算工程附件 SHA-256 摘要并写入审计日志，截止后冻结评测基线。",
-              },
-              {
-                tag: "03 · 五维度评委盲审",
-                title: "问题价值 · AI 契合度 · 创新性 · 技术实现 · 完整度",
-                desc: "封存版本直接进入组委会五维度双盲评审队列，与决赛评分看板完全对齐。",
-              },
-            ].map((item, idx) => (
-              <Card key={idx} className="border-border/60 bg-card/90">
-                <CardHeader className="pb-2">
-                  <Badge variant="outline" className="w-fit text-[11px]">{item.tag}</Badge>
-                  <CardTitle className="pt-1 text-base">{item.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xs leading-relaxed text-muted-foreground">{item.desc}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </details>
       </div>
     );
   }
@@ -272,12 +236,24 @@ function SubmissionEditor({ actorId, initial, manager, invalidate, onBack }: { a
       <Button asChild variant="ghost"><Link href={detail.wall.href}>{wall("viewProject")}</Link></Button>
       {detail.wall.isOwner && <Button variant="outline" disabled={locked || !detail.wall.synchronized} onClick={() => edit({ ...draft, projectId: detail.wall!.projectId, artifactVersionId: detail.wall!.artifactVersionId })}>{wall("useWallVersion")}</Button>}
     </CardContent></Card>}
-    <Card><CardHeader><CardTitle>{t("rules")}</CardTitle></CardHeader><CardContent className="space-y-2 text-sm leading-6">
-      <p>{t("window." + (detail.windowState === "INVALID" ? "RULES_PENDING" : detail.windowState))}</p>{ruleWindow?.state === "CONFIRMED" && <><p>{t("dates", { opens: time(ruleWindow.opensAt, locale), closes: time(ruleWindow.closesAt, locale) })}</p><p>{t(ruleWindow.includesDeadline ? "inclusive" : "exclusive")}</p></>}
-      {rule?.guidanceMarkdown && <p className="whitespace-pre-wrap break-words">{rule.guidanceMarkdown}</p>}
-      {rule && <p className="break-all text-muted-foreground">{t("ruleVersion", { id: rule.id })}</p>}
-      {detail.stage === "FINAL" && detail.finalEligibility?.state !== "ELIGIBLE" && <p>{t("finalPending")}</p>}{detail.frozenSubmissionId && <p>{t("frozen")}</p>}<p>{t("serverTime")}</p>
-    </CardContent></Card>
+    <div className="rounded-xl border bg-muted/20 px-4 py-3 text-xs leading-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2 font-medium text-foreground">
+          <span>{t("rules")}: {t("window." + (detail.windowState === "INVALID" ? "RULES_PENDING" : detail.windowState))}</span>
+          {ruleWindow?.state === "CONFIRMED" && <span className="text-muted-foreground">· {t("dates", { opens: time(ruleWindow.opensAt, locale), closes: time(ruleWindow.closesAt, locale) })}</span>}
+        </div>
+        {detail.stage === "FINAL" && detail.finalEligibility?.state !== "ELIGIBLE" && <span className="font-medium text-amber-600 dark:text-amber-400">{t("finalPending")}</span>}
+        {detail.frozenSubmissionId && <span className="font-medium text-primary">{t("frozen")}</span>}
+      </div>
+      <details className="mt-1.5 text-muted-foreground">
+        <summary className="w-fit cursor-pointer font-medium hover:text-foreground">{t("serverTime")}</summary>
+        <div className="mt-1.5 space-y-1">
+          {ruleWindow?.state === "CONFIRMED" && <p>{t(ruleWindow.includesDeadline ? "inclusive" : "exclusive")}</p>}
+          {rule?.guidanceMarkdown && <p className="whitespace-pre-wrap break-words">{rule.guidanceMarkdown}</p>}
+          {rule && <p className="break-all">{t("ruleVersion", { id: rule.id })}</p>}
+        </div>
+      </details>
+    </div>
     {error && <p role="alert">{message(error)}</p>}{note && <p role="status">{note}</p>}
     {pending && <div className="space-y-3 rounded-xl border p-4"><p role="alert">{t("pending")}</p><Button disabled={busy} onClick={() => void mutate(pending.action)}>{t("retry")}</Button></div>}
     {stale && !pending && <div className="space-y-3 rounded-xl border p-4"><p role="status">{t("stale")}</p><Button disabled={busy} onClick={() => void reload(true)}>{t("refresh")}</Button></div>}

@@ -819,13 +819,14 @@
       "rankings": "Enter preliminary and final 5-dimension judge scores, preview trimmed-mean standings, and publish official rankings."
     },
     "crossNav": {
-      "hub": "Back to AgriHackathon hub",
-      "credits": "02 Compute center",
-      "bindWall": "03 Bind project to wall",
-      "submissions": "03 Stage submissions",
-      "tasks": "My timetable",
-      "wall": "04 Project wall & Star rank",
-      "showcase": "05 Finalists & showcase"
+      "flowLabel": "5-Step Contestant Flow",
+      "hub": "01 Hub & Tracks",
+      "credits": "02 Compute",
+      "submissions": "03 Submit Code",
+      "wall": "04 Wall & Stars",
+      "showcase": "05 Rankings",
+      "bindWall": "Bind to Wall",
+      "tasks": "Timetable"
     },
     "organizerNav": {
       "manage": "01 Rules & Advancement",
@@ -1020,7 +1021,7 @@
     "officialRosterLocked": "This official roster is fixed for the preliminary and final stages. Later team membership changes do not rewrite it.",
     "preliminaryBaseline": "Frozen preliminary submission: {id}",
     "title": "Team stage submissions",
-    "description": "Official judging submission channel (private by default, no public Wall required): claim 20 team compute credits, upload source archive or pin Git snapshot, and submit preliminary/final materials.",
+    "description": "STEP 03 Official judging channel (private by default): select team → claim 20 compute credits → submit code/Git snapshot.",
     "back": "Back to Agrihackathon",
     "loading": "Loading…",
     "login": "Sign in to prepare a submission",
@@ -1032,7 +1033,7 @@
       "PRELIMINARY": "Preliminary",
       "FINAL": "Final"
     },
-    "privacy": "Materials are visible only to authorized team members and competition staff. Submission does not publish work, advance a team, award XP or charge compute points.",
+    "privacy": "Materials are visible only to authorized team members and staff. Submissions are private by default and never charge credits.",
     "disabled": "This competition submission workspace is not enabled yet.",
     "noTeam": "No entry for this competition. Create or join a team and register first.",
     "managerOnly": "The team owner or administrator prepares and submits materials.",

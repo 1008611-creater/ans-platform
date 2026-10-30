@@ -36,13 +36,12 @@ function ErrorNotice({ code }: { code: string }) {
 }
 function RoundNotice({ round }: { round: AgriPopularityView | null }) {
   const t = useTranslations("agriWall"); const locale = useLocale();
-  return <section aria-label={t("popularity")} className="rounded-2xl border bg-muted/30 p-5 sm:p-6">
-    <div>
-      <div className="flex flex-wrap items-center gap-3"><Star className="size-5 text-primary" aria-hidden="true" /><h2 className="text-lg font-semibold">{t("popularity")}</h2><Badge variant="secondary">{t(round ? "states." + round.state : "states.UNCONFIGURED")}</Badge></div>
-      <p className="mt-2.5 max-w-2xl text-sm leading-6 text-muted-foreground">{t(round ? "roundCopy." + round.state : "roundCopy.UNCONFIGURED")}</p>
-      {round && <p className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm"><Clock3 className="size-4 shrink-0" aria-hidden="true" /><time dateTime={round.opensAt}>{formatTime(round.opensAt, locale)}</time><span aria-hidden="true">—</span><time dateTime={round.closesAt}>{formatTime(round.closesAt, locale)}</time><span className="text-muted-foreground">{t("beijing")}</span></p>}
-      <details className="mt-3.5 text-sm"><summary className="w-fit cursor-pointer rounded-sm font-medium underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("rulesTitle")}</summary><ul className="mt-2.5 list-disc space-y-1.5 ps-5 text-xs leading-5 text-muted-foreground">{["window", "account", "team", "total", "tie", "frozen"].map(rule => <li key={rule}>{t("rules." + rule)}</li>)}</ul></details>
+  return <section aria-label={t("popularity")} className="rounded-xl border bg-muted/25 px-4 py-3.5 sm:px-5">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-2.5"><Star className="size-4 text-primary" aria-hidden="true" /><h2 className="text-sm font-semibold">{t("popularity")}</h2><Badge variant="secondary">{t(round ? "states." + round.state : "states.UNCONFIGURED")}</Badge><span className="text-xs text-muted-foreground">{t(round ? "roundCopy." + round.state : "roundCopy.UNCONFIGURED")}</span></div>
+      <details className="text-xs"><summary className="w-fit cursor-pointer rounded-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{t("rulesTitle")}</summary><ul className="mt-2 list-disc space-y-1 ps-5 text-xs leading-5 text-muted-foreground">{["window", "account", "team", "total", "tie", "frozen"].map(rule => <li key={rule}>{t("rules." + rule)}</li>)}</ul></details>
     </div>
+    {round && <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground"><Clock3 className="size-3.5 shrink-0" aria-hidden="true" /><time dateTime={round.opensAt}>{formatTime(round.opensAt, locale)}</time><span aria-hidden="true">—</span><time dateTime={round.closesAt}>{formatTime(round.closesAt, locale)}</time><span>{t("beijing")}</span></p>}
   </section>;
 }
 
@@ -110,8 +109,8 @@ export function AgriWall({ initialView }: { initialView?: AgriWallView } = {}) {
   const frozen = view?.round?.state === "CLOSED" && !!view.round.frozenAt;
   const results = view?.round?.results ?? [];
   const ranks = new Map(results.map(row => [row.entryId, row]));
-  return <div className="space-y-7">
-    <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div className="max-w-2xl"><p className="mb-3 text-sm font-medium text-primary">{t("eyebrow")}</p><h1 className="ans-page-title">{t("title")}</h1><p className="mt-4 text-base leading-7 text-muted-foreground">{t("description")}</p></div><div className="flex shrink-0 flex-wrap gap-2"><Button asChild><Link href={SUBMIT}>{t("join")}<ArrowRight aria-hidden="true" /></Link></Button><Button asChild variant="secondary"><Link href="/workspace/credits"><Cpu className="size-4" aria-hidden="true" />{t("claimCompute")}</Link></Button><Button asChild variant="outline"><Link href="/competitions/agrihackathon/showcase"><Trophy className="size-4" aria-hidden="true" />{t("viewShowcase")}</Link></Button><Button asChild variant="outline"><Link href="/competitions/agrihackathon">{t("eventGuide")}</Link></Button></div></header>
+  return <div className="space-y-5">
+    <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div className="max-w-2xl"><p className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-primary">{t("eyebrow")}</p><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t("title")}</h1><p className="mt-1.5 text-sm text-muted-foreground">{t("description")}</p></div><div className="flex shrink-0 flex-wrap gap-2"><Button asChild size="sm"><Link href={SUBMIT}>{t("join")}<ArrowRight aria-hidden="true" /></Link></Button><Button asChild variant="secondary" size="sm"><Link href="/competitions/agrihackathon/submissions">{t("continueSubmission")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/workspace/credits"><Cpu className="size-3.5" aria-hidden="true" />{t("claimCompute")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/showcase"><Trophy className="size-3.5" aria-hidden="true" />{t("viewShowcase")}</Link></Button><Button asChild variant="ghost" size="sm"><Link href="/competitions/agrihackathon">{t("eventGuide")}</Link></Button></div></header>
     {error && <ErrorNotice code={error} />}
     {!view && loading && <p role="status" className="py-12 text-center text-sm text-muted-foreground">{t("loading")}</p>}
     {!view && !loading && error && <Button variant="outline" onClick={refreshView}><RefreshCw aria-hidden="true" />{t("retry")}</Button>}
@@ -145,53 +144,6 @@ export function AgriWall({ initialView }: { initialView?: AgriWallView } = {}) {
               {query ? t("clearSearch") : <Link href={SUBMIT}>{t("join")}</Link>}
             </Button>
           </div>
-          {!query && (
-            <details className="group rounded-2xl border border-dashed border-border/80 bg-muted/15 p-4">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-foreground">
-                <span>📖 查看三大赛道作品上墙结构参考范例</span>
-                <span className="text-xs font-normal text-muted-foreground group-open:hidden">▾</span>
-                <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">收起 ▴</span>
-              </summary>
-              <div className="mt-4 grid gap-5 md:grid-cols-3">
-                {[
-                  {
-                    team: "赛道 #01 · 智慧植保方向",
-                    title: "Agri-Vision 小麦条锈病无人机多光谱巡检流",
-                    summary: "结合田间无人机多光谱影像与 Qwen-VL 诊断节点，生成病虫害热力图与农艺防治处方。",
-                    cover: "/competitions/agrihackathon/gitglow-tracks.webp",
-                  },
-                  {
-                    team: "赛道 #02 · 设施农业方向",
-                    title: "GreenHouse-OS 温室水肥光热多 Agent 协同沙盘",
-                    summary: "基于温湿度与光照时序预测模型，动态调度滴灌与补光策略，支持评委扫码体验。",
-                    cover: "/competitions/agrihackathon/gitglow-workflow.webp",
-                  },
-                  {
-                    team: "赛道 #03 · 生物育种方向",
-                    title: "Seed-GPT 玉米耐旱表型组学文献与基因检索助手",
-                    summary: "整合作物表型组学文献与知识图谱，辅助育种团队快速检索耐旱候选基因位点。",
-                    cover: "/competitions/agrihackathon/gitglow-scoring.webp",
-                  },
-                ].map((demo) => (
-                  <article key={demo.title} className="flex flex-col overflow-hidden rounded-2xl border bg-card transition hover:border-primary/40">
-                    <Image src={demo.cover} alt={demo.title} width={720} height={450} unoptimized className="aspect-[16/10] w-full border-b object-cover" />
-                    <div className="flex flex-1 flex-col p-5">
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <span className="text-xs text-muted-foreground">{demo.team}</span>
-                        <Badge variant="secondary">📖 参考范例</Badge>
-                      </div>
-                      <h3 className="text-base font-semibold leading-snug">{demo.title}</h3>
-                      <p className="mt-2 flex-1 text-xs leading-6 text-muted-foreground">{demo.summary}</p>
-                      <div className="mt-4 flex items-center justify-between border-t pt-3 text-xs">
-                        <span className="text-muted-foreground">含问题定义 · 实测指标 · 源码回执</span>
-                        <Link href={SUBMIT} className="font-medium text-primary hover:underline">绑定我的参赛作品 →</Link>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </details>
-          )}
         </div>}
       </section>
     </>}
@@ -240,7 +192,8 @@ function BindForm({ mine, reload }: { mine: AgriWallMine; reload: (message?: str
     catch (reason) { if (alive.current) { const code = reason instanceof Error ? reason.message : "INTERNAL_ERROR"; setError(code); if (!code.startsWith("AGRI_") && !["INVALID_INPUT", "VERSION_CONFLICT", "ACCOUNT_CHANGED", "UNAUTHORIZED", "FORBIDDEN"].includes(code)) setUncertain(true); } }
     finally { flight.current = false; if (alive.current) setBusy(false); }
   }
-  return <div className="space-y-6"><ol className="grid gap-4 sm:grid-cols-2"><li className="overflow-hidden rounded-2xl border bg-card"><Image src="/competitions/agrihackathon/gitglow-workflow.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full border-b bg-slate-950/90 object-cover" /><div className="p-5"><p className="text-xs font-semibold text-primary">{t("stepOne")}</p><h2 className="mt-1.5 font-semibold">{t("publishTitle")}</h2><p className="mt-1.5 text-sm leading-6 text-muted-foreground">{t("publishBody")}</p><Button asChild variant="outline" className="mt-4 h-auto min-h-11 max-w-full whitespace-normal"><Link href="/explore/submit?event=agrihackathon">{t("publish")}<ArrowUpRight aria-hidden="true" /></Link></Button><p className="mt-2.5 text-xs leading-5 text-muted-foreground">{t("reviewHint")}</p></div></li><li className="overflow-hidden rounded-2xl border bg-card"><Image src="/competitions/agrihackathon/gitglow-wall.webp" alt="" width={1440} height={900} unoptimized className="aspect-[16/10] w-full border-b bg-slate-950/90 object-cover" /><div className="p-5"><p className="text-xs font-semibold text-primary">{t("stepTwo")}</p><h2 className="mt-1.5 font-semibold">{t("bindTitle")}</h2><p className="mt-1.5 text-sm leading-6 text-muted-foreground">{t("bindBody")}</p><Button asChild variant="ghost" className="mt-4"><Link href={registrationHref}>{t("registration")}</Link></Button></div></li></ol>
+  return <div className="space-y-5">
+    <ol className="grid gap-3 sm:grid-cols-2"><li className="flex flex-col justify-between rounded-xl border bg-muted/20 p-4"><div className="space-y-1"><p className="text-xs font-semibold text-primary">{t("stepOne")} · {t("publishTitle")}</p><p className="text-xs leading-5 text-muted-foreground">{t("publishBody")} · {t("reviewHint")}</p></div><div className="mt-3"><Button asChild variant="outline" size="sm" className="h-auto min-h-9 max-w-full whitespace-normal"><Link href="/explore/submit?event=agrihackathon">{t("publish")}<ArrowUpRight aria-hidden="true" /></Link></Button></div></li><li className="flex flex-col justify-between rounded-xl border bg-muted/20 p-4"><div className="space-y-1"><p className="text-xs font-semibold text-primary">{t("stepTwo")} · {t("bindTitle")}</p><p className="text-xs leading-5 text-muted-foreground">{t("bindBody")}</p></div><div className="mt-3"><Button asChild variant="ghost" size="sm"><Link href={registrationHref}>{t("registration")}</Link></Button></div></li></ol>
     {bindingClosed && <p role="status" className="rounded-xl border bg-muted/30 p-4 text-sm leading-7">{t("bindingClosed")}</p>}
     {!mine.entries.length ? <div className="rounded-2xl border p-6"><h2 className="font-semibold">{t("noTeamTitle")}</h2><p className="mt-2 text-sm leading-7 text-muted-foreground">{t("noTeamBody")}</p><div className="mt-4 flex flex-wrap gap-2"><Button asChild><Link href={registrationHref}>{t("registration")}</Link></Button><Button asChild variant="outline"><Link href="/teams">{t("openTeams")}</Link></Button></div></div> : <form onSubmit={event => void bind(event)} className="space-y-5 rounded-2xl border p-5 sm:p-6"><div className="space-y-2"><label htmlFor={teamSelect} className="text-sm font-medium">{t("team")}</label><select id={teamSelect} className={selectClass} value={teamId} disabled={busy} onChange={event => { setTeamId(event.target.value); setListingId(""); setConsent(false); setError(""); }}>{mine.entries.map(entry => <option key={entry.id} value={entry.id}>{entry.teamName}</option>)}</select></div>
       {team?.wall ? <div role="status" className="space-y-4 rounded-xl border border-primary/25 bg-primary/5 p-5"><div className="flex gap-3"><CheckCircle2 className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" /><div><h2 className="font-semibold">{t("boundTitle")}</h2><p className="mt-2 break-words text-sm">{team.wall.title}</p><p className="mt-2 text-sm leading-7 text-muted-foreground">{t(team.wall.published ? "boundBody" : "boundUnpublished")}</p></div></div><div className="flex flex-wrap gap-2"><Button asChild><Link href={`/competitions/agrihackathon/submissions?teamCompetitionId=${encodeURIComponent(team.id)}`}>{t("continueSubmission")}<ArrowRight aria-hidden="true" /></Link></Button><Button asChild variant="outline"><Link href={boundOffer ? `/explore/member-${boundOffer.slug}` : WALL}>{t(boundOffer ? "details" : "backWall")}</Link></Button></div>{boundOffer && <div className="border-t pt-4"><p className="mb-3 text-sm leading-7 text-muted-foreground">{t("submissionWallSync")}</p><Button type="submit" variant="outline" disabled={busy || uncertain}>{t(busy ? "syncingProject" : "syncProject")}</Button></div>}</div> : <>

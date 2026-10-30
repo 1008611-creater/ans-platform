@@ -1,7 +1,19 @@
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { AgriContestantFlowBar } from "@/components/competitions/agri-contestant-flow-bar";
 import { AgriWallSubmit } from "@/components/competitions/agri-wall";
-import { Button } from "@/components/ui/button";
 export const dynamic = "force-dynamic";
 export async function generateMetadata() { const t = await getTranslations("agriWall"); return { title: t("submitTitle") }; }
-export default async function AgriWallSubmitPage() { const t = await getTranslations("agriWall"), nav = await getTranslations("product.agrihackathon"); return <div className="ans-product-shell"><div className="ans-product-container ans-page-content max-w-4xl space-y-6"><div className="flex flex-wrap items-center gap-2"><Button asChild variant="ghost"><Link href="/explore?category=competition&subcategory=agri-wall">{t("backWall")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon">{nav("crossNav.hub")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/workspace/credits">{nav("crossNav.credits")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/submissions">{nav("crossNav.submissions")}</Link></Button><Button asChild variant="outline" size="sm"><Link href="/competitions/agrihackathon/tasks">{nav("crossNav.tasks")}</Link></Button></div><header><p className="mb-3 text-sm font-medium text-primary">{t("eyebrow")}</p><h1 className="ans-page-title">{t("submitTitle")}</h1><p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">{t("submitDescription")}</p></header><AgriWallSubmit /></div></div>; }
+export default async function AgriWallSubmitPage() {
+  const t = await getTranslations("agriWall"), nav = await getTranslations("product.agrihackathon");
+  return <div className="ans-product-shell">
+    <div className="ans-product-container ans-page-content max-w-4xl space-y-5">
+      <AgriContestantFlowBar current="bindWall" backHref="/explore?category=competition&subcategory=agri-wall" backLabel={t("backWall")} nav={nav} />
+      <header className="space-y-1.5">
+        <p className="text-xs font-semibold uppercase tracking-widest text-primary">{t("eyebrow")}</p>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t("submitTitle")}</h1>
+        <p className="max-w-2xl text-sm text-muted-foreground">{t("submitDescription")}</p>
+      </header>
+      <AgriWallSubmit />
+    </div>
+  </div>;
+}
