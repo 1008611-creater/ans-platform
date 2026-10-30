@@ -27,7 +27,12 @@ export async function ProjectCard({ project, compact = false }: { project: Catal
   </>;
   return <article className={compact ? `${styles.card} group flex flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-card transition hover:border-primary/50` : "ans-project-card group flex flex-col justify-between"}>
     {isExternal ? <a href={directHref} target="_blank" rel="noopener noreferrer" className={compact ? styles.link : "ans-card-link"}>{body}</a> : <Link href={directHref} prefetch={false} className={compact ? styles.link : "ans-card-link"}>{body}</Link>}
-    {hasFooterBar && <div className="flex items-center justify-end border-t border-border/40 bg-muted/15 px-3.5 py-1.5 text-[11px]">
+    {hasFooterBar && <div className="flex items-center justify-between gap-2 border-t border-border/40 bg-muted/15 px-3.5 py-1.5 text-[11px]">
+      {project.memberHref && project.sourceUrl && /^https?:\/\//.test(project.sourceUrl) ? (
+        <a href={project.sourceUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-emerald-600 hover:underline dark:text-emerald-400">
+          {isEn ? "Open Link / Repo ↗" : "直达体验 / 源码 ↗"}
+        </a>
+      ) : <span />}
       <Link href={`/explore/${project.slug}`} prefetch={false} className="text-foreground/80 hover:text-foreground hover:underline">{isEn ? "Guide & Info →" : "项目指南 →"}</Link>
     </div>}
   </article>;

@@ -1,0 +1,21 @@
+{
+  "appId": "fun.cauai.ans",
+  "appName": "ANS",
+  "webDir": "public",
+  "server": {
+    "url": "https://ans.cauai.fun/explore",
+    "cleartext": false,
+    "allowNavigation": [
+      "ans.cauai.fun",
+      "*.cauai.fun"
+    ]
+  },
+  "android": {
+    "backgroundColor": "#0A1633",
+    "allowMixedContent": false
+  },
+  "ios": {
+    "backgroundColor": "#0A1633",
+    "contentInset": "always"
+  }
+}

@@ -28,6 +28,8 @@ export async function MarketOfferCard({ offer, owner = false, headingLevel = 2 }
   const status = offer.submittedAt && !offer.reviewedAt ? "PENDING" : offer.status;
   const coverSrc = listing.coverUrl || FALLBACK_COVERS[listing.category] || "/catalog/gitglow-v1/magic-resume.webp";
   const deliverableHint = listing.deliverables.length ? listing.deliverables.slice(0, 3).join(" · ") : undefined;
+  const hasLiveDemo = Boolean(listing.usageUrl || listing.previewUrl);
+  const hasRepo = Boolean(listing.githubUrl);
   return <Link href={owner ? "/market/creator/" + offer.id : marketProductPath(offer)} className="ans-project-card group flex min-w-0 flex-col overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md">
     <div className="relative aspect-video overflow-hidden border-b bg-slate-950/90">
       <Image unoptimized src={coverSrc} width={960} height={540} alt={tp("projectCover", { title: listing.title })} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"/>
@@ -36,15 +38,22 @@ export async function MarketOfferCard({ offer, owner = false, headingLevel = 2 }
       <div className="mb-1.5 flex items-center justify-between gap-2 text-[11px] font-medium text-muted-foreground">
         <span>{p("categories." + listing.category)} · {p("children." + listing.subcategory)}</span>
         {listing.execution ? (
-          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">在线工作台即跑</span>
+          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">🚀 在线工作台即跑</span>
         ) : purchasable ? (
-          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">{points === 0 ? "开源展示" : "支付即秒发"}</span>
+          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">{points === 0 ? (hasLiveDemo ? "🔗 在线体验直达" : hasRepo ? "📦 开源仓库" : "🌐 开源展示") : "⚡ 支付即秒发"}</span>
         ) : (
           <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">暂未开放购买</span>
         )}
       </div>
       <Heading className="line-clamp-1 break-words text-base font-semibold group-hover:text-primary sm:text-lg">{listing.title}</Heading>
-      <p title={deliverableHint ? `${listing.summary}（交付：${deliverableHint}）` : listing.summary} className="mt-1.5 mb-3 line-clamp-2 break-words text-xs leading-5 text-muted-foreground">{listing.summary}</p>
+      <p title={deliverableHint ? `${listing.summary}（交付：${deliverableHint}）` : listing.summary} className="mt-1.5 mb-2.5 line-clamp-2 break-words text-xs leading-5 text-muted-foreground">{listing.summary}</p>
+      {listing.deliverables.length > 0 && (
+        <div className="mb-3 flex flex-wrap gap-1">
+          {listing.deliverables.slice(0, 2).map((item, idx) => (
+            <span key={idx} className="max-w-[160px] truncate rounded bg-muted/70 px-1.5 py-0.5 text-[10px] text-muted-foreground">📦 {item}</span>
+          ))}
+        </div>
+      )}
       <div className="mt-auto flex items-center justify-between gap-3 border-t pt-3.5">
         <div>
           {listing.execution ? (
@@ -60,7 +69,7 @@ export async function MarketOfferCard({ offer, owner = false, headingLevel = 2 }
           )}
         </div>
         <span className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold ${purchasable ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
-          {owner ? t("listingStatus." + status) : listing.execution ? `${w("runnable")} →` : purchasable ? (points === 0 ? "查看样板 →" : "立即购买 →") : "查看大纲 →"}
+          {owner ? t("listingStatus." + status) : listing.execution ? `${w("runnable")} →` : purchasable ? (points === 0 ? (hasLiveDemo ? "在线体验 ↗" : hasRepo ? "查看源码 ↗" : "查看详情 →") : "立即购买 →") : "查看大纲 →"}
         </span>
       </div>
     </div>

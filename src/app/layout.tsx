@@ -39,8 +39,17 @@ export async function generateMetadata(): Promise<Metadata> {
     shortcut: "/favicon/favicon.svg",
   },
   manifest: "/favicon/site.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "ANS",
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   other: {
     "apple-mobile-web-app-title": "ANS",
+    "mobile-web-app-capable": "yes",
     "theme-color": "#0b0b0f",
   },
   openGraph: {

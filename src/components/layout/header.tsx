@@ -7,7 +7,7 @@ import { WorkspaceLink as Link, useWorkspaceNavigation } from "@/components/prov
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Menu,
   Plus,
@@ -19,6 +19,7 @@ import {
   Copy,
   Heart,
   Coins,
+  Smartphone,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ import { setLocale } from "@/lib/i18n/client";
 import { useBranding } from "@/components/providers/branding-provider";
 import { analyticsAuth, analyticsSettings } from "@/lib/analytics";
 import { PRIMARY_NAVIGATION, isPrimaryNavigationActive } from "@/domain/navigation/primary";
+import type { BeforeInstallPromptEvent } from "@/components/mobile/mobile-app-installer";
 
 const languages = [
   { code: "zh", name: "中文" },
@@ -62,6 +64,7 @@ interface HeaderProps {
 
 export function Header({ embedded = false, authProvider = "credentials", allowRegistration = true }: HeaderProps) {
   const { data: session, status: sessionStatus } = useSession();
+  const locale = useLocale();
   const t = useTranslations();
   const hubText = useTranslations("hubs");
   const { theme } = useTheme();
@@ -75,6 +78,19 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoutState, setLogoutState] = useState<"idle" | "pending" | "confirming">("idle");
   const logoutInFlight = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+    const captureInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      window.__ansInstallPrompt = event as BeforeInstallPromptEvent;
+    };
+    window.addEventListener("beforeinstallprompt", captureInstallPrompt);
+    return () => window.removeEventListener("beforeinstallprompt", captureInstallPrompt);
+  }, []);
 
   const handleLogout = useCallback(async function logout() {
     if (logoutInFlight.current) return;
@@ -168,6 +184,17 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
               <nav aria-label={t("a11y.mobileNav")} className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
                 <div className="space-y-1">{productLinks.map(({ id, href, label }) => <Link key={href} href={href} aria-current={isPrimaryNavigationActive(id, pathname) ? "page" : undefined} onClick={() => setMobileMenuOpen(false)} className="flex min-h-11 items-center rounded-md px-3 py-3 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:text-foreground focus-visible:outline-2 focus-visible:outline-primary">{label}</Link>)}</div>
               </nav>
+              <div className="border-t p-3">
+                <Link
+                  href="/app"
+                  aria-current={pathname === "/app" ? "page" : undefined}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex min-h-11 items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.08] px-3 py-2.5 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/15 dark:text-emerald-300"
+                >
+                  <Smartphone className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>{locale === "en" ? "Install ANS Mobile App" : "安装 ANS 手机版 App"}</span>
+                </Link>
+              </div>
             </div>
           </SheetContent>
         </Sheet>

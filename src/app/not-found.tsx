@@ -18,7 +18,8 @@ export default async function NotFound() {
             alt="ANS mascot"
             width={128}
             height={128}
-            className="h-32 w-32 object-contain"
+            unoptimized
+            className="h-32 w-32 object-contain [image-rendering:pixelated]"
             priority
           />
         </div>

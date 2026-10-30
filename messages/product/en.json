@@ -217,7 +217,9 @@
       "cancelled": "The task was cancelled. You can keep preparing your details and start another generation when ready.",
       "archived": "This project is archived. You can review saved previews and versions. Return to the project page to manage its archived state before continuing."
     },
-    "openStage": "Open the dino close-up stage"
+    "openStage": "Open the dino close-up stage",
+    "to2d": "Switch to Pixel style",
+    "to3d": "Switch to True 3D"
   },
   "categories": {
     "learning": "Learning",
