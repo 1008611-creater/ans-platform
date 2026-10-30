@@ -37,10 +37,10 @@ const OFFICIAL_WORKFLOW_CARDS = [
   },
   {
     slug: "easel",
-    title: "Easel 视觉海报与提示词工坊",
-    summary: "结构化生成商业海报、科研配图与 16:9 封面视觉提示词方案。",
+    title: "无限画布 · 官方 AIGC 创作者平台",
+    summary: "直连拍我AI (PixVerse V6/C1/Kling 4.0) 与火山 Seedance 2.5 视频算力池，统一共享 ANS 积分。",
     cover: "/catalog/ans-pro-v1/astro-starlight.webp",
-    badge: "🚀 在线即跑 · 视觉工坊",
+    badge: "🎬 拍我+火山 · 无限画布",
     href: "/workflows/easel",
   },
 ] as const;
