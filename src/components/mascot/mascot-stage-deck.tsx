@@ -3,13 +3,19 @@
 import { useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import {
+  dispatchGrokBotCommand,
   getFormSnapshot,
+  getGrokShapeSnapshot,
   getPixelStateSnapshot,
+  getRenderStyle2dSnapshot,
   subscribeMascotStore,
   writeForm,
+  writeGrokShape,
   writePixelState,
+  writeRenderStyle2d,
   type DinoState,
 } from "@/lib/mascot/client-store";
+import { GROK_SHAPE_META } from "@/lib/mascot/grokbot-dino-2d";
 import { dispatchDinoInteract } from "./companion-sanctuary-presets";
 
 const PIXEL_DECK_STATES: readonly { id: DinoState; icon: string }[] = [
@@ -38,6 +44,8 @@ export function MascotStageDeck() {
   const t = useTranslations("product.mascot");
   const form = useSyncExternalStore(subscribeMascotStore, getFormSnapshot, () => "3d" as const);
   const pixelState = useSyncExternalStore(subscribeMascotStore, getPixelStateSnapshot, () => "idle" as const);
+  const grokShape = useSyncExternalStore(subscribeMascotStore, getGrokShapeSnapshot, () => "tutulong" as const);
+  const renderStyle = useSyncExternalStore(subscribeMascotStore, getRenderStyle2dSnapshot, () => "grok" as const);
   const [spinning, setSpinning] = useState(false);
 
   const selectForm = (nextForm: "2d" | "3d") => {
@@ -106,41 +114,107 @@ export function MascotStageDeck() {
         <span className="ans-mascot-stage-deck-title">
           {t(form === "2d" ? "deck.title2d" : "deck.title3d")}
         </span>
-        <div className="ans-mascot-form-segmented" role="group" aria-label={t(form === "2d" ? "to3d" : "to2d")}>
-          <button
-            type="button"
-            data-testid="mascot-deck-form-2d"
-            aria-pressed={form === "2d"}
-            onClick={() => selectForm("2d")}
-          >
-            {t("deck.formPixel")}
-          </button>
-          <button
-            type="button"
-            data-testid="mascot-deck-form-3d"
-            aria-pressed={form === "3d"}
-            onClick={() => selectForm("3d")}
-          >
-            {t("deck.form3d")}
-          </button>
+        <div className="ans-mascot-stage-deck-actions">
+          {form === "2d" ? (
+            <div className="ans-mascot-form-segmented ans-mascot-substyle-segmented" role="group" aria-label="2D 渲染引擎切换">
+              <button
+                type="button"
+                data-testid="mascot-2d-style-grok"
+                aria-pressed={renderStyle === "grok"}
+                onClick={() => writeRenderStyle2d("grok")}
+              >
+                {t("deck.styleGrok")}
+              </button>
+              <button
+                type="button"
+                data-testid="mascot-2d-style-pixel"
+                aria-pressed={renderStyle === "pixel"}
+                onClick={() => writeRenderStyle2d("pixel")}
+              >
+                {t("deck.stylePixel")}
+              </button>
+            </div>
+          ) : null}
+          <div className="ans-mascot-form-segmented" role="group" aria-label={t(form === "2d" ? "to3d" : "to2d")}>
+            <button
+              type="button"
+              data-testid="mascot-deck-form-2d"
+              aria-pressed={form === "2d"}
+              onClick={() => selectForm("2d")}
+            >
+              {t("deck.formPixel")}
+            </button>
+            <button
+              type="button"
+              data-testid="mascot-deck-form-3d"
+              aria-pressed={form === "3d"}
+              onClick={() => selectForm("3d")}
+            >
+              {t("deck.form3d")}
+            </button>
+          </div>
         </div>
       </div>
 
       {form === "2d" ? (
-        <div className="ans-mascot-stage-chips" data-testid="mascot-pixel-chips">
-          {PIXEL_DECK_STATES.map(item => (
-            <button
-              key={item.id}
-              type="button"
-              data-testid={`mascot-pixel-state-${item.id}`}
-              aria-pressed={pixelState === item.id}
-              onClick={() => writePixelState(item.id)}
-            >
-              <span aria-hidden="true">{item.icon}</span>
-              <span>{t(`deck.${item.id}`)}</span>
-            </button>
-          ))}
-        </div>
+        <>
+          <div className="ans-mascot-stage-chips" data-testid="mascot-pixel-chips">
+            {PIXEL_DECK_STATES.map(item => (
+              <button
+                key={item.id}
+                type="button"
+                data-testid={`mascot-pixel-state-${item.id}`}
+                aria-pressed={pixelState === item.id}
+                onClick={() => writePixelState(item.id)}
+              >
+                <span aria-hidden="true">{item.icon}</span>
+                <span>{t(`deck.${item.id}`)}</span>
+              </button>
+            ))}
+          </div>
+          {renderStyle === "grok" ? (
+            <div className="ans-mascot-stage-chips ans-mascot-grok-bar" data-testid="mascot-grok-bar">
+              <button
+                type="button"
+                data-testid="mascot-grok-poke"
+                onClick={() => dispatchGrokBotCommand({ kind: "poke" })}
+              >
+                <span aria-hidden="true">👆</span>
+                <span>{t("deck.grokPoke")}</span>
+              </button>
+              <button
+                type="button"
+                data-testid="mascot-grok-wink"
+                onClick={() => dispatchGrokBotCommand({ kind: "wink" })}
+              >
+                <span aria-hidden="true">😉</span>
+                <span>{t("deck.grokWink")}</span>
+              </button>
+              <button
+                type="button"
+                data-testid="mascot-grok-spin"
+                onClick={() => dispatchGrokBotCommand({ kind: "spin" })}
+              >
+                <span aria-hidden="true">🔄</span>
+                <span>{t("deck.grokSpin")}</span>
+              </button>
+              <span className="ans-mascot-grok-divider" aria-hidden="true" />
+              {GROK_SHAPE_META.map(shape => (
+                <button
+                  key={shape.id}
+                  type="button"
+                  data-testid={`mascot-grok-shape-${shape.id}`}
+                  aria-pressed={grokShape === shape.id}
+                  onClick={() => writeGrokShape(shape.id)}
+                  title={shape.labelEn}
+                >
+                  <span aria-hidden="true">{shape.icon}</span>
+                  <span>{shape.labelZh}</span>
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </>
       ) : (
         <div className="ans-mascot-stage-chips" data-testid="mascot-3d-chips">
           {THREE_D_POSES.map(item => (
