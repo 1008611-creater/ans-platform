@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { VoiceOffer } from "@/contracts/voice";
-import { loadSanctuaryState, type DinoPhase } from "@/domain/mascot/sanctuary";
+import { loadSanctuaryState } from "@/domain/mascot/sanctuary";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { getFormSnapshot, subscribeMascotStore } from "@/lib/mascot/client-store";
 import { useSitePreferences } from "@/lib/site-preferences";

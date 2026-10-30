@@ -17,17 +17,16 @@ import {
 import {
   SANCTUARY_EVENT_NAME,
   loadSanctuaryState,
-  type DinoPhase,
 } from "@/domain/mascot/sanctuary";
 
 interface PixelCompanionStageProps {
-  phase: DinoPhase;
+  phase: string;
   open: boolean;
 }
 
 type BounceKind = "none" | "hop" | "squash" | "shake" | "spin";
 
-function phaseToPixelState(phase: DinoPhase): DinoState | null {
+function phaseToPixelState(phase: string): DinoState | null {
   switch (phase) {
     case "working":
     case "submitting":
