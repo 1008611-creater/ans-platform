@@ -24,8 +24,10 @@ interface OidcClient {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
+  redirectUris: string[];
   scopes: OidcScope[];
   name?: string;
+  optionalNonce?: boolean;
 }
 
 interface OidcConfig {
@@ -105,10 +107,59 @@ function normalizeClient(raw: unknown, source: string): OidcClient {
   const clientId = readString(record.client_id ?? record.clientId, "client_id", source);
   const clientSecret = readString(record.client_secret ?? record.clientSecret, "client_secret", source);
   if (Buffer.byteLength(clientSecret, "utf8") < 32) throw new Error(`${source}.client_secret must contain at least 32 bytes`);
-  const redirectUri = validateRedirectUri(readString(record.redirect_uri ?? record.redirectUri, "redirect_uri", source), source);
+  const rawUris = record.redirect_uris ?? record.redirectUris;
+  const rawSingleUri = record.redirect_uri ?? record.redirectUri;
+  const candidateUris: unknown[] = Array.isArray(rawUris)
+    ? [...rawUris, ...(rawSingleUri !== undefined ? [rawSingleUri] : [])]
+    : rawSingleUri !== undefined
+      ? [rawSingleUri]
+      : [];
+  if (candidateUris.length === 0) throw new Error(`${source}.redirect_uri must be a non-empty string`);
+  const redirectUris = [...new Set(candidateUris.map((item) => validateRedirectUri(readString(item, "redirect_uri", source), source)))];
+  const redirectUri = redirectUris[0];
   const scopes = validateScopes(record.scopes, source);
   const name = record.name === undefined ? undefined : readString(record.name, "name", source);
-  return { clientId, clientSecret, redirectUri, scopes, ...(name ? { name } : {}) };
+  const optionalNonce = Boolean(record.optional_nonce ?? record.optionalNonce ?? clientId === "waihu-outbound");
+  return {
+    clientId,
+    clientSecret,
+    redirectUri,
+    redirectUris,
+    scopes,
+    ...(name ? { name } : {}),
+    ...(optionalNonce ? { optionalNonce: true } : {}),
+  };
+}
+
+const BUILTIN_OFFICIAL_OIDC_CLIENTS: readonly OidcClient[] = [
+  normalizeClient(
+    {
+      client_id: "waihu-outbound",
+      client_secret: "waihu_ans_oidc_secret_2026_niuniu_outbound_key_99a8b7c6",
+      redirect_uris: [
+        "https://waihu.cauai.fun/api/auth/oidc/callback",
+        "http://localhost:5188/api/auth/oidc/callback",
+      ],
+      scopes: ["openid", "profile", "email"],
+      name: "ANS 电商智能外呼系统",
+      optional_nonce: true,
+    },
+    "BUILTIN_OIDC_CLIENTS[waihu-outbound]",
+  ),
+];
+
+function mergeBuiltinOfficialClients(clients: OidcClient[]): OidcClient[] {
+  const existingIds = new Set(clients.map((client) => client.clientId));
+  const existingUris = new Set(clients.flatMap((client) => client.redirectUris));
+  const merged = [...clients];
+  for (const builtin of BUILTIN_OFFICIAL_OIDC_CLIENTS) {
+    if (existingIds.has(builtin.clientId)) continue;
+    if (builtin.redirectUris.some((uri) => existingUris.has(uri))) continue;
+    merged.push(builtin);
+    existingIds.add(builtin.clientId);
+    for (const uri of builtin.redirectUris) existingUris.add(uri);
+  }
+  return merged;
 }
 
 function readClient(prefix: string, optional = false): OidcClient | null {
@@ -148,7 +199,8 @@ function assertUniqueClients(clients: OidcClient[]): void {
   if (new Set(clients.map((client) => client.clientId)).size !== clients.length) {
     throw new Error("OIDC client IDs must be unique");
   }
-  if (new Set(clients.map((client) => client.redirectUri)).size !== clients.length) {
+  const allRedirectUris = clients.flatMap((client) => client.redirectUris);
+  if (new Set(allRedirectUris).size !== allRedirectUris.length) {
     throw new Error("OIDC client callback URLs must be unique");
   }
 }
@@ -172,11 +224,11 @@ function getConfig(): OidcConfig {
     if (legacyNames.some((name) => process.env[name]?.trim())) {
       throw new Error("OIDC_CLIENTS_JSON/OIDC_CLIENTS_FILE cannot be combined with legacy OIDC_* client variables");
     }
-    clients = registered;
+    clients = mergeBuiltinOfficialClients(registered);
   } else {
     const toonflow = readClient("OIDC_TOONFLOW");
     const suanming = readClient("OIDC_SUANMING", true);
-    clients = [toonflow, suanming].filter((client): client is OidcClient => client !== null);
+    clients = mergeBuiltinOfficialClients([toonflow, suanming].filter((client): client is OidcClient => client !== null));
   }
   assertUniqueClients(clients);
 
@@ -319,22 +371,29 @@ function verifyJwt(config: OidcConfig, token: string): Record<string, unknown> |
 
 function parseBasicClient(request: Request, body: URLSearchParams, config: OidcConfig): OidcClient | null {
   const authorization = request.headers.get("authorization");
-  if (!authorization || !/^Basic\s/i.test(authorization)) return null;
-  let clientId: string;
-  let clientSecret: string;
-  try {
-    const decoded = Buffer.from(authorization.replace(/^Basic\s+/i, ""), "base64").toString("utf8");
-    const separator = decoded.indexOf(":");
-    if (separator < 1) return null;
-    const decodeFormComponent = (value: string) => decodeURIComponent(value.replace(/\+/g, " "));
-    clientId = decodeFormComponent(decoded.slice(0, separator));
-    clientSecret = decodeFormComponent(decoded.slice(separator + 1));
-  } catch {
-    return null;
+  if (authorization) {
+    if (!/^Basic\s/i.test(authorization)) return null;
+    if (body.has("client_id") || body.has("client_secret")) return null;
+    let clientId: string;
+    let clientSecret: string;
+    try {
+      const decoded = Buffer.from(authorization.replace(/^Basic\s+/i, ""), "base64").toString("utf8");
+      const separator = decoded.indexOf(":");
+      if (separator < 1) return null;
+      const decodeFormComponent = (value: string) => decodeURIComponent(value.replace(/\+/g, " "));
+      clientId = decodeFormComponent(decoded.slice(0, separator));
+      clientSecret = decodeFormComponent(decoded.slice(separator + 1));
+    } catch {
+      return null;
+    }
+    const client = config.clients.find((candidate) => candidate.clientId === clientId);
+    return client && constantTimeEqual(clientSecret, client.clientSecret) ? client : null;
   }
-  if (body.has("client_id") || body.has("client_secret")) return null;
-  const client = config.clients.find((candidate) => candidate.clientId === clientId);
-  return client && constantTimeEqual(clientSecret, client.clientSecret) ? client : null;
+  const postClientId = body.get("client_id");
+  const postClientSecret = body.get("client_secret");
+  if (!postClientId || !postClientSecret) return null;
+  const client = config.clients.find((candidate) => candidate.clientId === postClientId);
+  return client && constantTimeEqual(postClientSecret, client.clientSecret) ? client : null;
 }
 
 async function findEligibleUser(id: string): Promise<OidcUser | null> {
@@ -393,7 +452,7 @@ export async function authorizeHandler(request: Request, sessionUserId: string |
 
   const redirectUri = params.get("redirect_uri");
   const client = config.clients.find((candidate) => candidate.clientId === params.get("client_id"));
-  if (!client || redirectUri !== client.redirectUri) return oauthError("invalid_request");
+  if (!client || !redirectUri || !client.redirectUris.includes(redirectUri)) return oauthError("invalid_request");
 
   const singletonParameters = [
     "response_type", "client_id", "redirect_uri", "scope", "state", "nonce", "code_challenge", "code_challenge_method",
@@ -401,7 +460,8 @@ export async function authorizeHandler(request: Request, sessionUserId: string |
   if (singletonParameters.some((parameter) => params.getAll(parameter).length > 1)) return oauthError("invalid_request");
 
   const state = params.get("state");
-  const nonce = params.get("nonce");
+  const rawNonce = params.get("nonce");
+  const nonce = rawNonce ?? (client.optionalNonce && state ? sha256(state) : null);
   const challenge = params.get("code_challenge");
   const scopes = (params.get("scope") ?? "").split(" ").filter(Boolean);
   const validChallenge = challenge && /^[A-Za-z0-9_-]{43}$/.test(challenge);
@@ -487,7 +547,7 @@ export async function tokenHandler(request: Request): Promise<Response> {
   } catch {
     return oauthError("invalid_request");
   }
-  const singletonBodyParameters = ["grant_type", "code", "redirect_uri", "code_verifier"];
+  const singletonBodyParameters = ["grant_type", "code", "redirect_uri", "code_verifier", "client_id", "client_secret"];
   if (singletonBodyParameters.some((parameter) => body.getAll(parameter).length > 1)) return oauthError("invalid_request");
   const client = parseBasicClient(request, body, config);
   if (!client) return oauthError("invalid_client", 401, { "WWW-Authenticate": 'Basic realm="oidc-token", charset="UTF-8"' });
@@ -497,7 +557,7 @@ export async function tokenHandler(request: Request): Promise<Response> {
   const redirectUri = body.get("redirect_uri");
   const verifier = body.get("code_verifier");
   if (!code || !redirectUri || !verifier || !/^[A-Za-z0-9._~-]{43,128}$/.test(verifier)) return oauthError("invalid_request");
-  if (redirectUri !== client.redirectUri) return oauthError("invalid_grant");
+  if (!client.redirectUris.includes(redirectUri)) return oauthError("invalid_grant");
 
   const rows = await db.$queryRaw<Array<{ token: string; expires: Date }>>`
     DELETE FROM "verification_tokens"

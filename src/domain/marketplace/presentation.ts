@@ -2,7 +2,9 @@ import type { MarketOrderAction, MarketOrderStatus } from "@/contracts/marketpla
 import { nextOrderStatus } from "./order";
 
 // Official static resource listings are publicly listed/sold only once their delivery matches the listing.
-export const VERIFIED_DELIVERABLE_SLUGS: ReadonlySet<string> = new Set<string>([]);
+export const VERIFIED_DELIVERABLE_SLUGS: ReadonlySet<string> = new Set<string>([
+  "ans-ecommerce-outbound-saas",
+]);
 
 export function isMarketOfferPurchasable(offer: {
   slug?: string;
