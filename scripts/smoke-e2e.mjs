@@ -118,7 +118,7 @@ async function runDesktop(page, { baseUrl, seed }, checks, problems) {
   await visit("/", "首页");
   await visit("/explore", "项目广场");
   await visit("/hubs", "Hub 目录", "想从哪个方向开始？");
-  await visit("/community", "社区成长");
+  await visit("/community", "社区", "农客松与竞赛");
   await visit("/competitions", "赛事活动");
   await visit("/market", "市场");
   for (const [retired, expectedDestination] of [["/prompts", "/explore"], ["/templates", "/hubs"]]) {
@@ -147,7 +147,7 @@ async function runDesktop(page, { baseUrl, seed }, checks, problems) {
     checks.push({ label: "登录", pathname: "/login", status: 200, matched: loggedIn, newProblems: 0 });
     if (!loggedIn) pageProblems.push("登录失败：提交后仍停留在 /login");
     if (loggedIn) {
-      await visit("/community", "社区成长（已登录）", "社区成长");
+      await visit("/community", "社区（已登录）", "农客松与竞赛");
       await visit("/workspace", "工作台（已登录）");
       await visit("/collection", "我的收藏", "我的收藏");
       await visit("/workflows/runs", "运行记录", "运行记录");
@@ -170,7 +170,7 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
     ["/", "移动端 首页"],
     ["/explore", "移动端 项目广场"],
     ["/hubs", "移动端 Hub 目录"],
-    ["/community", "移动端 社区成长"],
+    ["/community", "移动端 社区"],
     ["/competitions", "移动端 赛事活动"],
     ["/market", "移动端 市场"],
     ["/workflows", "移动端 旧工作流跳转"],
@@ -229,10 +229,11 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
     drawerHrefs = await page.evaluate(() =>
       [...document.querySelectorAll("[role=dialog] a")].map(a => new URL(a.href).pathname));
   }
-  const reachable = JSON.stringify(drawerHrefs) === JSON.stringify(PRIMARY_PATHS);
+  // 抽屉可以有附加入口（如 /app），但核心入口必须全部可达。
+  const reachable = PRIMARY_PATHS.every(path => drawerHrefs.includes(path));
   checks.push({ label: "移动端 抽屉菜单可达核心入口", pathname: "/", status: 200, matched: opened && reachable, newProblems: 0 });
   if (!opened) pageProblems.push("移动端未找到抽屉菜单触发按钮");
-  else if (!reachable) pageProblems.push(`移动端抽屉菜单缺少核心入口（实际：${drawerHrefs.join(",") || "无"}）`);
+  else if (!reachable) pageProblems.push(`移动端抽屉菜单缺少核心入口（缺少：${PRIMARY_PATHS.filter(path => !drawerHrefs.includes(path)).join(",")}；实际：${drawerHrefs.join(",") || "无"}）`);
 
   problems.push(...pageProblems);
 }

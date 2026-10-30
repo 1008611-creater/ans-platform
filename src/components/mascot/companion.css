@@ -784,7 +784,7 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
   background-position: 0% 0%;
   image-rendering: pixelated;
   pointer-events: none;
-  animation: ans-dino-pixel-steps 4s steps(5) infinite;
+  animation: ans-dino-pixel-steps 4.5s steps(1, end) infinite;
 }
 .ans-companion-v2[data-open=true] .ans-dino-avatar .ans-dino-pixel {
   width: 120px;
@@ -795,8 +795,11 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
   .ans-companion-v2[data-open=true] .ans-dino-avatar .ans-dino-pixel { width: 60px; height: 60px; }
 }
 @keyframes ans-dino-pixel-steps {
-  from { background-position-x: 0%; }
-  to { background-position-x: -500%; }
+  0%, 54% { background-position: 0% 0%; }
+  55%, 60% { background-position: 25% 0%; }
+  61%, 74% { background-position: 50% 0%; }
+  75%, 88% { background-position: 75% 0%; }
+  89%, 100% { background-position: 25% 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   .ans-dino-avatar .ans-dino-pixel { animation: none; }

@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { WorkspaceLink as Link } from "@/components/providers/workspace-navigation";
 import { useLocale } from "next-intl";
 import {
+  ArrowUpRight,
   Check,
+  Coins,
   Compass,
   Copy,
   Download,
@@ -16,7 +18,6 @@ import {
   Smartphone,
   Sparkles,
   Trophy,
-  Coins,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -37,36 +38,66 @@ export type DevicePlatform = "android" | "ios" | "wechat" | "desktop";
 export function detectDeviceEnvironment(userAgent: string): {
   platform: DevicePlatform;
   inAppName: "WeChat" | "QQ" | null;
+  underlyingOs: "android" | "ios" | "desktop";
 } {
   const ua = userAgent || "";
+  const isIosUa = /iPhone|iPad|iPod/i.test(ua);
+  const isAndroidUa = /Android/i.test(ua);
+  const underlyingOs: "android" | "ios" | "desktop" = isIosUa
+    ? "ios"
+    : isAndroidUa
+      ? "android"
+      : "desktop";
+
   if (/MicroMessenger/i.test(ua)) {
-    return { platform: "wechat", inAppName: "WeChat" };
+    return { platform: "wechat", inAppName: "WeChat", underlyingOs };
   }
   if (/\bQQ\//i.test(ua)) {
-    return { platform: "wechat", inAppName: "QQ" };
+    return { platform: "wechat", inAppName: "QQ", underlyingOs };
   }
-  if (/iPhone|iPad|iPod/i.test(ua)) {
-    return { platform: "ios", inAppName: null };
+  if (isIosUa) {
+    return { platform: "ios", inAppName: null, underlyingOs: "ios" };
   }
-  if (/Android/i.test(ua)) {
-    return { platform: "android", inAppName: null };
+  if (isAndroidUa) {
+    return { platform: "android", inAppName: null, underlyingOs: "android" };
   }
-  return { platform: "desktop", inAppName: null };
+  return { platform: "desktop", inAppName: null, underlyingOs: "desktop" };
 }
 
 const APP_INSTALL_URL = "https://ans.cauai.fun/app";
+const ANDROID_DOWNLOAD_PATH = "/api/app/download?platform=android";
+const IOS_DOWNLOAD_PATH = "/api/app/download?platform=ios";
 
 export function MobileAppInstaller() {
   const locale = useLocale();
   const isEn = locale === "en";
 
   const [detectedPlatform, setDetectedPlatform] = useState<DevicePlatform>("android");
+  const [underlyingOs, setUnderlyingOs] = useState<"android" | "ios" | "desktop">("android");
   const [activeTab, setActiveTab] = useState<DevicePlatform>("android");
   const [inAppName, setInAppName] = useState<"WeChat" | "QQ" | null>(null);
   const [isStandalone, setIsStandalone] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installOutcome, setInstallOutcome] = useState<"idle" | "accepted" | "dismissed">("idle");
+  const [autoDownloadStarted, setAutoDownloadStarted] = useState<"none" | "android" | "ios">("none");
+  const [wechatOverlayOpen, setWechatOverlayOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const autoTriggeredRef = useRef(false);
+
+  const triggerInstallerDownload = (target: "android" | "ios") => {
+    const url = target === "ios" ? IOS_DOWNLOAD_PATH : ANDROID_DOWNLOAD_PATH;
+    setAutoDownloadStarted(target);
+    if (typeof window !== "undefined") {
+      // Create hidden anchor click so browsers trigger file download without breaking SPA state
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", target === "ios" ? "ANS-iOS-App.mobileconfig" : "ANS-Mobile-v1.2.apk");
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -76,7 +107,6 @@ export function MobileAppInstaller() {
     }
 
     const env = detectDeviceEnvironment(window.navigator.userAgent);
-    // Check iPadOS desktop-class Safari (MacIntel + touch points)
     const isIpadOs =
       env.platform === "desktop" &&
       /Macintosh/i.test(window.navigator.userAgent) &&
@@ -84,15 +114,36 @@ export function MobileAppInstaller() {
       window.navigator.maxTouchPoints > 1;
 
     const effectivePlatform: DevicePlatform = isIpadOs ? "ios" : env.platform;
+    const effectiveOs: "android" | "ios" | "desktop" = isIpadOs ? "ios" : env.underlyingOs;
     setDetectedPlatform(effectivePlatform);
+    setUnderlyingOs(effectiveOs);
     setActiveTab(effectivePlatform);
     setInAppName(env.inAppName);
 
     const standaloneMatch =
       (typeof window.matchMedia === "function" &&
         window.matchMedia("(display-mode: standalone)").matches) ||
-      (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+      (window.navigator as Navigator & { standalone?: boolean }).standalone === true ||
+      /ANSMobileApp/i.test(window.navigator.userAgent);
     setIsStandalone(Boolean(standaloneMatch));
+
+    let autoDownloadTimer: number | undefined;
+    if (effectivePlatform === "wechat") {
+      setWechatOverlayOpen(true);
+    } else if (!standaloneMatch && !autoTriggeredRef.current) {
+      // Auto-trigger download when opened in a real mobile browser (Android or iOS Safari)
+      if (effectivePlatform === "android") {
+        autoTriggeredRef.current = true;
+        autoDownloadTimer = window.setTimeout(() => {
+          triggerInstallerDownload("android");
+        }, 450);
+      } else if (effectivePlatform === "ios") {
+        autoTriggeredRef.current = true;
+        autoDownloadTimer = window.setTimeout(() => {
+          triggerInstallerDownload("ios");
+        }, 450);
+      }
+    }
 
     if (window.__ansInstallPrompt) {
       setDeferredPrompt(window.__ansInstallPrompt);
@@ -115,10 +166,28 @@ export function MobileAppInstaller() {
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     window.addEventListener("appinstalled", handleAppInstalled);
     return () => {
+      if (autoDownloadTimer !== undefined) {
+        window.clearTimeout(autoDownloadTimer);
+      }
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
+
+  const handlePrimaryDownloadClick = () => {
+    if (detectedPlatform === "wechat") {
+      setWechatOverlayOpen(true);
+      setActiveTab("wechat");
+      return;
+    }
+    if (detectedPlatform === "ios" || underlyingOs === "ios") {
+      triggerInstallerDownload("ios");
+      setActiveTab("ios");
+      return;
+    }
+    triggerInstallerDownload("android");
+    setActiveTab("android");
+  };
 
   const handleTriggerNativeInstall = async () => {
     if (!deferredPrompt) return;
@@ -131,7 +200,8 @@ export function MobileAppInstaller() {
         setDeferredPrompt(null);
       }
     } catch {
-      // Fallback to manual browser steps shown below
+      // Fallback to APK download
+      triggerInstallerDownload("android");
     }
   };
 
@@ -146,15 +216,51 @@ export function MobileAppInstaller() {
   };
 
   const tabs: Array<{ id: DevicePlatform; label: string }> = [
-    { id: "android", label: isEn ? "Android App" : "安卓手机 (Android)" },
+    { id: "android", label: isEn ? "Android (.apk)" : "安卓安装包 (.apk)" },
     { id: "ios", label: isEn ? "iPhone / iOS" : "苹果手机 (iPhone)" },
-    { id: "wechat", label: isEn ? "WeChat / QQ Guide" : "微信 / QQ 内打开" },
+    { id: "wechat", label: isEn ? "WeChat / QQ" : "微信 / QQ 内打开" },
     { id: "desktop", label: isEn ? "Desktop Web" : "电脑端网页版" },
   ];
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      {/* Top Hero Card */}
+      {/* Prominent WeChat / QQ Escape Banner when inside WeChat WebView */}
+      {detectedPlatform === "wechat" || wechatOverlayOpen ? (
+        <section
+          data-testid="wechat-escape-banner"
+          className="rounded-3xl border-2 border-amber-500 bg-amber-500/15 p-5 shadow-md"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-slate-950">
+                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+                {isEn
+                  ? `Opened in ${inAppName || "WeChat"} — Tap Top-Right '···' to Auto-Download`
+                  : `当前在${inAppName === "QQ" ? " QQ " : "微信"}内打开，请点右上角「···」选择「在浏览器打开」`}
+              </div>
+              <h2 className="text-lg font-bold text-foreground">
+                {isEn
+                  ? "WeChat blocks direct App downloads. Open in system browser to start automatic download!"
+                  : "微信内置浏览器拦截了安装包自动下载！只需切到系统浏览器打开，即可自动弹出下载："}
+              </h2>
+              <ol className="list-decimal space-y-1 pl-5 text-sm font-medium text-foreground/90">
+                <li>
+                  {isEn
+                    ? "Tap the '···' menu button at the top-right corner of WeChat."
+                    : "点击屏幕右上角的「···」三个点按钮；"}
+                </li>
+                <li>
+                  {isEn
+                    ? "Tap 'Open in Browser' (Safari on iPhone, System Browser on Android) — the App installer will download automatically!"
+                    : "选择「在默认浏览器中打开」（安卓跳浏览器后自动下载 .apk 安装包；苹果跳 Safari 后自动弹出桌面安装描述文件）。"}
+                </li>
+              </ol>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Top Hero Card with Direct Installer Download Buttons */}
       <section className="rounded-3xl border border-emerald-500/25 bg-gradient-to-br from-emerald-500/[0.08] via-background to-background p-5 sm:p-7">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-4">
@@ -190,45 +296,95 @@ export function MobileAppInstaller() {
               </h1>
               <p className="text-sm text-muted-foreground">
                 {isEn
-                  ? "Install ANS to your phone home screen for full-screen access to AgriHackathon, Project Square, 3D Dino Agent, and Compute Center. On PC, use the web workspace directly."
-                  : "将 ANS 安装到手机桌面，开启无浏览器地址栏的全屏体验，随时查赛题、逛项目广场、领算力积分；电脑端无需装软件，直接使用网页工作台。"}
+                  ? "Download the ANS Android APK or iPhone WebClip installer for full-screen mobile access. On PC, use the web workspace directly."
+                  : "手机浏览器打开本页即可自动下载安装包（安卓 .apk 独立客户端 / 苹果 iOS 桌面描述文件）；电脑端无需安装，直接使用网页工作台。"}
               </p>
             </div>
           </div>
 
-          <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col sm:items-end">
-            {deferredPrompt && !isStandalone ? (
-              <Button
-                size="lg"
-                onClick={() => void handleTriggerNativeInstall()}
-                data-testid="native-pwa-install-btn"
-                className="w-full bg-emerald-600 font-semibold text-white hover:bg-emerald-500 sm:w-auto"
-              >
-                <Download className="mr-2 h-4 w-4" aria-hidden="true" />
-                {isEn ? "Install ANS App Now" : "一键安装 ANS 手机端 App"}
-              </Button>
-            ) : null}
+          <div className="flex shrink-0 flex-col gap-2 sm:items-end">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => void handleCopyUrl()}
-              data-testid="copy-app-url-btn"
-              className="w-full sm:w-auto"
+              size="lg"
+              onClick={handlePrimaryDownloadClick}
+              data-testid="direct-download-installer-btn"
+              className="w-full bg-emerald-600 font-semibold text-white shadow-sm hover:bg-emerald-500 sm:w-auto"
             >
-              {copied ? (
-                <>
-                  <Check className="mr-1.5 h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
-                  {isEn ? "Copied Link" : "已复制安装链接"}
-                </>
-              ) : (
-                <>
-                  <Copy className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-                  {isEn ? "Copy App Install Link" : "复制手机安装链接"}
-                </>
-              )}
+              <Download className="mr-2 h-4 w-4" aria-hidden="true" />
+              {underlyingOs === "ios"
+                ? isEn
+                  ? "Download iPhone Installer (.mobileconfig)"
+                  : "立即下载苹果 iPhone 安装包"
+                : isEn
+                  ? "Download Android App (.apk)"
+                  : "立即下载安卓手机安装包 (.apk)"}
             </Button>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <a
+                href={ANDROID_DOWNLOAD_PATH}
+                download="ANS-Mobile-v1.2.apk"
+                data-testid="download-android-apk-link"
+                className="inline-flex h-8 items-center gap-1 rounded-lg border px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                {isEn ? "Android .apk" : "安卓 .apk 下载"}
+              </a>
+              <a
+                href={IOS_DOWNLOAD_PATH}
+                download="ANS-iOS-App.mobileconfig"
+                data-testid="download-ios-profile-link"
+                className="inline-flex h-8 items-center gap-1 rounded-lg border px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                {isEn ? "iOS Profile" : "苹果 iOS 描述文件"}
+              </a>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void handleCopyUrl()}
+                data-testid="copy-app-url-btn"
+                className="h-8 px-2.5 text-xs"
+              >
+                {copied ? (
+                  <>
+                    <Check className="mr-1 h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+                    {isEn ? "Copied" : "已复制链接"}
+                  </>
+                ) : (
+                  <>
+                    <Copy className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+                    {isEn ? "Copy Link" : "复制链接"}
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
+
+        {/* Auto-Download Feedback Banner */}
+        {autoDownloadStarted === "android" ? (
+          <div
+            role="status"
+            data-testid="auto-download-status"
+            className="mt-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-800 dark:text-emerald-200"
+          >
+            {isEn
+              ? "Downloading ANS-Mobile-v1.2.apk automatically! Check your browser download prompt to install."
+              : "已为您自动发起安卓安装包 (ANS-Mobile-v1.2.apk) 下载！请在浏览器底部弹窗中点击「下载/保存」并完成安装。若未弹出，请点击上方绿色按钮手动下载。"}
+          </div>
+        ) : null}
+
+        {autoDownloadStarted === "ios" ? (
+          <div
+            role="status"
+            data-testid="auto-download-status"
+            className="mt-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-800 dark:text-emerald-200"
+          >
+            {isEn
+              ? "Downloading iOS WebClip profile! Tap 'Allow' in the Safari popup, then open Settings -> Profile Downloaded -> Install."
+              : "已为您自动拉起苹果 iOS 桌面安装包！请在弹窗中点击「允许」，随后打开手机「设置 → 已下载描述文件 → 安装」，即可在桌面生成 ANS 独立 App 图标。"}
+          </div>
+        ) : null}
 
         {installOutcome === "accepted" ? (
           <div
@@ -328,10 +484,10 @@ export function MobileAppInstaller() {
               {detectedPlatform === "wechat"
                 ? isEn
                   ? `Detected ${inAppName || "in-app"} browser — please open in system browser first.`
-                  : `已自动识别您当前在 ${inAppName === "QQ" ? "QQ" : "微信"} 内打开，请按下方两步切换至系统浏览器安装。`
+                  : `已自动识别您当前在 ${inAppName === "QQ" ? "QQ" : "微信"} 内打开，请先切换至系统浏览器即可自动下载安装包。`
                 : isEn
                   ? "Auto-selected for your current device. You can also view steps for other devices."
-                  : "已自动匹配您当前的设备环境，也可点击切换查看其他设备安装方式。"}
+                  : "已自动匹配您当前的设备环境并触发下载，也可点击切换查看其他设备安装方式。"}
             </p>
           </div>
 
@@ -368,8 +524,8 @@ export function MobileAppInstaller() {
           <div data-testid="guide-panel-wechat" className="space-y-4">
             <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-950 dark:text-amber-200">
               {isEn
-                ? "WeChat / QQ built-in browsers restrict home-screen installation. Open this page in Safari or your system browser to install the full-screen App."
-                : "微信与 QQ 内置浏览器屏蔽了手机桌面图标安装权限。请花 3 秒切换到手机自带浏览器，即可一键生成桌面独立 App 图标。"}
+                ? "WeChat / QQ built-in browsers block .apk and .mobileconfig downloads. Open this page in Safari or your system browser to auto-download!"
+                : "微信与 QQ 内置浏览器会拦截安装包下载。请点击右上角「···」选择「在默认浏览器中打开」，进入手机浏览器后会自动开始下载安装包！"}
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-xl border bg-background/60 p-4 space-y-1.5">
@@ -382,7 +538,7 @@ export function MobileAppInstaller() {
                 <p className="text-xs text-muted-foreground">
                   {isEn
                     ? "In the popup menu, select 'Open in Browser' (Safari on iPhone, Chrome/System Browser on Android)."
-                    : "在弹出的底部菜单中，选择「在默认浏览器中打开」（iPhone 自动跳转 Safari，安卓跳转系统浏览器）。"}
+                    : "在弹出的菜单中，点击「在默认浏览器中打开」（iPhone 自动跳转 Safari，安卓跳转系统浏览器）。"}
                 </p>
               </div>
               <div className="rounded-xl border bg-background/60 p-4 space-y-1.5">
@@ -390,12 +546,12 @@ export function MobileAppInstaller() {
                   STEP 02
                 </span>
                 <h3 className="text-sm font-semibold">
-                  {isEn ? "Add ANS to Home Screen" : "一键添加到手机主屏幕"}
+                  {isEn ? "Automatic Installer Download" : "浏览器自动下载并安装"}
                 </h3>
                 <p className="text-xs text-muted-foreground">
                   {isEn
-                    ? "In your system browser, tap 'Install App' or 'Add to Home Screen' to get the standalone ANS icon."
-                    : "在系统浏览器打开后，点击本页「一键安装」或浏览器菜单「添加到主屏幕」，桌面即刻生成 ANS 图标。"}
+                    ? "Once opened in your system browser, the ANS installer (.apk for Android / .mobileconfig for iPhone) will start downloading automatically."
+                    : "跳转到手机浏览器后，页面将自动弹出 ANS 安装包下载，确认安装后桌面即刻生成 ANS 独立图标。"}
                 </p>
               </div>
             </div>
@@ -408,42 +564,52 @@ export function MobileAppInstaller() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-xl border bg-background/60 p-4 space-y-2">
                 <span className="inline-block rounded-md bg-emerald-500/15 px-2 py-0.5 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                  STEP 01
+                  方式 A · 独立安装包 (.apk)
                 </span>
                 <h3 className="text-sm font-semibold">
                   {isEn
-                    ? "One-Click Install or Open Browser Menu"
-                    : "点击「一键安装」或打开浏览器菜单"}
+                    ? "Direct APK Download (Recommended)"
+                    : "直接下载 ANS 安卓安装包 (ANS-Mobile-v1.2.apk)"}
                 </h3>
                 <p className="text-xs text-muted-foreground">
                   {isEn
-                    ? "On Chrome / Edge / system browser, tap the install button above, or tap the menu icon (≡ / ···) at the bottom or top-right."
-                    : "使用 Chrome、Edge 或手机自带浏览器访问本页，若顶部出现「一键安装 ANS 手机端 App」可直接点击；或点击浏览器底部/右上角菜单「≡ / ···」。"}
+                    ? "Tap the button below to download ANS-Mobile-v1.2.apk and install the standalone native Android package."
+                    : "安卓手机浏览器打开本页会自动下载 .apk 安装包；您也可以随时点击下方按钮直接下载安装。"}
                 </p>
-                {deferredPrompt ? (
+                <div className="flex flex-wrap gap-2 pt-1">
                   <Button
                     size="sm"
-                    onClick={() => void handleTriggerNativeInstall()}
-                    className="mt-1 bg-emerald-600 text-white hover:bg-emerald-500"
+                    onClick={() => triggerInstallerDownload("android")}
+                    className="bg-emerald-600 text-white hover:bg-emerald-500"
                   >
                     <Download className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-                    {isEn ? "Install to Home Screen" : "立即弹出安装窗口"}
+                    {isEn ? "Download .APK Now" : "下载安卓 .apk 安装包"}
                   </Button>
-                ) : null}
+                  {deferredPrompt ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      data-testid="native-pwa-install-btn"
+                      onClick={() => void handleTriggerNativeInstall()}
+                    >
+                      {isEn ? "1-Click Add to Home Screen" : "免安装包一键加到桌面"}
+                    </Button>
+                  ) : null}
+                </div>
               </div>
               <div className="rounded-xl border bg-background/60 p-4 space-y-2">
                 <span className="inline-block rounded-md bg-emerald-500/15 px-2 py-0.5 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                  STEP 02
+                  方式 B · 浏览器添加到桌面
                 </span>
                 <h3 className="text-sm font-semibold">
                   {isEn
-                    ? "Select 'Add to Home Screen' / 'Install App'"
-                    : "选择「添加到主屏幕」或「安装应用」"}
+                    ? "Or Select 'Add to Home Screen' in Browser"
+                    : "也可通过浏览器菜单「添加到主屏幕」"}
                 </h3>
                 <p className="text-xs text-muted-foreground">
                   {isEn
-                    ? "Confirm adding the ANS icon. Launch ANS from your home screen for a full-screen native experience."
-                    : "确认添加后，手机桌面将生成独立的 ANS 图标。从桌面点开即可全屏运行，长按图标还能直接跳进农客松主会场。"}
+                    ? "If your phone restricts third-party APK installation, tap your browser menu (≡ / ···) and select 'Add to Home Screen'."
+                    : "若手机开启了纯净模式拦截第三方 .apk，也可直接点击浏览器菜单「≡ / ···」选择「添加到主屏幕」，免安装享受同等全屏体验。"}
                 </p>
               </div>
             </div>
@@ -456,33 +622,41 @@ export function MobileAppInstaller() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-xl border bg-background/60 p-4 space-y-2">
                 <span className="inline-block rounded-md bg-emerald-500/15 px-2 py-0.5 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                  STEP 01
+                  方式 A · 自动下载描述文件
+                </span>
+                <h3 className="text-sm font-semibold">
+                  {isEn
+                    ? "Download iOS Desktop Profile (.mobileconfig)"
+                    : "下载 iOS 桌面描述文件一键生成图标"}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {isEn
+                    ? "Tap 'Allow' when Safari prompts to download the configuration profile, then go to iPhone Settings -> Profile Downloaded -> Install."
+                    : "在 Safari 中点击下方按钮并在弹窗点「允许」，随后打开手机「设置 → 已下载描述文件 → 右上角安装」，桌面即刻生成 ANS 全屏 App。"}
+                </p>
+                <Button
+                  size="sm"
+                  onClick={() => triggerInstallerDownload("ios")}
+                  className="mt-1 bg-emerald-600 text-white hover:bg-emerald-500"
+                >
+                  <Download className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                  {isEn ? "Download iOS Profile" : "下载 iPhone 描述文件安装包"}
+                </Button>
+              </div>
+              <div className="rounded-xl border bg-background/60 p-4 space-y-2">
+                <span className="inline-block rounded-md bg-emerald-500/15 px-2 py-0.5 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                  方式 B · Safari 分享添加
                 </span>
                 <h3 className="flex items-center gap-1.5 text-sm font-semibold">
                   <Share className="h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                   {isEn
-                    ? "Open in Safari & Tap the Share Button"
-                    : "在 Safari 浏览器点击底部「分享」按钮"}
+                    ? "Or Tap Safari Share -> 'Add to Home Screen'"
+                    : "或点 Safari 底部「分享 → 添加到主屏幕」"}
                 </h3>
                 <p className="text-xs text-muted-foreground">
                   {isEn
-                    ? "Use iPhone/iPad Safari to open ans.cauai.fun/app, then tap the Share icon [↑] in the bottom toolbar."
-                    : "请使用 iPhone 自带的 Safari 浏览器打开本页，点击屏幕底部正中间的「分享」图标（带向上箭头的方框）。"}
-                </p>
-              </div>
-              <div className="rounded-xl border bg-background/60 p-4 space-y-2">
-                <span className="inline-block rounded-md bg-emerald-500/15 px-2 py-0.5 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                  STEP 02
-                </span>
-                <h3 className="text-sm font-semibold">
-                  {isEn
-                    ? "Tap 'Add to Home Screen'"
-                    : "下滑选择「添加到主屏幕」并确认"}
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  {isEn
-                    ? "Scroll down the share sheet, tap 'Add to Home Screen', and tap 'Add' in the top right. ANS will launch full-screen like a native iOS App."
-                    : "在分享菜单中向下滑动，点击「添加到主屏幕」，再点击右上角「添加」。从桌面打开 ANS 即可隐藏 Safari 地址栏全屏使用。"}
+                    ? "Tap the Share icon [↑] in Safari bottom bar and select 'Add to Home Screen' to add the full-screen App without opening Settings."
+                    : "不想进系统设置安装描述文件时，也可直接点击 Safari 底部正中间的「分享」图标，下滑点击「添加到主屏幕」即可。"}
                 </p>
               </div>
             </div>
@@ -524,13 +698,13 @@ export function MobileAppInstaller() {
                 <div className="flex items-center gap-2">
                   <Smartphone className="h-4 w-4 text-primary" aria-hidden="true" />
                   <h3 className="text-sm font-semibold">
-                    {isEn ? "Phone: Open Link to Install Mobile App" : "手机端：浏览器打开本页安装 App"}
+                    {isEn ? "Phone: Open Link to Auto-Download App" : "手机端：浏览器打开本页自动下载 App"}
                   </h3>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {isEn
-                    ? "Send ans.cauai.fun/app to your phone and open it in Safari (iOS) or Chrome/Edge (Android) to install the standalone ANS App."
-                    : "在手机 Safari（苹果）或系统浏览器（安卓）中输入下方网址，即可把 ANS 独立 App 安装到手机桌面："}
+                    ? "Open ans.cauai.fun/app in your phone browser to automatically download the Android .apk or iOS installer:"
+                    : "用手机系统浏览器打开下方网址，将自动弹出安卓 .apk 或苹果 iOS 安装包下载："}
                 </p>
                 <div className="flex items-center justify-between gap-2 rounded-lg border bg-muted/50 px-3 py-2">
                   <code className="text-xs font-semibold text-foreground">{APP_INSTALL_URL}</code>

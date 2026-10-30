@@ -8,7 +8,7 @@ export function memberCatalogProject(offer: MarketOfferView): CatalogProject {
   return {
     slug: "member-" + offer.slug, category: data.category, subcategory: data.subcategory,
     goal: data.category === "career" ? "career" : data.category === "competition" ? "contest" : "portfolio",
-    source: "web", sourceUrl: data.sourceUrl ?? data.previewUrl, preview: "site",
+    source: "web", sourceUrl: data.usageUrl ?? data.previewUrl ?? data.sourceUrl ?? data.githubUrl, preview: "site",
     memberHref: "/market/" + offer.slug, creator,
     ...(data.coverUrl ? {coverUrl: data.coverUrl, coverNote: "创作者上传的项目截图"} : {}),
     content: {zh: {
