@@ -1,8 +1,9 @@
 {
   "id": "/",
-  "name": "ANS · 让 AI 永不停转",
+  "name": "ANS · AI Never Stops",
   "short_name": "ANS",
-  "start_url": "/",
+  "description": "ANS (AI Never Stops) 手机端独立应用：项目广场、农客松参赛、小恐龙 Agent 与算力中心。",
+  "start_url": "/explore",
   "scope": "/",
   "icons": [
     {
@@ -22,6 +23,26 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "农客松参赛",
+      "short_name": "农客松",
+      "url": "/competitions/agrihackathon",
+      "icons": [{ "src": "/favicon/web-app-manifest-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "项目广场",
+      "short_name": "广场",
+      "url": "/explore",
+      "icons": [{ "src": "/favicon/web-app-manifest-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "算力中心",
+      "short_name": "积分",
+      "url": "/workspace/credits",
+      "icons": [{ "src": "/favicon/web-app-manifest-192x192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ],
   "theme_color": "#0A1633",
