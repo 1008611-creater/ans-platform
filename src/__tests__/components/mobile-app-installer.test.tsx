@@ -38,50 +38,70 @@ describe("MobileAppInstaller & detectDeviceEnvironment", () => {
       detectDeviceEnvironment(
         "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Mobile/15E148 MicroMessenger/8.0.50",
       ),
-    ).toEqual({ platform: "wechat", inAppName: "WeChat" });
+    ).toEqual({ platform: "wechat", inAppName: "WeChat", underlyingOs: "ios" });
 
     expect(
       detectDeviceEnvironment(
         "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Mobile Safari/537.36 V1_AND_SQ_9.0.0 QQ/9.0.0",
       ),
-    ).toEqual({ platform: "wechat", inAppName: "QQ" });
+    ).toEqual({ platform: "wechat", inAppName: "QQ", underlyingOs: "android" });
 
     expect(
       detectDeviceEnvironment(
         "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 Version/17.4 Mobile/15E148 Safari/604.1",
       ),
-    ).toEqual({ platform: "ios", inAppName: null });
+    ).toEqual({ platform: "ios", inAppName: null, underlyingOs: "ios" });
 
     expect(
       detectDeviceEnvironment(
         "Mozilla/5.0 (Linux; Android 14; SM-S9180) AppleWebKit/537.36 Chrome/124.0.0.0 Mobile Safari/537.36",
       ),
-    ).toEqual({ platform: "android", inAppName: null });
+    ).toEqual({ platform: "android", inAppName: null, underlyingOs: "android" });
 
     expect(
       detectDeviceEnvironment(
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/125.0.0.0 Safari/537.36",
       ),
-    ).toEqual({ platform: "desktop", inAppName: null });
+    ).toEqual({ platform: "desktop", inAppName: null, underlyingOs: "desktop" });
   });
 
-  it("auto-selects the WeChat guide when opened inside WeChat built-in browser", () => {
+  it("shows prominent WeChat escape banner when opened inside WeChat built-in browser", () => {
     vi.spyOn(window.navigator, "userAgent", "get").mockReturnValue(
       "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) MicroMessenger/8.0.50",
     );
 
     render(<MobileAppInstaller />);
+    expect(screen.getByTestId("wechat-escape-banner")).toBeInTheDocument();
     expect(screen.getByTestId("guide-panel-wechat")).toBeInTheDocument();
-    expect(screen.getByText(/在默认浏览器中打开/)).toBeInTheDocument();
+    expect(screen.getAllByText(/在默认浏览器中打开/).length).toBeGreaterThan(0);
   });
 
-  it("captures beforeinstallprompt on Android and invokes native prompt() on click", async () => {
+  it("auto-triggers APK download and exposes direct download links on Android browsers", async () => {
+    vi.useFakeTimers();
     vi.spyOn(window.navigator, "userAgent", "get").mockReturnValue(
       "Mozilla/5.0 (Linux; Android 14; Pixel 8) Chrome/125.0.0.0 Mobile Safari/537.36",
     );
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
 
     render(<MobileAppInstaller />);
     expect(screen.getByTestId("guide-panel-android")).toBeInTheDocument();
+    expect(screen.getByTestId("download-android-apk-link")).toHaveAttribute(
+      "href",
+      "/api/app/download?platform=android",
+    );
+    expect(screen.getByTestId("download-ios-profile-link")).toHaveAttribute(
+      "href",
+      "/api/app/download?platform=ios",
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+
+    expect(clickSpy).toHaveBeenCalledOnce();
+    expect(screen.getByTestId("auto-download-status")).toHaveTextContent(
+      /已为您自动发起安卓安装包/,
+    );
 
     const promptSpy = vi.fn().mockResolvedValue(undefined);
     const fakeEvent = new Event("beforeinstallprompt", { cancelable: true }) as BeforeInstallPromptEvent;
@@ -101,7 +121,7 @@ describe("MobileAppInstaller & detectDeviceEnvironment", () => {
     });
 
     expect(promptSpy).toHaveBeenCalledOnce();
-    expect(screen.getByRole("status")).toHaveTextContent(/已发起 ANS 手机桌面安装/);
+    vi.useRealTimers();
   });
 
   it("renders standalone Quick Launch hub when running in standalone App mode", () => {
