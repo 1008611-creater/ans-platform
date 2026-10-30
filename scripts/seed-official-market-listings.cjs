@@ -8,6 +8,9 @@ const { PrismaClient } = require("@prisma/client");
 const OFFICIAL_MARKET_LISTINGS = [
   {
     slug: "cau-sci-paper-polisher-kit",
+    // 已下架（2026-10-30）：交付只有一页说明，没有商品页承诺的工程、脚本或模板。
+    // 补齐 official-deliveries.ts 里的真实交付后，再改回 PUBLISHED。
+    status: "WITHDRAWN",
     title: "农学 SCI 论文摘要与文献综述精修工作台",
     summary: "面向智慧农业、植物保护、生物育种与资环方向，一键生成高水平英文 Abstract、Graphical Abstract 提示词与近五年文献对比矩阵。",
     description:
@@ -32,6 +35,9 @@ const OFFICIAL_MARKET_LISTINGS = [
   },
   {
     slug: "agri-anova-stats-plot-pack",
+    // 已下架（2026-10-30）：交付只有一页说明，没有商品页承诺的工程、脚本或模板。
+    // 补齐 official-deliveries.ts 里的真实交付后，再改回 PUBLISHED。
+    status: "WITHDRAWN",
     title: "田间试验方差分析 (ANOVA) 与 Nature 配色科研绘图包",
     summary: "输入正交试验或大田对照组数据，自动生成 R / Python 显著性检验（LSD/Duncan）、三线表导出与高分期刊箱线图/热力图代码。",
     description:
@@ -55,6 +61,9 @@ const OFFICIAL_MARKET_LISTINGS = [
   },
   {
     slug: "aigc-agri-short-drama-storyboard",
+    // 已下架（2026-10-30）：交付只有一页说明，没有商品页承诺的工程、脚本或模板。
+    // 补齐 official-deliveries.ts 里的真实交付后，再改回 PUBLISHED。
+    status: "WITHDRAWN",
     title: "AI 科普短剧与农客松 60 秒路演视频分镜生成器",
     summary: "输入项目痛点或科普主题，自动拆解 12 镜高清分镜脚本、Image 2.5 首尾帧一致性生图 Prompt 与激昂路演旁白词。",
     description:
@@ -101,6 +110,9 @@ const OFFICIAL_MARKET_LISTINGS = [
   },
   {
     slug: "nextjs-agri-agent-dashboard-starter",
+    // 已下架（2026-10-30）：交付只有一页说明，没有商品页承诺的工程、脚本或模板。
+    // 补齐 official-deliveries.ts 里的真实交付后，再改回 PUBLISHED。
+    status: "WITHDRAWN",
     title: "Next.js 15 + 智慧农业多模态监测大屏全栈参赛模板",
     summary: "开箱即用的农客松 Web 演示站脚手架：内置流式 Agent 对话舱、叶片病害拖拽识别、温室传感器时序折线图与响应式深色大屏。",
     description:
@@ -173,6 +185,9 @@ const OFFICIAL_MARKET_LISTINGS = [
   },
   {
     slug: "lab-weekly-git-report-automation",
+    // 已下架（2026-10-30）：交付只有一页说明，没有商品页承诺的工程、脚本或模板。
+    // 补齐 official-deliveries.ts 里的真实交付后，再改回 PUBLISHED。
+    status: "WITHDRAWN",
     title: "课题组组会周报与 Git 代码进展一键汇总自动化流",
     summary: "仅需 5 积分！将本周凌乱的实验记录、阅读文献与 GitHub Commit 自动提炼成导师最爱的结构化组会汇报与下周排期表。",
     description:
