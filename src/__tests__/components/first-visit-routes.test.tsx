@@ -78,3 +78,13 @@ it("中英文案齐全且英文界面不漏中文", () => {
     expect(link.textContent).not.toMatch(/[一-鿿]/);
   }
 });
+
+it("需求句文字不淡于 /70，保证在卡面上对比度达到 4.5:1（axe color-contrast）", () => {
+  mount("zh");
+  const links = within(screen.getByRole("navigation", { name: zh.firstVisit.routes.label })).getAllByRole("link");
+  FIRST_VISIT_ROUTES.forEach(({ key }, i) => {
+    const need = within(links[i]).getByText(zh.firstVisit.routes[key].need);
+    const alpha = need.className.match(/text-\[#12211C\]\/(\d+)/)?.[1];
+    expect(alpha === undefined || Number(alpha) >= 70).toBe(true);
+  });
+});

@@ -54,7 +54,7 @@ export function FirstVisitRoutes({ onNavigate, className }: { onNavigate?: (key:
                 <Icon className="size-[18px]" strokeWidth={2.2} />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[13px] leading-tight text-[#12211C]/55">{t(`${key}.need`)}</span>
+                <span className="block text-[13px] leading-tight text-[#12211C]/70">{t(`${key}.need`)}</span>
                 <span className="mt-0.5 block text-[15px] leading-snug font-bold tracking-[-0.01em] text-[#12211C] transition-colors duration-200 group-hover:text-[#1F6B50] sm:text-base">
                   {t(`${key}.result`)}
                 </span>
