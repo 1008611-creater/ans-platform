@@ -1447,25 +1447,9 @@ export function ComputeQuestArcade({
                       ))}
                     </div>
 
-                    {/* Side-by-Side: Left = Native Canvas 3D .glb Turntable, Right = OpenLux 2x2 Four-View Sheet */}
-                    <div className="grid grid-cols-2 gap-2.5">
+                    {/* Native Canvas 3D .glb Turntable (True 3D only, no pseudo-3D sheet image) */}
+                    <div>
                       <GlbInteractiveTurntable asset={activeGlb} isEn={isEn} />
-
-                      <div className="relative flex h-52 flex-col justify-between overflow-hidden rounded-xl border border-amber-500/40 bg-white p-2 text-slate-900">
-                        <div className="flex items-center justify-between rounded bg-slate-900 px-2 py-0.5 text-[10px] font-bold text-amber-300">
-                          <span>{isEn ? "Orthographic 2×2 Four-View" : "2×2 正交四视图"}</span>
-                          <span>F/B/L/R</span>
-                        </div>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={activeGlb.sheetUrl}
-                          alt={isEn ? activeGlb.nameEn : activeGlb.nameZh}
-                          className="mx-auto my-auto h-36 w-36 object-contain"
-                        />
-                        <div className="text-center text-[10px] font-medium text-slate-500">
-                          {isEn ? "Front · Back · Left · Right" : "正 · 背 · 左 · 右"}
-                        </div>
-                      </div>
                     </div>
 
                     {/* Metadata & Actions */}

@@ -3,7 +3,8 @@
 import Image from "next/image";
 import type { VoiceOffer } from "@/contracts/voice";
 import { loadSanctuaryState } from "@/domain/mascot/sanctuary";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { getFormSnapshot, subscribeMascotStore } from "@/lib/mascot/client-store";
 import { useSitePreferences } from "@/lib/site-preferences";
 
 export type SpeechRequest = { id: number; text: string };
@@ -24,6 +25,7 @@ const isRealBrowserWebGL = () =>
 /** Sends public guide replies and a bound actor ID; no credentials or private task records. */
 export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, speech, onVoiceStatus }: { actor?: string | null; voicePolicy?: VoiceOffer | null; phase: string; open: boolean; speech?: SpeechRequest | null; onVoiceStatus?: (status: string) => void }) {
   const preferences = useSitePreferences();
+  const pixelForm = useSyncExternalStore(subscribeMascotStore, () => getFormSnapshot() === "2d", () => false);
   const deliveredSpeech = useRef<number | null>(null);
   const voiceCallback = useRef(onVoiceStatus);
   voiceCallback.current = onVoiceStatus;
@@ -33,7 +35,7 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
   const [requested, setRequested] = useState(open);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
-  const active = enabled && (requested || open) && !failed;
+  const active = !pixelForm && enabled && (requested || open) && !failed;
   const animated = active && ready;
   const send = useCallback((data: AvatarMessage) => {
     frame.current?.contentWindow?.postMessage({ type: "ans-dino", ...data }, window.location.origin);
@@ -190,8 +192,9 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
     document.addEventListener("visibilitychange", visibility);
     return () => { window.removeEventListener("pointermove", pointer); document.removeEventListener("visibilitychange", visibility); };
   }, [animated, send]);
-  return <span className="ans-dino-avatar" aria-hidden="true">
-    <Image src="/mascot/ans-mascot.png" width={88} height={88} alt="" className={animated ? "invisible" : ""} />
+  return <span className="ans-dino-avatar" data-pixel-anim={enabled && !animated ? "true" : "false"} aria-hidden="true">
+    {enabled && !animated && <span className="ans-dino-pixel" data-testid="mascot-pixel-avatar" />}
+    <Image src="/mascot/ans-mascot.png" width={88} height={88} unoptimized alt="" className={animated ? "invisible" : ""} />
     {/* Download 3D eagerly in real WebGL browsers; retain the frame across subsequent openings. */}
     {active && <iframe ref={frame} src="/mascot/3d/index.html?ui=sanctuary-20261018-v4" title="ANS Little Dino 3D Companion" tabIndex={-1} loading="eager" style={{ backgroundColor: "transparent", colorScheme: "normal" }} className={`ans-dino-canvas ${animated ? "opacity-100" : "opacity-0"}`} />}
   </span>;

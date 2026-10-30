@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DinoAvatar } from "@/components/mascot/dino-avatar";
+import { writeForm } from "@/lib/mascot/client-store";
 import { resetSitePreferences, updateSitePreferences } from "@/lib/site-preferences";
 
 vi.mock("next/image", () => ({ default: ({ className }: { className?: string }) => <span data-testid="static-mascot" className={className} /> }));
@@ -323,5 +324,16 @@ describe("DinoAvatar frame lifecycle", () => {
     fireEvent(document, new Event("visibilitychange"));
     message(view.source, "ans-dino-ready");
     expect(view.send).not.toHaveBeenCalled();
+  });
+
+  it("renders pixel sprite before 3D ready and locks to pixel style without 3D iframe when form is 2d", () => {
+    const view = mount();
+    expect(screen.getByTestId("mascot-pixel-avatar")).toBeInTheDocument();
+    message(view.source, "ans-dino-ready");
+    expect(screen.queryByTestId("mascot-pixel-avatar")).toBeNull();
+    act(() => writeForm("2d"));
+    expect(screen.getByTestId("mascot-pixel-avatar")).toBeInTheDocument();
+    expect(view.container.querySelector("iframe")).toBeNull();
+    act(() => writeForm("3d"));
   });
 });
