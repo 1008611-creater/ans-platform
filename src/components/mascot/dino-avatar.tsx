@@ -194,7 +194,7 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
     return () => { window.removeEventListener("pointermove", pointer); document.removeEventListener("visibilitychange", visibility); };
   }, [animated, send]);
   return <span className="ans-dino-avatar" data-pixel-anim={enabled && !animated ? "true" : "false"} aria-hidden="true">
-    {enabled && !animated && <PixelCompanionStage phase={phase as DinoPhase} open={open} />}
+    {enabled && !animated && <PixelCompanionStage phase={phase} open={open} />}
     <Image src="/mascot/ans-mascot.png" width={88} height={88} unoptimized alt="" className={animated ? "invisible" : ""} />
     {/* Download 3D eagerly in real WebGL browsers; retain the frame across subsequent openings. */}
     {active && <iframe ref={frame} src="/mascot/3d/index.html?ui=sanctuary-20261018-v4" title="ANS Little Dino 3D Companion" tabIndex={-1} loading="eager" style={{ backgroundColor: "transparent", colorScheme: "normal" }} className={`ans-dino-canvas ${animated ? "opacity-100" : "opacity-0"}`} />}
