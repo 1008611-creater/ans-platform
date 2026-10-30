@@ -85,10 +85,11 @@ export async function listCommunityFeed(channel: CommunityChannel) {
     id: artifact.id,
     href: `/showcase/${artifact.id}`,
     channel: GOAL_CHANNEL[artifact.project.goal ?? ""] ?? "learning",
-    title: artifact.title,
+    // 作品标题多是工作流默认名（如「README 草稿」），封面用项目名更能说清做了什么。
+    title: artifact.project.title,
     excerpt: plainExcerpt(artifact.markdown),
     version: artifact.version,
-    repo: `${artifact.project.team?.slug ?? artifact.author.username}/${artifact.project.title}`,
+    repo: `${artifact.project.team?.slug ?? artifact.author.username}/${artifact.title}`,
     author: { name: artifact.author.nickname || artifact.author.username, username: artifact.author.username, avatar: artifact.author.avatar },
     likes: artifact.counts.reactions,
     comments: artifact.counts.comments,
