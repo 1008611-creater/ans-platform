@@ -1,0 +1,114 @@
+{
+ "atlas": "first-visit-atlas.png",
+ "atlas2x": "first-visit-atlas@2x.png",
+ "cell": 128,
+ "cols": 5,
+ "rows": 2,
+ "source": {
+  "atlas": "dino-atlas.png",
+  "commit": "8349f7c1",
+  "note": "首访舞台用到的 10 格，从权威 8×8 图集原样裁出（逐像素一致，不重画、不改色）。完整图集见该提交。"
+ },
+ "frames": {
+  "stand": {
+   "row": 0,
+   "col": 0,
+   "state": "idle",
+   "label": "站立",
+   "source": [
+    0,
+    0
+   ]
+  },
+  "blink": {
+   "row": 0,
+   "col": 1,
+   "state": "idle",
+   "label": "眨眼",
+   "source": [
+    0,
+    1
+   ]
+  },
+  "tilt": {
+   "row": 0,
+   "col": 2,
+   "state": "idle",
+   "label": "歪头",
+   "source": [
+    0,
+    2
+   ]
+  },
+  "wag": {
+   "row": 0,
+   "col": 3,
+   "state": "idle",
+   "label": "摇尾",
+   "source": [
+    0,
+    3
+   ]
+  },
+  "hop": {
+   "row": 0,
+   "col": 4,
+   "state": "idle",
+   "label": "轻跳",
+   "source": [
+    0,
+    7
+   ]
+  },
+  "jump": {
+   "row": 1,
+   "col": 0,
+   "state": "action",
+   "label": "跳起",
+   "source": [
+    6,
+    0
+   ]
+  },
+  "wave": {
+   "row": 1,
+   "col": 1,
+   "state": "action",
+   "label": "挥手",
+   "source": [
+    6,
+    1
+   ]
+  },
+  "heart": {
+   "row": 1,
+   "col": 2,
+   "state": "action",
+   "label": "比心",
+   "source": [
+    6,
+    2
+   ]
+  },
+  "cheer": {
+   "row": 1,
+   "col": 3,
+   "state": "action",
+   "label": "欢呼",
+   "source": [
+    6,
+    3
+   ]
+  },
+  "laugh": {
+   "row": 1,
+   "col": 4,
+   "state": "emote",
+   "label": "大笑",
+   "source": [
+    4,
+    2
+   ]
+  }
+ }
+}

@@ -4,6 +4,8 @@
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
+/* 手机横屏这类矮宽视口（如 844×390） */
+@custom-variant short-landscape (@media (orientation: landscape) and (max-height: 500px));
 
 @theme inline {
   --color-background: var(--background);

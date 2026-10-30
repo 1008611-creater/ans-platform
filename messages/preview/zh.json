@@ -54,5 +54,34 @@
   "send": "发送",
   "thinking": "正在处理…",
   "chatEmpty": "它已经读过这个项目的介绍，可以直接问。",
-  "back": "返回项目广场"
+  "back": "返回项目广场",
+  "firstVisit": {
+    "title": "AI Never Stops",
+    "tagline": "你想做的，这里都有人正在做",
+    "reopen": "再弹一次",
+    "close": "关闭",
+    "routes": {
+      "label": "选一个你想去的地方",
+      "explore": {
+        "need": "我想先看看大家都做了什么",
+        "result": "逛项目广场，先看真实效果"
+      },
+      "learn": {
+        "need": "我想从零学着做",
+        "result": "边学边做，先做一个产品官网"
+      },
+      "team": {
+        "need": "我想拉上同学一起做",
+        "result": "组队参赛，平台给算力"
+      },
+      "compete": {
+        "need": "我想参加 AI 比赛",
+        "result": "进农客松，三大赛道任选一条"
+      },
+      "publish": {
+        "need": "我已经做出了东西",
+        "result": "上传项目，审核后公开展示"
+      }
+    }
+  }
 }
