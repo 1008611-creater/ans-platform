@@ -1,16 +1,18 @@
 name: Android App
 
 # 手机端 App 外壳（mobile/android）的编译、签名与发版。
-# - 改了 mobile/android 的 PR：编一次正式包并校验签名，产物挂在这次运行上可下载试装。
+# - 任何分支推送改了 mobile/android：编一次正式包并校验签名，产物挂在这次运行上可下载试装。
+#   用 push 而不是 pull_request，不用等 GitHub 算出 PR 合并提交。
 # - 推 app-android-v* 标签：同上，再建一个 GitHub Release。
 on:
-  pull_request:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "app-android-v*"
     paths:
       - "mobile/android/**"
       - ".github/workflows/android.yml"
-  push:
-    tags:
-      - "app-android-v*"
   workflow_dispatch:
 
 concurrency:
