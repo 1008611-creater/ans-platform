@@ -1,0 +1,106 @@
+name: Android App
+
+# 手机端 App 外壳（mobile/android）的编译、签名与发版。
+# - 改了 mobile/android 的 PR：编一次正式包并校验签名，产物挂在这次运行上可下载试装。
+# - 推 app-android-v* 标签：同上，再建一个 GitHub Release。
+on:
+  pull_request:
+    paths:
+      - "mobile/android/**"
+      - ".github/workflows/android.yml"
+  push:
+    tags:
+      - "app-android-v*"
+  workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # 正式签名证书的 SHA-256 指纹。签出来对不上就失败，防止有人换了密钥导致老用户没法覆盖升级。
+  EXPECTED_CERT_SHA256: "c4fd3f3bbed07d0bdef991c20e9f852c6d3f0f4e7a17b5f63f563c675656f171"
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.2"
+
+      - name: Restore signing keystore
+        env:
+          ANS_KEYSTORE_BASE64: ${{ secrets.ANS_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$ANS_KEYSTORE_BASE64" ]; then
+            echo "::error::缺少仓库 Secret ANS_KEYSTORE_BASE64，无法签正式包。"
+            exit 1
+          fi
+          echo "$ANS_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/ans-release.p12"
+          echo "ANS_KEYSTORE_PATH=$RUNNER_TEMP/ans-release.p12" >> "$GITHUB_ENV"
+
+      - name: Build signed release APK
+        env:
+          ANS_KEYSTORE_PASSWORD: ${{ secrets.ANS_KEYSTORE_PASSWORD }}
+          ANS_KEY_PASSWORD: ${{ secrets.ANS_KEYSTORE_PASSWORD }}
+          ANS_KEY_ALIAS: ans
+        run: gradle -p mobile/android --no-daemon assembleRelease
+
+      - name: Verify signature and package
+        id: verify
+        run: |
+          set -euo pipefail
+          BUILD_TOOLS="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n 1)"
+          APK="mobile/android/app/build/outputs/apk/release/app-release.apk"
+          test -f "$APK"
+
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK" | tee "$RUNNER_TEMP/certs.txt"
+          ACTUAL="$(grep -m1 'certificate SHA-256 digest' "$RUNNER_TEMP/certs.txt" | awk '{print $NF}')"
+          if [ "$ACTUAL" != "$EXPECTED_CERT_SHA256" ]; then
+            echo "::error::签名证书指纹不对：$ACTUAL"
+            exit 1
+          fi
+
+          "$BUILD_TOOLS/aapt2" dump badging "$APK" | head -n 3
+          VERSION_NAME="$(grep '^ANS_VERSION_NAME=' mobile/android/gradle.properties | cut -d= -f2)"
+          VERSION_CODE="$(grep '^ANS_VERSION_CODE=' mobile/android/gradle.properties | cut -d= -f2)"
+          OUT="ANS-${VERSION_NAME}.apk"
+          cp "$APK" "$OUT"
+          echo "file=$OUT" >> "$GITHUB_OUTPUT"
+          echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          {
+            echo "### ANS Android ${VERSION_NAME} (${VERSION_CODE})"
+            echo "- 大小：$(du -h "$OUT" | cut -f1)"
+            echo "- SHA-256：\`$(sha256sum "$OUT" | cut -d' ' -f1)\`"
+            echo "- 签名证书指纹已核对"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.verify.outputs.file }}
+          path: ${{ steps.verify.outputs.file }}
+          retention-days: 30
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/app-android-v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "${{ steps.verify.outputs.file }}" \
+            --title "ANS Android ${{ steps.verify.outputs.version_name }}" \
+            --notes "手机端 App 安装包。线上下载地址：https://ans.cauai.fun/app"
