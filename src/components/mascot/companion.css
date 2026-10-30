@@ -768,3 +768,36 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
 .ans-companion-dock-slot { display: flex; justify-content: flex-end; align-items: center; padding: 2px 10px 4px; }
 .ans-companion-dock--inline { display: flex; align-items: center; gap: 4px; }
 .ans-companion-dock--inline > button { cursor: pointer; }
+
+/* 像素风格形态（与真 3D 共同构成仅有的两种吉祥物形态，彻底移除伪 3D 贴图） */
+.ans-dino-avatar > img { image-rendering: pixelated; }
+.ans-dino-avatar[data-pixel-anim="true"] > img { opacity: 0; }
+.ans-dino-avatar .ans-dino-pixel {
+  position: absolute;
+  inset: 0 auto auto 0;
+  display: block;
+  width: 106px;
+  height: 106px;
+  background-image: url("/mascot/pixel/first-visit-atlas@2x.png");
+  background-repeat: no-repeat;
+  background-size: 500% 200%;
+  background-position: 0% 0%;
+  image-rendering: pixelated;
+  pointer-events: none;
+  animation: ans-dino-pixel-steps 4s steps(5) infinite;
+}
+.ans-companion-v2[data-open=true] .ans-dino-avatar .ans-dino-pixel {
+  width: 120px;
+  height: 120px;
+}
+@media (max-width: 640px) {
+  .ans-companion-v2 .ans-dino-avatar .ans-dino-pixel { width: 52px; height: 52px; }
+  .ans-companion-v2[data-open=true] .ans-dino-avatar .ans-dino-pixel { width: 60px; height: 60px; }
+}
+@keyframes ans-dino-pixel-steps {
+  from { background-position-x: 0%; }
+  to { background-position-x: -500%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ans-dino-avatar .ans-dino-pixel { animation: none; }
+}
