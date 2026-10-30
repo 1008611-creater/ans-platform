@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import type { VoiceOffer } from "@/contracts/voice";
-import { loadSanctuaryState } from "@/domain/mascot/sanctuary";
+import { loadSanctuaryState, type DinoPhase } from "@/domain/mascot/sanctuary";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { getFormSnapshot, subscribeMascotStore } from "@/lib/mascot/client-store";
 import { useSitePreferences } from "@/lib/site-preferences";
+import { PixelCompanionStage } from "./pixel-companion-stage";
 
 export type SpeechRequest = { id: number; text: string };
 
@@ -193,7 +194,7 @@ export function DinoAvatar({ actor = null, voicePolicy = null, phase, open, spee
     return () => { window.removeEventListener("pointermove", pointer); document.removeEventListener("visibilitychange", visibility); };
   }, [animated, send]);
   return <span className="ans-dino-avatar" data-pixel-anim={enabled && !animated ? "true" : "false"} aria-hidden="true">
-    {enabled && !animated && <span className="ans-dino-pixel" data-testid="mascot-pixel-avatar" />}
+    {enabled && !animated && <PixelCompanionStage phase={phase as DinoPhase} open={open} />}
     <Image src="/mascot/ans-mascot.png" width={88} height={88} unoptimized alt="" className={animated ? "invisible" : ""} />
     {/* Download 3D eagerly in real WebGL browsers; retain the frame across subsequent openings. */}
     {active && <iframe ref={frame} src="/mascot/3d/index.html?ui=sanctuary-20261018-v4" title="ANS Little Dino 3D Companion" tabIndex={-1} loading="eager" style={{ backgroundColor: "transparent", colorScheme: "normal" }} className={`ans-dino-canvas ${animated ? "opacity-100" : "opacity-0"}`} />}

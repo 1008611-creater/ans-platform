@@ -23,6 +23,7 @@ import { usePausedRunModels } from "@/components/providers/run-model-pricing";
 import { useCompanionSize } from "./use-companion-size";
 import { getFormSnapshot, subscribeMascotStore, writeForm } from "@/lib/mascot/client-store";
 import { CompanionQuestPin, CompanionSanctuaryBar } from "./companion-sanctuary-bar";
+import { MascotStageDeck } from "./mascot-stage-deck";
 import "./companion.css";
 
 const CompanionReply = lazy(() => import("./companion-reply").then(module => ({ default: module.CompanionReply })));
@@ -285,7 +286,11 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
           <div className="ans-companion-controls">
             <button type="button" onClick={panelSize.reset} aria-label={ui("resetChatSize")} title={ui("resetChatSize")}><Maximize2 aria-hidden="true" /></button>
             <button type="button" disabled={agent.busy || agent.checkingReceipts || (!messages.length && !draft && !agent.quote)} aria-label={ui("newConversation")} title={ui("newConversation")} onClick={newConversation}><RotateCcw aria-hidden="true" /></button>
-            <button type="button" aria-label={mascotLabel} title={mascotLabel} data-testid="mascot-form-toggle" onClick={() => writeForm(mascotForm === "2d" ? "3d" : "2d")}><span aria-hidden="true" className="text-[11px] font-bold tracking-tight">{mascotForm === "2d" ? "3D" : "2D"}</span></button>
+            <button type="button" aria-label={mascotLabel} title={mascotLabel} data-testid="mascot-form-toggle" onClick={() => {
+              const next = mascotForm === "2d" ? "3d" : "2d";
+              writeForm(next);
+              if (next === "3d") window.dispatchEvent(new CustomEvent("ans:dino-activate"));
+            }}><span aria-hidden="true" className="text-[11px] font-bold tracking-tight">{mascotForm === "2d" ? "3D" : "2D"}</span></button>
             <button type="button" aria-label={ui("openSiteSettings")} title={ui("openSiteSettings")} onClick={settings}><Settings aria-hidden="true" /></button>
             <button id="ans-companion-dismiss" type="button" aria-label={t("close")} title={t("close")} onClick={() => changeOpen(false)}><X aria-hidden="true" /></button>
           </div>
@@ -305,6 +310,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
           onSpeak={text => setSpeech({ id: ++sequence.current, text })}
           onSwitchToWorkMode={switchToWorkMode}
         />
+        <MascotStageDeck />
         {!actor && <Link className="ans-companion-signin" href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}>{ui("agentSignIn")}<ArrowUpRight aria-hidden="true" /></Link>}
         {undo?.mode === mode && <div className="ans-companion-undo" role="status"><span>{ui("conversationCleared")}</span><button type="button" onClick={restoreConversation}>{ui("undoClear")}</button></div>}
         <div className="ans-companion-reading">

@@ -1,36 +1,19 @@
-/**
- * 吉祥物兔兔龙「像素风格 (2d) ⇄ 真 3D (3d)」双形态客户端状态存储。
- */
+"use client";
 
-export type MascotForm = "2d" | "3d";
+import {
+  FORM_EVENT,
+  FORM_STORAGE_KEY,
+  STATE_EVENT,
+  isDinoState,
+  isMascotForm,
+  type DinoState,
+  type MascotForm,
+} from "./atlas";
 
-export const FORM_STORAGE_KEY = "ans.mascot.form";
-export const FORM_EVENT = "ans:mascot-form";
+export type { DinoState, MascotForm };
+export { FORM_EVENT, FORM_STORAGE_KEY, STATE_EVENT, isDinoState, isMascotForm };
 
-export function isMascotForm(value: unknown): value is MascotForm {
-  return value === "2d" || value === "3d";
-}
-
-const listeners = new Set<() => void>();
-
-function emit(): void {
-  for (const listener of listeners) listener();
-}
-
-export function subscribeMascotStore(listener: () => void): () => void {
-  listeners.add(listener);
-  if (typeof window === "undefined") return () => listeners.delete(listener);
-  const onStorage = (event: StorageEvent) => {
-    if (event.key === FORM_STORAGE_KEY) emit();
-  };
-  window.addEventListener(FORM_EVENT, listener);
-  window.addEventListener("storage", onStorage);
-  return () => {
-    listeners.delete(listener);
-    window.removeEventListener(FORM_EVENT, listener);
-    window.removeEventListener("storage", onStorage);
-  };
-}
+let activePixelState: DinoState = "idle";
 
 export function getFormSnapshot(): MascotForm {
   if (typeof window === "undefined") return "3d";
@@ -42,13 +25,44 @@ export function getFormSnapshot(): MascotForm {
   }
 }
 
+export function getPixelStateSnapshot(): DinoState {
+  return activePixelState;
+}
+
 export function writeForm(form: MascotForm): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(FORM_STORAGE_KEY, form);
   } catch {
-    /* Ignore storage errors in private mode */
+    /* Ignore storage errors in private mode. */
   }
   window.dispatchEvent(new CustomEvent(FORM_EVENT, { detail: { form } }));
-  emit();
+}
+
+export function writePixelState(state: DinoState): void {
+  activePixelState = state;
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(STATE_EVENT, { detail: { state } }));
+}
+
+export function subscribeMascotStore(onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const onStorage = (event: StorageEvent) => {
+    if (!event.key || event.key === FORM_STORAGE_KEY) onStoreChange();
+  };
+  const onState = (event: Event) => {
+    const next = (event as CustomEvent<{ state?: unknown }>).detail?.state;
+    if (isDinoState(next) && next !== activePixelState) {
+      activePixelState = next;
+    }
+    onStoreChange();
+  };
+  window.addEventListener("storage", onStorage);
+  window.addEventListener(FORM_EVENT, onStoreChange);
+  window.addEventListener(STATE_EVENT, onState);
+  return () => {
+    window.removeEventListener("storage", onStorage);
+    window.removeEventListener(FORM_EVENT, onStoreChange);
+    window.removeEventListener(STATE_EVENT, onState);
+  };
 }
