@@ -86,6 +86,13 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
 
   const roundedAvailable = history ? Math.round(Number(history.availablePoints) * 10) / 10 : 0;
   const roundedReserved = history ? Math.round(Number(history.reservedPoints ?? 0) * 10) / 10 : 0;
+  const roundedApiHistory = Array.isArray(apiHistory)
+    ? apiHistory.map(item => ({
+        ...item,
+        authorizedPoints: Math.round(Number(item.authorizedPoints) * 10) / 10,
+        settledPoints: item.settledPoints === null ? null : Math.round(Number(item.settledPoints) * 10) / 10,
+      }))
+    : apiHistory;
 
   return (
     <AccountContentBoundary actorId={actorId}>
@@ -154,7 +161,7 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
                 availablePoints={roundedAvailable}
                 reservedPoints={roundedReserved}
                 pendingCount={history.pendingCount}
-                apiHistory={apiHistory}
+                apiHistory={roundedApiHistory}
                 products={getCreditProducts(process.env)}
               />
               {userId && process.env.ANS_COMPUTE_BENEFITS_ENABLED === "1" && (

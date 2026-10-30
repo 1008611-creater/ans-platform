@@ -324,7 +324,7 @@ export OPENAI_API_KEY="pchat_你的个人密钥"
                   </span>
                 </div>
                 <p className="mt-1 font-mono text-[11px] font-bold text-[#4A4843]">
-                  输入 $0.30/1M · 缓存 $0.006/1M · 输出 $1.20/1M
+                  输入 $0.30/1M · 缓存 $0.006/1M · 输出 $1.20/1M · 🟢 McGrox + 火山双活池
                 </p>
               </div>
 
@@ -338,7 +338,7 @@ export OPENAI_API_KEY="pchat_你的个人密钥"
                   </span>
                 </div>
                 <p className="mt-1 font-mono text-[11px] font-bold text-[#4A4843]">
-                  Sol: 输入 $2 / 输出 $10 · Astra: 输入 $10 / 输出 $50
+                  Sol: $2/$10 · Astra: $10/$50 · 🟢 Cockpit McGrox 渠道已连通
                 </p>
               </div>
             </div>
