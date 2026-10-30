@@ -4,7 +4,8 @@ import { nextOrderStatus } from "./order";
 // Paid resource listings sell only once their delivery matches the listing.
 // Withdrawn 2026-10-30 (delivery was a one-page note): lab-weekly-git-report-automation,
 // aigc-agri-short-drama-storyboard, agri-anova-stats-plot-pack, cau-sci-paper-polisher-kit,
-// nextjs-agri-agent-dashboard-starter, and earlier open-pi-agent-rag-toolchain.
+// nextjs-agri-agent-dashboard-starter, and earlier open-pi-agent-rag-toolchain; the remaining seven paid
+// official listings were withdrawn the same day until their deliveries are checked.
 export const VERIFIED_DELIVERABLE_SLUGS: ReadonlySet<string> = new Set<string>([]);
 
 export function isMarketOfferPurchasable(offer: {

@@ -87,6 +87,9 @@ const OFFICIAL_MARKET_LISTINGS = [
   },
   {
     slug: "cau-ai-engineer-interview-coach",
+    // 已下架（2026-10-30）：付费交付尚未逐项核实与商品描述一致。
+    // 补齐 official-deliveries.ts 里的真实交付后，再改回 PUBLISHED。
+    status: "WITHDRAWN",
     title: "大厂 AI Agent 工程师与数智农业岗面试通关模拟包",
     summary: "汇总字节/阿里/美团大模型应用岗及中粮/先正达数智农业岗真实面经，含 RAG 调优、Multi-Agent 架构与 STAR 项目深挖应答库。",
     description:
@@ -162,6 +165,9 @@ const OFFICIAL_MARKET_LISTINGS = [
   },
   {
     slug: "agri-hackathon-pitch-deck-pro",
+    // 已下架（2026-10-30）：付费交付尚未逐项核实与商品描述一致。
+    // 补齐 official-deliveries.ts 里的真实交付后，再改回 PUBLISHED。
+    status: "WITHDRAWN",
     title: "农客松 & 挑战杯国金级商业计划书与 10 页路演 PPT 蓝本",
     summary: "专为涉农科创与 AI 落地项目设计：含政策文件对齐库、大棚/农场降本增效 ROI 测算模型、10 页黄金逻辑框架与评委高频毒舌问答。",
     description:
