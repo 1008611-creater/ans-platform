@@ -303,7 +303,7 @@ export function DinoSoulToolbar({
             onClick={() => handleManualSpeakUp(false)}
           >
             <span aria-hidden="true">🎲</span>
-            <span>搭话 {speakCalc.hitLine}%</span>
+            <span>搭话</span>
           </button>
         )}
       </div>
