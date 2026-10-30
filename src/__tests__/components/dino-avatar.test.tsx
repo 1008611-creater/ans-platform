@@ -380,6 +380,12 @@ describe("DinoAvatar frame lifecycle", () => {
     stepSpring(spring, 8, 0.85, 0.1);
     expect(spring.x).toBeGreaterThan(0);
 
+    // 眨眼用的 26Hz 弹簧跑两秒也不能发散成 NaN（会让 SVG transform 报错）
+    const blink = createSpring(1);
+    blink.target = 0.05;
+    for (let i = 0; i < 120; i++) stepSpring(blink, 26, 1, 1 / 60);
+    expect(blink.x).toBeCloseTo(0.05, 3);
+
     // Verify spherical eye projection foreshortens and hides back-facing eyes on 180 deg turn
     const frontProj = projectEyeOnSphere({
       ring: GROK_EXPRESSIONS.happy[0],

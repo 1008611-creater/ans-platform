@@ -178,9 +178,11 @@ export function stepSpring(
   dt: number,
 ): void {
   const omega = freqHz * Math.PI * 2;
+  // 高频弹簧（如 26Hz 眨眼）在 1/120s 步长下会发散成 NaN，按 ω·步长 ≤ 0.5 再细分。
+  const maxStep = Math.min(FIXED_STEP, 0.5 / omega);
   let remaining = clamp(dt, 0, 0.1);
   while (remaining > 1e-6) {
-    const step = Math.min(FIXED_STEP, remaining);
+    const step = Math.min(maxStep, remaining);
     spring.v +=
       (-omega * omega * (spring.x - spring.target) - 2 * damping * omega * spring.v) *
       step;
