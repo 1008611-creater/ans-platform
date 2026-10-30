@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 /**
@@ -26,6 +26,8 @@ export async function readAndroidRelease(): Promise<AndroidRelease | null> {
     ) {
       return null;
     }
+    // 清单写了但安装包没放上来时，当作还没发版，免得下载按钮点出 404。
+    await access(join(process.cwd(), "public", data.file));
     return {
       versionCode: data.versionCode,
       versionName: data.versionName,
