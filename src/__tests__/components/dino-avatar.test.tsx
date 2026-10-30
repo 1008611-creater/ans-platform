@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DinoAvatar } from "@/components/mascot/dino-avatar";
-import { writeForm } from "@/lib/mascot/client-store";
+import { writeForm, writePixelState } from "@/lib/mascot/client-store";
 import { resetSitePreferences, updateSitePreferences } from "@/lib/site-preferences";
 
 vi.mock("next/image", () => ({ default: ({ className }: { className?: string }) => <span data-testid="static-mascot" className={className} /> }));
@@ -334,6 +334,15 @@ describe("DinoAvatar frame lifecycle", () => {
     act(() => writeForm("2d"));
     expect(screen.getByTestId("mascot-pixel-avatar")).toBeInTheDocument();
     expect(view.container.querySelector("iframe")).toBeNull();
-    act(() => writeForm("3d"));
+    act(() => writePixelState("work"));
+    expect(screen.getByTestId("mascot-pixel-avatar")).toHaveAttribute("data-pixel-state", "work");
+    act(() => {
+      window.dispatchEvent(new CustomEvent("ans:dino-interact", { detail: { action: "pat" } }));
+    });
+    expect(screen.getByTestId("mascot-pixel-avatar")).toHaveAttribute("data-pixel-state", "emote");
+    act(() => {
+      writePixelState("idle");
+      writeForm("3d");
+    });
   });
 });

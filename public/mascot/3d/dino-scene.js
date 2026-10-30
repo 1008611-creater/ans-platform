@@ -36,7 +36,9 @@ uniform vec3 uDinoBlushColor;`;
 const DINO_FACE_FRAG_BODY = `#include <map_fragment>
 {
   float skinMask = clamp((diffuseColor.g - diffuseColor.r * 0.72) * 3.5, 0.0, 1.0);
-  diffuseColor.rgb *= mix(vec3(1.0), uDinoSkinTint, skinMask * 0.90);
+  diffuseColor.rgb *= mix(vec3(1.0), uDinoSkinTint, skinMask * 0.92);
+  float rimSheen = smoothstep(0.14, 0.32, abs(vDinoObjPos.x)) * smoothstep(0.22, 0.82, vDinoObjPos.y) * skinMask * 0.09;
+  diffuseColor.rgb += uDinoSkinTint * rimSheen;
 }
 if (vDinoObjPos.z > 0.16) {
   vec3 skinGreen = vec3(0.415, 0.665, 0.475) * uDinoSkinTint;
@@ -60,16 +62,18 @@ if (vDinoObjPos.z > 0.16) {
     diffuseColor.rgb = mix(diffuseColor.rgb, lashDark, clamp(max(blinkLine, archLine), 0.0, 1.0));
     if (cover < 0.45 && dEye < 0.029) {
       vec2 hlDyn = pEye - (vec2(-0.007, 0.009) + uDinoGaze * 0.0055);
-      float cDyn = (1.0 - smoothstep(0.0040, 0.0068, length(hlDyn))) * 0.65;
+      float cDyn = (1.0 - smoothstep(0.0042, 0.0072, length(hlDyn))) * 0.86;
+      vec2 hlSub = pEye - (vec2(0.006, -0.007) + uDinoGaze * 0.0035);
+      float cSub = (1.0 - smoothstep(0.0022, 0.0044, length(hlSub))) * 0.52;
       vec2 st = pEye - (vec2(0.003, -0.002) + uDinoGaze * 0.0045);
-      float star = (1.0 - smoothstep(0.0, 0.013, length(st))) * (1.0 - smoothstep(0.0010, 0.0026, min(abs(st.x), abs(st.y)))) * smoothstep(0.45, 1.0, uDinoStar);
-      diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.99, 0.96), clamp(cDyn + star * 0.85, 0.0, 1.0));
+      float star = (1.0 - smoothstep(0.0, 0.013, length(st))) * (1.0 - smoothstep(0.0010, 0.0026, min(abs(st.x), abs(st.y)))) * smoothstep(0.42, 1.0, uDinoStar);
+      diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.99, 0.97), clamp(cDyn + cSub + star * 0.90, 0.0, 1.0));
     }
   }
-  vec2 bR = (vDinoObjPos.xy - vec2(-0.168, 0.592)) / vec2(0.042, 0.025);
-  vec2 bL = (vDinoObjPos.xy - vec2(0.163, 0.592)) / vec2(0.042, 0.025);
-  float blushBoost = max(1.0 - smoothstep(0.15, 1.0, length(bR)), 1.0 - smoothstep(0.15, 1.0, length(bL)));
-  diffuseColor.rgb = mix(diffuseColor.rgb, uDinoBlushColor, blushBoost * max(0.0, uDinoBlush - 0.45) * 0.52);
+  vec2 bR = (vDinoObjPos.xy - vec2(-0.168, 0.592)) / vec2(0.044, 0.026);
+  vec2 bL = (vDinoObjPos.xy - vec2(0.163, 0.592)) / vec2(0.044, 0.026);
+  float blushBoost = max(1.0 - smoothstep(0.12, 1.0, length(bR)), 1.0 - smoothstep(0.12, 1.0, length(bL)));
+  diffuseColor.rgb = mix(diffuseColor.rgb, uDinoBlushColor, blushBoost * max(0.0, uDinoBlush - 0.34) * 0.62);
   if (vDinoObjPos.z > 0.22) {
     vec2 mP = vDinoObjPos.xy - vec2(-0.002, 0.5690);
     float smileCurveY = 2.65 * mP.x * mP.x;
@@ -352,19 +356,19 @@ function startCompanion() {
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = T.SRGBColorSpace;
   renderer.toneMapping = T.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.98;
+  renderer.toneMappingExposure = 1.05;
   renderer.debug.onShaderError = () => fail('SHADER_COMPILE_FAILED');
   renderer.domElement.setAttribute('aria-hidden', 'true');
   document.body.append(renderer.domElement);
 
-  // Neutral studio light; the GLB's original textures and materials stay intact.
-  scene.add(new T.HemisphereLight(0xf7f9f8, 0xb5bab8, 1.25));
-  const key = new T.DirectionalLight(0xf8faf9, 2.05);
+  // Studio light with soft mint rim & warm fill; the GLB's original textures and materials stay intact.
+  scene.add(new T.HemisphereLight(0xf8fdfa, 0xb8c4be, 1.32));
+  const key = new T.DirectionalLight(0xffffff, 2.12);
   key.position.set(-2.6, 3.8, 4.2);
-  const fill = new T.DirectionalLight(0xf4f7f8, 0.58);
-  fill.position.set(3.5, 1.1, 2.2);
-  const rim = new T.DirectionalLight(0xf6faf8, 0.62);
-  rim.position.set(1.5, 2.5, -3.2);
+  const fill = new T.DirectionalLight(0xfffbeb, 0.68);
+  fill.position.set(3.5, 1.2, 2.4);
+  const rim = new T.DirectionalLight(0xdcfce7, 0.88);
+  rim.position.set(1.5, 2.6, -3.2);
   scene.add(key, fill, rim);
   const contactMaterial = new T.ShaderMaterial({
     transparent: true, depthWrite: false, toneMapped: false,
@@ -424,6 +428,64 @@ function startCompanion() {
   haloMesh.position.set(0, 0.004, 0.025);
   haloMesh.renderOrder = 12;
   scene.add(haloMesh);
+
+  // 3D Floating Starlight Particles around the companion
+  const starCount = 22;
+  const starGeo = new T.BufferGeometry();
+  const starSeeds = new Float32Array(starCount * 3);
+  for (let i = 0; i < starCount; i++) {
+    starSeeds[i * 3] = (i / starCount) * Math.PI * 2;
+    starSeeds[i * 3 + 1] = 0.28 + (i % 5) * 0.055;
+    starSeeds[i * 3 + 2] = (i * 0.6180339) % 1.0;
+  }
+  starGeo.setAttribute('position', new T.BufferAttribute(starSeeds, 3));
+  const starMaterial = new T.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    toneMapped: false,
+    uniforms: haloUniforms,
+    vertexShader: `
+      uniform float uTime;
+      uniform float uFlight;
+      varying float vPhase;
+      varying float vMix;
+      void main() {
+        float baseAng = position.x;
+        float radius = position.y;
+        float seed = position.z;
+        float speed = 0.35 + uFlight * 0.65;
+        float cyc = fract(seed + uTime * speed * 0.28);
+        vPhase = cyc;
+        vMix = fract(seed * 3.7);
+        float ang = baseAng + uTime * (0.65 + uFlight * 1.4) + cyc * 1.6;
+        float r = radius * (0.85 + 0.28 * sin(cyc * 3.14159));
+        vec3 worldPos = vec3(cos(ang) * r, 0.06 + cyc * 0.78, sin(ang) * r + 0.04);
+        vec4 mvPosition = modelViewMatrix * vec4(worldPos, 1.0);
+        gl_Position = projectionMatrix * mvPosition;
+        gl_PointSize = (6.0 + 6.5 * sin(cyc * 3.14159)) * (0.75 + 0.55 * uFlight);
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uAuraColor1;
+      uniform vec3 uAuraColor2;
+      uniform float uAuraBoost;
+      varying float vPhase;
+      varying float vMix;
+      void main() {
+        vec2 uv = gl_PointCoord - 0.5;
+        float d = length(uv) * 2.0;
+        if (d > 1.0) discard;
+        float cross = max(0.0, 1.0 - min(abs(uv.x), abs(uv.y)) * 14.0) * 0.55;
+        float glow = pow(1.0 - d, 2.2) + cross * (1.0 - d);
+        float fade = sin(vPhase * 3.1415926);
+        vec3 col = mix(uAuraColor1, uAuraColor2, vMix);
+        gl_FragColor = vec4(mix(col, vec3(1.0), 0.38), clamp(glow * fade * uAuraBoost * 0.85, 0.0, 0.92));
+      }
+    `,
+  });
+  const starPoints = new T.Points(starGeo, starMaterial);
+  starPoints.renderOrder = 14;
+  scene.add(starPoints);
 
   function isVisible() {
     return !pageSuspended && !document.hidden && parentVisible;
@@ -816,6 +878,8 @@ function startCompanion() {
       contactMaterial.uniforms.opacity.value = SETTINGS.shadowOpacity * (1 - Math.min(0.45, jump * 5));
       haloMesh.position.x = contact.position.x;
       haloMesh.position.z = contact.position.z;
+      starPoints.position.x = contact.position.x;
+      starPoints.position.z = contact.position.z;
       orbit?.update();
       renderer.render(scene, camera);
       const currentGesture = performer?.gesture || 'idle';

@@ -219,7 +219,29 @@
     },
     "openStage": "进入小恐龙近景互动",
     "to2d": "切换为像素风格",
-    "to3d": "切换为真 3D 形态"
+    "to3d": "切换为真 3D 形态",
+    "deck": {
+      "title2d": "像素剧场 · 64帧全动作",
+      "title3d": "真3D剧场 · 实时渲染互动",
+      "formPixel": "像素 2D",
+      "form3d": "真 3D",
+      "idle": "待机",
+      "walk": "散步",
+      "run": "疾跑",
+      "work": "搬砖",
+      "emote": "表情",
+      "react": "吃瓜",
+      "action": "欢呼",
+      "meme": "暴富",
+      "poseHello": "挥手",
+      "poseCelebrate": "欢呼",
+      "poseShy": "害羞",
+      "poseCurious": "歪头",
+      "spin360": "转台",
+      "macroStage": "特写",
+      "pat": "摸头",
+      "feed": "投喂"
+    }
   },
   "categories": {
     "learning": "学习成长",

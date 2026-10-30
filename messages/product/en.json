@@ -219,7 +219,29 @@
     },
     "openStage": "Open the dino close-up stage",
     "to2d": "Switch to Pixel style",
-    "to3d": "Switch to True 3D"
+    "to3d": "Switch to True 3D",
+    "deck": {
+      "title2d": "Pixel Stage · 64-Frame Atlas",
+      "title3d": "True 3D Stage · WebGL Live",
+      "formPixel": "Pixel 2D",
+      "form3d": "True 3D",
+      "idle": "Idle",
+      "walk": "Walk",
+      "run": "Sprint",
+      "work": "Code",
+      "emote": "Emote",
+      "react": "Snack",
+      "action": "Cheer",
+      "meme": "Rich",
+      "poseHello": "Wave",
+      "poseCelebrate": "Cheer",
+      "poseShy": "Shy",
+      "poseCurious": "Tilt",
+      "spin360": "Spin",
+      "macroStage": "Macro",
+      "pat": "Pat",
+      "feed": "Feed"
+    }
   },
   "categories": {
     "learning": "Learning",

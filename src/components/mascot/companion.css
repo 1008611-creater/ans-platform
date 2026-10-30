@@ -769,38 +769,217 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
 .ans-companion-dock--inline { display: flex; align-items: center; gap: 4px; }
 .ans-companion-dock--inline > button { cursor: pointer; }
 
-/* 像素风格形态（与真 3D 共同构成仅有的两种吉祥物形态，彻底移除伪 3D 贴图） */
+/* 像素风格形态（64帧 8×8 完整图集 + 弹簧呼吸 + 光环投影，与真 3D 共同构成双形态） */
 .ans-dino-avatar > img { image-rendering: pixelated; }
 .ans-dino-avatar[data-pixel-anim="true"] > img { opacity: 0; }
-.ans-dino-avatar .ans-dino-pixel {
+.ans-dino-pixel-stage {
   position: absolute;
   inset: 0 auto auto 0;
   display: block;
   width: 106px;
   height: 106px;
-  background-image: url("/mascot/pixel/first-visit-atlas@2x.png");
-  background-repeat: no-repeat;
-  background-size: 500% 200%;
-  background-position: 0% 0%;
-  image-rendering: pixelated;
   pointer-events: none;
-  animation: ans-dino-pixel-steps 4.5s steps(1, end) infinite;
+  transform-origin: 50% 90%;
 }
-.ans-companion-v2[data-open=true] .ans-dino-avatar .ans-dino-pixel {
+.ans-companion-v2[data-open=true] .ans-dino-pixel-stage {
   width: 120px;
   height: 120px;
 }
+.ans-dino-pixel-shadow {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 4px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(22, 54, 42, 0.24) 0%, rgba(22, 54, 42, 0) 74%);
+  animation: ans-dino-shadow-breathe 2.6s ease-in-out infinite;
+}
+.ans-dino-pixel-aura {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 1px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(82, 232, 168, 0.55);
+  box-shadow: 0 0 14px rgba(82, 232, 168, 0.32), inset 0 0 8px rgba(255, 224, 130, 0.22);
+  animation: ans-dino-aura-pulse 3.2s ease-in-out infinite;
+}
+.ans-dino-pixel-stage[data-aura="none"] .ans-dino-pixel-aura { display: none; }
+.ans-dino-pixel-stage[data-species="cyber_gold"] .ans-dino-pixel-aura,
+.ans-dino-pixel-stage[data-aura="aura_gold"] .ans-dino-pixel-aura {
+  border-color: rgba(255, 206, 72, 0.72);
+  box-shadow: 0 0 16px rgba(255, 184, 48, 0.45);
+}
+.ans-dino-pixel-stage[data-species="sakura_mochi"] .ans-dino-pixel-aura,
+.ans-dino-pixel-stage[data-aura="aura_sakura"] .ans-dino-pixel-aura {
+  border-color: rgba(255, 138, 194, 0.72);
+  box-shadow: 0 0 16px rgba(255, 138, 194, 0.42);
+}
+.ans-dino-pixel-stage[data-species="aurora_ice"] .ans-dino-pixel-aura,
+.ans-dino-pixel-stage[data-aura="aura_aurora"] .ans-dino-pixel-aura {
+  border-color: rgba(98, 224, 255, 0.72);
+  box-shadow: 0 0 16px rgba(132, 120, 255, 0.44);
+}
+.ans-dino-pixel-stage[data-species="cyber_gold"] .ans-dino-pixel {
+  filter: sepia(0.28) saturate(1.45) hue-rotate(-14deg) drop-shadow(0 2px 6px rgba(255, 196, 64, 0.28));
+}
+.ans-dino-pixel-stage[data-species="sakura_mochi"] .ans-dino-pixel {
+  filter: hue-rotate(195deg) saturate(1.18) brightness(1.04) drop-shadow(0 2px 6px rgba(255, 138, 194, 0.28));
+}
+.ans-dino-pixel-stage[data-species="aurora_ice"] .ans-dino-pixel {
+  filter: hue-rotate(38deg) saturate(1.22) brightness(1.04) drop-shadow(0 2px 6px rgba(98, 224, 255, 0.28));
+}
+.ans-dino-avatar .ans-dino-pixel {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: url("/mascot/pixel/dino-atlas.png");
+  background-repeat: no-repeat;
+  background-size: 800% 800%;
+  background-position: 0% 0%;
+  image-rendering: pixelated;
+  pointer-events: none;
+  transform-origin: 50% 90%;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), filter 220ms ease;
+  animation: ans-dino-atlas-row 3.2s steps(1, end) infinite;
+}
+.ans-dino-pixel-stage[data-bounce="hop"] {
+  animation: ans-dino-bounce-hop 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ans-dino-pixel-stage[data-bounce="squash"] {
+  animation: ans-dino-bounce-squash 540ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ans-dino-pixel-stage[data-bounce="shake"] {
+  animation: ans-dino-bounce-shake 580ms ease-in-out;
+}
 @media (max-width: 640px) {
-  .ans-companion-v2 .ans-dino-avatar .ans-dino-pixel { width: 52px; height: 52px; }
-  .ans-companion-v2[data-open=true] .ans-dino-avatar .ans-dino-pixel { width: 60px; height: 60px; }
+  .ans-companion-v2 .ans-dino-pixel-stage { width: 52px; height: 52px; }
+  .ans-companion-v2[data-open=true] .ans-dino-pixel-stage { width: 60px; height: 60px; }
 }
-@keyframes ans-dino-pixel-steps {
-  0%, 54% { background-position: 0% 0%; }
-  55%, 60% { background-position: 25% 0%; }
-  61%, 74% { background-position: 50% 0%; }
-  75%, 88% { background-position: 75% 0%; }
-  89%, 100% { background-position: 25% 100%; }
+@keyframes ans-dino-atlas-row {
+  0%, 12.49%     { background-position-x: 0%; }
+  12.5%, 24.99%  { background-position-x: 14.2857%; }
+  25%, 37.49%    { background-position-x: 28.5714%; }
+  37.5%, 49.99%  { background-position-x: 42.8571%; }
+  50%, 62.49%    { background-position-x: 57.1429%; }
+  62.5%, 74.99%  { background-position-x: 71.4286%; }
+  75%, 87.49%    { background-position-x: 85.7143%; }
+  87.5%, 100%    { background-position-x: 100%; }
 }
+@keyframes ans-dino-shadow-breathe {
+  0%, 100% { transform: scaleX(1); opacity: 0.85; }
+  50%      { transform: scaleX(0.88); opacity: 0.62; }
+}
+@keyframes ans-dino-aura-pulse {
+  0%, 100% { transform: scale(0.96); opacity: 0.72; }
+  50%      { transform: scale(1.05); opacity: 1; }
+}
+@keyframes ans-dino-bounce-hop {
+  0%   { transform: translateY(0) scale(1.08, 0.9); }
+  40%  { transform: translateY(-14px) scale(0.94, 1.08); }
+  75%  { transform: translateY(2px) scale(1.04, 0.96); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+@keyframes ans-dino-bounce-squash {
+  0%   { transform: scale(1, 1); }
+  30%  { transform: scale(1.16, 0.84); }
+  65%  { transform: scale(0.94, 1.06); }
+  100% { transform: scale(1, 1); }
+}
+@keyframes ans-dino-bounce-shake {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  20%      { transform: translateX(-5px) rotate(-6deg); }
+  40%      { transform: translateX(5px) rotate(6deg); }
+  60%      { transform: translateX(-4px) rotate(-4deg); }
+  80%      { transform: translateX(4px) rotate(4deg); }
+}
+
+/* 兔兔龙双形态互动动作台（MascotStageDeck） */
+.ans-mascot-stage-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 7px 14px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklch, var(--muted) 38%, var(--background));
+  flex-shrink: 0;
+}
+.ans-mascot-stage-deck-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ans-mascot-stage-deck-title {
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--muted-foreground);
+  letter-spacing: -0.01em;
+}
+.ans-mascot-form-segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+.ans-mascot-form-segmented > button {
+  padding: 2px 9px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+.ans-mascot-form-segmented > button[aria-pressed="true"] {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.ans-mascot-stage-chips {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 1px;
+}
+.ans-mascot-stage-chips::-webkit-scrollbar { display: none; }
+.ans-mascot-stage-chips > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 11px;
+  font-weight: 550;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 150ms, background 150ms, color 150ms, transform 120ms;
+}
+.ans-mascot-stage-chips > button:hover {
+  border-color: var(--primary);
+  background: color-mix(in oklch, var(--primary) 8%, var(--background));
+}
+.ans-mascot-stage-chips > button[aria-pressed="true"] {
+  border-color: var(--primary);
+  background: color-mix(in oklch, var(--primary) 14%, var(--background));
+  color: var(--primary);
+  font-weight: 650;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .ans-dino-avatar .ans-dino-pixel { animation: none; }
+  .ans-dino-avatar .ans-dino-pixel,
+  .ans-dino-pixel-shadow,
+  .ans-dino-pixel-aura,
+  .ans-dino-pixel-stage { animation: none !important; }
 }
