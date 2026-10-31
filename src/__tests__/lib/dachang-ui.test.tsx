@@ -80,7 +80,8 @@ describe("流式打字", () => {
     expect(paragraph.filter((node) => node.type === "element")).toHaveLength(4);
     expect(paragraph[1].properties?.style).toBe("animation-delay:30ms");
     expect(paragraph[2]).toEqual({ type: "text", value: " " });
-    expect(tree.children[1].children[0].children).toEqual([{ type: "text", value: "npm run" }]);
+    const code = tree.children[1].children[0] as { children: unknown };
+    expect(code.children).toEqual([{ type: "text", value: "npm run" }]);
   });
 });
 
