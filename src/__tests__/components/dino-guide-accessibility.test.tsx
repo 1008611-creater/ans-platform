@@ -7,6 +7,7 @@ import companionMessages from "../../../messages/companion/zh.json";
 import { PREFERENCES_KEY, resetSitePreferences } from "@/lib/site-preferences";
 import { COMPANION_SIZE_KEY, clampCompanionSize, companionBounds, defaultCompanionSize, useCompanionSize } from "@/components/mascot/use-companion-size";
 import type { DinoTaskSnapshot } from "@/components/mascot/dino-task-context";
+import { settleSheet, SHEET_CLOSE_PX, SHEET_EXPAND_PX } from "@/components/mascot/use-companion-sheet";
 
 const state = vi.hoisted(() => ({ task: null as DinoTaskSnapshot | null, actor: "member" as string | null, status: "authenticated" }));
 vi.mock("@/components/mascot/dino-task-context", () => ({ useDinoTask: () => state.task }));
@@ -210,4 +211,68 @@ it("keeps the chat label when the browser cannot own the click (no WebGL)", () =
   render(<DinoGuide />);
   fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
   expect(screen.getByRole("dialog", { name: mascotMessages.mascot.name })).toBeInTheDocument();
+});
+
+function stubPhone(matches = true) {
+  vi.stubGlobal("matchMedia", (query: string) => ({ matches, media: query, addEventListener() {}, removeEventListener() {} }));
+}
+
+it("settles the phone sheet by drag distance: close from 60%, step down from 80%, expand on pull-up", () => {
+  expect(settleSheet("half", SHEET_CLOSE_PX + 1)).toBe("close");
+  expect(settleSheet("full", SHEET_CLOSE_PX + 1)).toBe("half");
+  expect(settleSheet("half", -SHEET_EXPAND_PX - 1)).toBe("full");
+  expect(settleSheet("half", 20)).toBe("half");
+  expect(settleSheet("full", -200)).toBe("full");
+});
+
+it("opens a bottom sheet from the phone badge even when WebGL owns the desktop click", () => {
+  stubPhone();
+  vi.stubGlobal("WebGLRenderingContext", function WebGLRenderingContext() {});
+  render(<DinoGuide />);
+  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
+  const dialog = screen.getByRole("dialog", { name: mascotMessages.mascot.name });
+  expect(dialog).toHaveAttribute("data-sheet", "true");
+  expect(dialog).toHaveAttribute("data-snap", "half");
+  expect(within(dialog).getByRole("button", { name: companionMessages.sheetGrabber })).toBeInTheDocument();
+  expect(document.querySelector(".ans-companion-scrim")).not.toBeNull();
+  expect(document.body.style.position).toBe("fixed");
+});
+
+it("keeps the phone sheet open on outside taps and closes it with the Android back gesture", async () => {
+  stubPhone();
+  render(<DinoGuide />);
+  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
+  expect(history.state?.ansCompanionSheet).toBe(true);
+  fireEvent.pointerDown(document.querySelector(".ans-companion-scrim")!);
+  expect(screen.getByRole("dialog", { name: mascotMessages.mascot.name })).toBeInTheDocument();
+  const grabber = screen.getByRole("button", { name: companionMessages.sheetGrabber });
+  fireEvent.keyDown(grabber, { key: "ArrowUp" });
+  expect(screen.getByRole("dialog")).toHaveAttribute("data-snap", "full");
+  act(() => { window.dispatchEvent(new PopStateEvent("popstate")); });
+  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  expect(document.body.style.position).toBe("");
+  expect(document.querySelector(".ans-companion-scrim")).toBeNull();
+});
+
+it("pops its own history entry when the phone sheet is closed with the close button", async () => {
+  stubPhone();
+  const back = vi.spyOn(history, "back").mockImplementation(() => {});
+  try {
+    render(<DinoGuide />);
+    fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: mascotMessages.mascot.close }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(back).toHaveBeenCalledTimes(1);
+  } finally {
+    back.mockRestore();
+    history.replaceState(null, "");
+  }
+});
+
+it("keeps the desktop popover when the viewport is wide", () => {
+  stubPhone(false);
+  render(<DinoGuide />);
+  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
+  expect(screen.getByRole("dialog")).not.toHaveAttribute("data-sheet");
+  expect(document.querySelector(".ans-companion-scrim")).toBeNull();
 });
