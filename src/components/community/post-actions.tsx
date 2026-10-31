@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Check, Flag, Heart } from "lucide-react";
+import { Check, Flag, Heart, Pin, PinOff } from "lucide-react";
 import { toast } from "sonner";
 import { COMMUNITY_REPORT_REASONS, HELP_REWARD_XP } from "@/contracts/community-posts";
 import { Button } from "@/components/ui/button";
@@ -158,4 +158,13 @@ export function ReportPost({ postId }: { postId: string }) {
       <Button type="submit" size="sm" variant="outline" disabled={pending}>{t("reportSubmit")}</Button>
     </form>
   </details>;
+}
+
+/** 管理员置顶 / 取消置顶。只在管理员看帖子详情时出现。 */
+export function PinPostButton({ postId, pinned }: { postId: string; pinned: boolean }) {
+  const t = useTranslations("product.communityPost.detail");
+  const { run, pending } = usePostAction(postId);
+  return <Button type="button" variant="ghost" size="sm" aria-pressed={pinned} disabled={pending} onClick={() => void run({ action: "pin", pinned: !pinned })}>
+    {pinned ? <PinOff className="h-4 w-4" aria-hidden="true" /> : <Pin className="h-4 w-4" aria-hidden="true" />}{pinned ? t("unpin") : t("pin")}
+  </Button>;
 }

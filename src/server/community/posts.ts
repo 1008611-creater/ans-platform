@@ -137,16 +137,21 @@ function relayQuote(relayOf: { id: string; title: string | null; body: string; s
   return relayOf.status === "HIDDEN" ? { id: relayOf.id, label: null } : { id: relayOf.id, label: relayOf.title || relayOf.body };
 }
 
-export async function listCommunityPosts({ board, sort = "latest", take = 40, authorIds }: { board?: CommunityBoard; sort?: CommunityFeedSort; take?: number; authorIds?: string[] }) {
+/** 推荐频道顶上最多放几条置顶帖。 */
+export const PINNED_MAX = 2;
+
+export async function listCommunityPosts({ board, sort = "latest", take = 40, authorIds, pinned = false, excludeIds }: { board?: CommunityBoard; sort?: CommunityFeedSort; take?: number; authorIds?: string[]; pinned?: boolean; excludeIds?: string[] }) {
   const now = new Date();
   const where: Prisma.CommunityPostWhereInput = {
     ...(board ? { board } : {}),
     ...(authorIds ? { authorId: { in: authorIds } } : {}),
+    ...(pinned ? { pinnedAt: { not: null } } : {}),
+    ...(excludeIds?.length ? { id: { notIn: excludeIds } } : {}),
     ...(sort === "open"
       ? { status: "OPEN", kind: "STALL", stall: { in: ["SEEK", "TEAM"] }, expiresAt: { gt: now } }
       : { status: { in: [...VISIBLE] }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }, { status: "RESOLVED" }] }),
   };
-  const rows = await db.communityPost.findMany({ where, include: feedInclude, orderBy: { createdAt: "desc" }, take: Math.min(Math.max(take, 1), 60) });
+  const rows = await db.communityPost.findMany({ where, include: feedInclude, orderBy: pinned ? { pinnedAt: "desc" } : { createdAt: "desc" }, take: Math.min(Math.max(take, 1), 60) });
   return rows.map(({ applications, roles, relayOf, relays, ...post }) => ({
     ...post,
     relayOf: relayQuote(relayOf),
@@ -375,6 +380,16 @@ async function decideApplication(post: ActionPost, userId: string, applicationId
   return result;
 }
 
+/** 置顶只有管理员能做，用来把每天的官方挑战帖放到推荐频道最上面。摊位会过期，不给置顶。 */
+async function pinPost(post: ActionPost, userId: string, pinned: boolean) {
+  const user = await db.user.findUnique({ where: { id: userId }, select: { role: true } });
+  if (user?.role !== "ADMIN") throw new CommunityError(403, "FORBIDDEN");
+  if (post.kind === "STALL") throw new CommunityError(400, "INVALID_ACTION");
+  await db.communityPost.update({ where: { id: post.id }, data: { pinnedAt: pinned ? new Date() : null } });
+  await db.auditLog.create({ data: { actorId: userId, action: pinned ? "COMMUNITY_POST_PINNED" : "COMMUNITY_POST_UNPINNED", resourceType: "community_post", resourceId: post.id } });
+  return { pinned };
+}
+
 async function reportPost(post: ActionPost, userId: string, reason: string, details?: string) {
   if (post.authorId === userId) throw new CommunityError(400, "SELF_ACTION");
   try {
@@ -405,5 +420,6 @@ export async function runCommunityPostAction(userId: string, postId: string, raw
     case "apply": return applyToTeam(post, userId, input.role, input.message);
     case "decide": return decideApplication(post, userId, input.applicationId, input.decision);
     case "report": return reportPost(post, userId, input.reason, input.details);
+    case "pin": return pinPost(post, userId, input.pinned);
   }
 }

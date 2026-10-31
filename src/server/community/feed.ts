@@ -1,6 +1,6 @@
 import type { CommunityBoard } from "@prisma/client";
 import { listPublishedArtifacts } from "@/server/projects/publication";
-import { listCommunityPosts, type CommunityFeedSort, type CommunityPostSummary } from "@/server/community/posts";
+import { listCommunityPosts, PINNED_MAX, type CommunityFeedSort, type CommunityPostSummary } from "@/server/community/posts";
 import { listFollowingIds } from "@/server/community/follows";
 
 /** 社区板块。项目库留在项目广场，这里只放人发的东西。「关注」只给登录的人看。 */
@@ -67,12 +67,14 @@ export async function listCommunityFeed(channel: CommunityChannel, sort: Communi
   if (channel === "following") {
     const ids = viewerId ? await listFollowingIds(viewerId) : [];
     const posts = ids.length ? await listCommunityPosts({ sort, authorIds: ids }) : [];
-    return { feed: posts.map((post) => ({ type: "post" as const, id: post.id, createdAt: post.createdAt, post })) as CommunityFeedItem[], followingCount: ids.length };
+    return { feed: posts.map((post) => ({ type: "post" as const, id: post.id, createdAt: post.createdAt, post })) as CommunityFeedItem[], followingCount: ids.length, pinned: [] };
   }
   const board = channel === "all" ? undefined : CHANNEL_BOARD[channel];
   const withWorks = sort === "latest" && (channel === "all" || channel === "aigc");
+  // 置顶帖只放在推荐频道的「最新」顶上，下面的信息流不再重复出现。
+  const pinned = channel === "all" && sort === "latest" ? await listCommunityPosts({ pinned: true, take: PINNED_MAX }) : [];
   const [posts, artifacts] = await Promise.all([
-    listCommunityPosts({ board, sort }),
+    listCommunityPosts({ board, sort, excludeIds: pinned.map((post) => post.id) }),
     withWorks ? listPublishedArtifacts(24) : Promise.resolve([]),
   ]);
   const feed: CommunityFeedItem[] = [
@@ -91,5 +93,5 @@ export async function listCommunityFeed(channel: CommunityChannel, sort: Communi
       comments: artifact.counts.comments,
     })),
   ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  return { feed, followingCount: null };
+  return { feed, followingCount: null, pinned: pinned.map((post) => ({ type: "post" as const, id: post.id, createdAt: post.createdAt, post })) as CommunityFeedItem[] };
 }
