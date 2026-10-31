@@ -27,7 +27,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.redirect.mockImplementation(() => { throw new Error("REDIRECT"); });
   mocks.growth.mockResolvedValue(profile);
-  mocks.feed.mockResolvedValue({ feed: [note], followingCount: null });
+  mocks.feed.mockResolvedValue({ feed: [note], followingCount: null, pinned: [] });
   mocks.suggest.mockResolvedValue([]);
   mocks.compose.mockResolvedValue({ teams: [], competitions: [] });
   mocks.stalls.mockResolvedValue([]);
@@ -53,7 +53,7 @@ it("shows the public feed to visitors without loading private growth", async () 
 });
 it("shows an honest empty state instead of padding the feed", async () => {
   mocks.auth.mockResolvedValue(null);
-  mocks.feed.mockResolvedValue({ feed: [], followingCount: null });
+  mocks.feed.mockResolvedValue({ feed: [], followingCount: null, pinned: [] });
   render(await CommunityPage({ searchParams: Promise.resolve({}) }));
   expect(screen.queryByTestId("community-feed")).not.toBeInTheDocument();
   expect(screen.getByText("empty")).toBeInTheDocument();
@@ -94,7 +94,7 @@ it("does not manufacture growth for a removed or unavailable account", async () 
 
 it("gives members a following channel that points to real people when it is empty", async () => {
   mocks.auth.mockResolvedValue({ user: { id: "self", username: "real-member" } });
-  mocks.feed.mockResolvedValue({ feed: [], followingCount: 0 });
+  mocks.feed.mockResolvedValue({ feed: [], followingCount: 0, pinned: [] });
   mocks.suggest.mockResolvedValue([{ id: "u2", username: "kai", nickname: null, avatar: null, reason: "fan", count: 0 }, { id: "u3", username: "bai", nickname: "白榆", avatar: null, reason: "relays", count: 4 }]);
   render(await CommunityPage({ searchParams: Promise.resolve({ c: "following" }) }));
   expect(mocks.feed).toHaveBeenCalledExactlyOnceWith("following", "latest", "self");
@@ -106,4 +106,14 @@ it("gives members a following channel that points to real people when it is empt
   expect(empty.querySelector('button[data-user="u2"]')).toHaveTextContent("followBack");
   expect(empty.querySelector('button[data-user="u3"]')).toHaveTextContent("follow");
   expect(screen.getByTestId("community-follow-suggestions")).toBeInTheDocument();
+});
+
+it("puts the pinned challenge above the feed on the recommended channel", async () => {
+  mocks.auth.mockResolvedValue(null);
+  mocks.feed.mockResolvedValue({ feed: [note], followingCount: null, pinned: [{ type: "post", id: "day02" }] });
+  render(await CommunityPage({ searchParams: Promise.resolve({}) }));
+  const pinned = screen.getByTestId("community-pinned");
+  expect(pinned).toHaveTextContent("pinned");
+  expect(pinned.querySelectorAll("li")).toHaveLength(1);
+  expect(screen.getAllByTestId("community-feed")).toHaveLength(2);
 });

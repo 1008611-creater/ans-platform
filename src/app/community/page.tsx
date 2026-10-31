@@ -17,7 +17,7 @@ import { CheckInHeatmap } from "@/components/community/check-in-heatmap";
 import { CommunityPanel } from "@/components/community/community-panel";
 import { ProfileGrowthPanel } from "@/components/growth/profile-growth-panel";
 import { Button } from "@/components/ui/button";
-import { Waves } from "lucide-react";
+import { Pin, Waves } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -103,6 +103,10 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
             <section aria-labelledby="community-feed-heading" className="min-w-0 space-y-3">
               <h2 id="community-feed-heading" className="sr-only">{t(`channels.${channel}`)}</h2>
+              {feed.pinned.length > 0 && <div className="space-y-2" data-testid="community-pinned">
+                <h3 className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground"><Pin className="h-3.5 w-3.5" aria-hidden="true" />{t("pinned")}</h3>
+                <CommunityFeed items={feed.pinned} />
+              </div>}
               {channel === "following" && feed.followingCount !== null && feed.followingCount > 0 && <p className="text-xs text-muted-foreground ans-num">{t("followingHint", { count: feed.followingCount })}</p>}
               {feed.feed.length > 0 ? <CommunityFeed items={feed.feed} /> : channel === "following" ? (
                 <div className="space-y-4 rounded-2xl bg-card px-5 py-6 shadow-[inset_0_0_0_0.5px_var(--hairline)]" data-testid="community-following-empty">

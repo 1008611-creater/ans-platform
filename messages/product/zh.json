@@ -3729,7 +3729,8 @@
     "relayOfHidden": "接力的原帖已隐藏",
     "relayCount": "{count} 人接力",
     "remix": "做同款",
-    "remixOf": "附项目：{title}"
+    "remixOf": "附项目：{title}",
+    "pinned": "置顶"
   },
   "modelPlaza": {
     "title": "模型广场",
@@ -4208,7 +4209,9 @@
       "done": "已完成",
       "remixHeading": "附的项目",
       "remixCta": "做同款",
-      "remixCount": "{count} 人晒了同款"
+      "remixCount": "{count} 人晒了同款",
+      "pin": "置顶",
+      "unpin": "取消置顶"
     },
     "errors": {
       "UNAUTHORIZED": "请先登录",

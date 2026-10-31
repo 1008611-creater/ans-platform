@@ -3729,7 +3729,8 @@
     "relayOfHidden": "The original post is hidden",
     "relayCount": "{count} relays",
     "remix": "Make your own",
-    "remixOf": "Project: {title}"
+    "remixOf": "Project: {title}",
+    "pinned": "Pinned"
   },
   "modelPlaza": {
     "title": "Model plaza",
@@ -4208,7 +4209,9 @@
       "done": "Done",
       "remixHeading": "Attached project",
       "remixCta": "Make your own",
-      "remixCount": "Shared by {count}"
+      "remixCount": "Shared by {count}",
+      "pin": "Pin",
+      "unpin": "Unpin"
     },
     "errors": {
       "UNAUTHORIZED": "Please sign in",

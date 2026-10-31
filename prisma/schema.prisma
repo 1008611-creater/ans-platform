@@ -3429,6 +3429,8 @@ model CommunityPost {
   relayOfId     String?
   relayOf       CommunityPost?      @relation("CommunityRelay", fields: [relayOfId], references: [id], onDelete: SetNull)
   relays        CommunityPost[]     @relation("CommunityRelay")
+  /// 管理员置顶的时间。推荐频道最上面放最近置顶的两条，用来放每天的官方挑战帖。
+  pinnedAt      DateTime?
   /// 做同款：帖子附的项目广场项目（catalog slug），看帖的人点「做同款」从这个项目开始做。
   catalogSlug   String?             @db.VarChar(80)
   createdAt     DateTime            @default(now())
@@ -3443,6 +3445,7 @@ model CommunityPost {
   @@index([board, status, createdAt])
   @@index([authorId, createdAt])
   @@index([relayOfId, createdAt])
+  @@index([pinnedAt])
   @@index([catalogSlug, createdAt])
   @@map("community_posts")
 }

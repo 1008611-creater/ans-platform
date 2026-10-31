@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   db: {
-    user: { findFirst: vi.fn() },
+    user: { findFirst: vi.fn(), findUnique: vi.fn() },
     competition: { findUnique: vi.fn() },
     teamMember: { findFirst: vi.fn(), findUnique: vi.fn(), count: vi.fn(), create: vi.fn(), update: vi.fn() },
     communityPost: { count: vi.fn(), create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
@@ -177,6 +177,29 @@ describe("站内提醒", () => {
     await expect(runCommunityPostAction("u1", "post1", { action: "reply", body: "我也遇到了" })).resolves.toEqual({ replyId: "r1" });
     expect(error).toHaveBeenCalledWith("COMMUNITY_NOTIFY_FAILED", "COMMUNITY_REPLY");
     error.mockRestore();
+  });
+});
+
+describe("置顶", () => {
+  it("only lets admins pin notes and quick lines, and records who did it", async () => {
+    mocks.db.communityPost.findUnique.mockResolvedValue(openPost({ kind: "NOTE", stall: null, expiresAt: null }));
+    mocks.db.user.findUnique.mockResolvedValue({ role: "USER" });
+    await expectCode(runCommunityPostAction("u1", "post1", { action: "pin", pinned: true }), "FORBIDDEN");
+    expect(mocks.db.communityPost.update).not.toHaveBeenCalled();
+
+    mocks.db.user.findUnique.mockResolvedValue({ role: "ADMIN" });
+    await expect(runCommunityPostAction("u1", "post1", { action: "pin", pinned: true })).resolves.toEqual({ pinned: true });
+    expect(mocks.db.communityPost.update).toHaveBeenCalledWith({ where: { id: "post1" }, data: { pinnedAt: expect.any(Date) } });
+    expect(mocks.db.auditLog.create).toHaveBeenCalledWith({ data: expect.objectContaining({ actorId: "u1", action: "COMMUNITY_POST_PINNED", resourceId: "post1" }) });
+
+    await runCommunityPostAction("u1", "post1", { action: "pin", pinned: false });
+    expect(mocks.db.communityPost.update).toHaveBeenLastCalledWith({ where: { id: "post1" }, data: { pinnedAt: null } });
+  });
+
+  it("does not pin stalls, which expire", async () => {
+    mocks.db.communityPost.findUnique.mockResolvedValue(openPost());
+    mocks.db.user.findUnique.mockResolvedValue({ role: "ADMIN" });
+    await expectCode(runCommunityPostAction("u1", "post1", { action: "pin", pinned: true }), "INVALID_ACTION");
   });
 });
 

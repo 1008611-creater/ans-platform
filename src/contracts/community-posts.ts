@@ -82,6 +82,7 @@ export const communityPostActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("apply"), role: z.string().trim().min(1).max(20), message: z.string().trim().max(300).optional() }),
   z.object({ action: z.literal("decide"), applicationId: z.string().trim().min(1).max(40), decision: z.enum(["ACCEPT", "DECLINE"]) }),
   z.object({ action: z.literal("report"), reason: z.enum(COMMUNITY_REPORT_REASONS), details: z.string().trim().max(500).optional() }),
+  z.object({ action: z.literal("pin"), pinned: z.boolean() }),
 ]);
 export type CommunityPostAction = z.input<typeof communityPostActionSchema>;
 
