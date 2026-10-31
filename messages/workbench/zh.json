@@ -63,7 +63,15 @@
     "splitHandle": "拖动调整对话和预览的宽度",
     "showPreview": "展开预览",
     "withDiff": "含变更对比",
-    "writeCode": "写代码"
+    "writeCode": "写代码",
+    "newTask": "新建任务",
+    "openMenu": "任务列表",
+    "closeMenu": "关闭任务列表",
+    "togglePanel": "预览面板",
+    "moreTools": "更多选项",
+    "send": "发送",
+    "jumpLatest": "跳至最新",
+    "stop": "关闭"
   },
   "aria": {
     "nicknameInput": "新昵称",
@@ -203,5 +211,9 @@
   "placeholder": {
     "newTask": "输入你要新建的网页、Python 脚本或农客松方案（Enter 执行）...",
     "iterate": "描述要对 {file} 做的修改（如：切换为浅色主题、增加导出 CSV 按钮）…"
+  },
+  "home": {
+    "title": "想做点什么？",
+    "samples": "从范例开始"
   }
 }

@@ -63,7 +63,15 @@
     "splitHandle": "Drag to resize chat and preview",
     "showPreview": "Show preview",
     "withDiff": "With diff",
-    "writeCode": "Write code"
+    "writeCode": "Write code",
+    "newTask": "New task",
+    "openMenu": "Tasks",
+    "closeMenu": "Close task list",
+    "togglePanel": "Preview panel",
+    "moreTools": "More options",
+    "send": "Send",
+    "jumpLatest": "Jump to latest",
+    "stop": "Close"
   },
   "aria": {
     "nicknameInput": "New nickname",
@@ -203,5 +211,9 @@
   "placeholder": {
     "newTask": "Describe the web page, Python script or project brief you want (Enter to run)...",
     "iterate": "Describe the change to {file} (for example: switch to a light theme, add an export CSV button)…"
+  },
+  "home": {
+    "title": "What do you want to build?",
+    "samples": "Start from a sample"
   }
 }
