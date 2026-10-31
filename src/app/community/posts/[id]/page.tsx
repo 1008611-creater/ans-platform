@@ -11,7 +11,7 @@ import { countRemixPosts, loadRemixProjects } from "@/server/community/remix";
 import { FollowButton } from "@/components/community/follow-button";
 import { PostCompose, type RelayTarget } from "@/components/community/post-compose";
 import { BOARD_CHIP } from "@/components/community/community-feed";
-import { ApplicationList, ApplyForm, ClosePostButton, HelpForm, LikeButton, OfferList, ReplyForm, ReportPost } from "@/components/community/post-actions";
+import { ApplicationList, ApplyForm, ClosePostButton, HelpForm, LikeButton, OfferList, PinPostButton, ReplyForm, ReportPost } from "@/components/community/post-actions";
 import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
@@ -136,6 +136,7 @@ export default async function CommunityPostPage({ params }: { params: Params }) 
           <div className="flex flex-wrap items-center gap-3 border-t pt-4">
             {viewerId ? <LikeButton postId={post.id} liked={post.liked} count={post._count.likes} /> : <span className="text-sm text-muted-foreground">{page("likes")} {post._count.likes}</span>}
             <span className="flex-1" />
+            {session?.user?.role === "ADMIN" && post.kind !== "STALL" && post.status !== "HIDDEN" && <PinPostButton postId={post.id} pinned={Boolean(post.pinnedAt)} />}
             {viewerId && !post.isAuthor && <ReportPost postId={post.id} />}
           </div>
         </article>
