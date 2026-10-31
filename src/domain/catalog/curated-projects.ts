@@ -445,5 +445,122 @@ export const CURATED_CATALOG_PROJECTS = [
         "sourceNote": "mermaid-js/mermaid-live-editor · MIT license."
       }
     }
+  },
+  {
+    "slug": "diagram-design",
+    "category": "github",
+    "subcategory": "agents",
+    "goal": "portfolio",
+    "preview": "agent",
+    "source": "github",
+    "sourceUrl": "https://github.com/cathrynlavery/diagram-design",
+    "licenseUrl": "https://github.com/cathrynlavery/diagram-design/blob/main/LICENSE",
+    "discoveryUrl": "https://github.com/521xueweihan/HelloGitHub/blob/master/content/HelloGitHub127.md",
+    "coverUrl": "/catalog/gitglow-v1/diagram-design.webp",
+    "coverNote": "原项目示例图库截图 GitGlow 版式",
+    "content": {
+      "zh": {
+        "title": "Diagram Design · 让 Agent 画好图",
+        "summary": "装进 Agent 的画图技能：一句话出架构图、流程图，配色字体跟着你的品牌走。",
+        "sample": "cathrynlavery/diagram-design",
+        "output": "一个独立的 HTML + SVG 图表文件，45 种图表类型可选，可以直接截图放进作品集、比赛方案或文章。",
+        "inputs": "一个支持 Agent Skills 的工具（Claude Code、Codex、Cursor 等）和 Node.js（用来跑 npx）。想用自己的配色，准备一个自己的网站地址。",
+        "decisions": "做同款时要定三件事：画什么图（架构、流程、时序等 45 种里选）、用谁的品牌（给网址让它提取配色和字体）、放在哪里用（作品集、比赛 PPT 还是 README）。",
+        "model": "用你的 Agent 当前在用的模型，技能本身不指定模型。",
+        "prompt": "用 diagram-design 帮我画一张我比赛项目的系统架构图：前端、后端、数据库和 AI 接口四块，配色用我网站的颜色。",
+        "skill": "1. npx skills add cathrynlavery/diagram-design（Claude Code 也可以用 /plugin marketplace add cathrynlavery/diagram-design）\n2. 对 Agent 说「onboard diagram-design to <你的网站>」，确认后配色就换成你的\n3. 直接让 Agent 画图；想先看效果，打开 skills/diagram-design/assets/index.html 示例图库",
+        "sourceNote": "作者 Cathryn Lavery，MIT 许可。官方版本只在这个仓库发布。发现于 HelloGitHub 第 127 期。"
+      },
+      "en": {
+        "title": "Diagram Design · Diagrams your agent draws well",
+        "summary": "An agent skill that turns one sentence into architecture and flow diagrams in your brand's colors and fonts.",
+        "sample": "cathrynlavery/diagram-design",
+        "output": "A self-contained HTML + SVG diagram file, with 45 diagram types, ready for a portfolio, pitch deck or article.",
+        "inputs": "A tool that reads Agent Skills (Claude Code, Codex, Cursor and others) and Node.js for npx. For your own palette, a website URL.",
+        "decisions": "Decide what to draw (architecture, flow, sequence and more), whose brand to use (give a URL to extract colors and fonts) and where it will be used.",
+        "model": "Uses whatever model your agent runs; the skill does not require a specific one.",
+        "prompt": "Use diagram-design to draw the system architecture of my competition project: frontend, backend, database and AI API, in my website's colors.",
+        "skill": "1. npx skills add cathrynlavery/diagram-design (or /plugin marketplace add cathrynlavery/diagram-design in Claude Code)\n2. Tell your agent \"onboard diagram-design to <your site>\" and approve the palette\n3. Ask for a diagram; to preview, open skills/diagram-design/assets/index.html",
+        "sourceNote": "By Cathryn Lavery, MIT license. Official builds come only from this repository. Found in HelloGitHub issue 127."
+      }
+    }
+  },
+  {
+    "slug": "word-atlas",
+    "category": "learning",
+    "subcategory": "methods",
+    "goal": "portfolio",
+    "preview": "site",
+    "source": "github",
+    "sourceUrl": "https://github.com/designfuchen/word-atlas",
+    "licenseUrl": "https://github.com/designfuchen/word-atlas/blob/main/LICENSE",
+    "discoveryUrl": "https://github.com/521xueweihan/HelloGitHub/blob/master/content/HelloGitHub127.md",
+    "coverUrl": "/catalog/gitglow-v1/word-atlas.webp",
+    "coverNote": "原项目界面截图 GitGlow 版式",
+    "content": {
+      "zh": {
+        "title": "词光 · 一词一画背雅思",
+        "summary": "看插画记单词，听英美发音，用间隔复习把 7298 个雅思词背牢。",
+        "sample": "designfuchen/word-atlas",
+        "output": "一个能在浏览器里用的背词网站：插画词卡、英美发音、每日计划、按话题组织的词汇星图，进度存在自己的设备上。",
+        "inputs": "Node.js 20 以上和 npm。仓库带全部图片和录音，第一次下载会比较久。想换成自己的词库，要准备词条、例句、插画和录音。",
+        "decisions": "做同款时主要换三样：词库（换成四六级、考研或专业词汇）、插画风格、复习节奏（FSRS 的目标记忆率可调）。界面和星图可以直接沿用。",
+        "model": "使用应用本身不需要 AI 模型。原项目的释义、例句和插画用生成式 AI 制作，录音用 ElevenLabs；换词库时需要同类模型。",
+        "prompt": "帮我把 word-atlas 跑起来，然后把词库换成四级词汇：保留插画词卡和星图，先做 50 个词试试效果。",
+        "skill": "1. git clone --depth 1 https://github.com/designfuchen/word-atlas.git && cd word-atlas\n2. npm ci && npm run dev，打开 http://localhost:5188\n3. 读 docs/dataset.md 了解词条字段，再按 docs/pipeline.md 生成自己的词条",
+        "sourceNote": "作者 designfuchen。代码和界面原创插画为 MIT，词库内容为 CC BY 4.0。原项目说明内容经过自动校验，尚未逐条人工审校。发现于 HelloGitHub 第 127 期。在线版独立迭代，功能和仓库可能不同。"
+      },
+      "en": {
+        "title": "Word Atlas · Illustrated IELTS vocabulary",
+        "summary": "Learn 7,298 IELTS words with illustrations, UK and US audio and spaced repetition.",
+        "sample": "designfuchen/word-atlas",
+        "output": "A browser vocabulary app: illustrated word cards, UK/US audio, a daily plan and a topic star map, with progress stored on your device.",
+        "inputs": "Node.js 20+ and npm. The repository includes all images and audio, so the first download is large. For your own word list, prepare entries, examples, illustrations and audio.",
+        "decisions": "Swap the word list (CET, graduate exams or subject vocabulary), the illustration style and the review target (FSRS retention is adjustable). The interface and star map can stay.",
+        "model": "Using the app needs no AI model. The original definitions, examples and illustrations were AI-generated and audio uses ElevenLabs; a new word list needs similar models.",
+        "prompt": "Help me run word-atlas, then replace the word list with CET-4 vocabulary: keep the illustrated cards and star map and try 50 words first.",
+        "skill": "1. git clone --depth 1 https://github.com/designfuchen/word-atlas.git && cd word-atlas\n2. npm ci && npm run dev, then open http://localhost:5188\n3. Read docs/dataset.md for entry fields, then follow docs/pipeline.md to generate your own entries",
+        "sourceNote": "By designfuchen. Code and original interface artwork are MIT; vocabulary content is CC BY 4.0. Content is automatically checked but not yet reviewed entry by entry. Found in HelloGitHub issue 127."
+      }
+    }
+  },
+  {
+    "slug": "future-periodic-table",
+    "category": "web",
+    "subcategory": "applications",
+    "goal": "portfolio",
+    "preview": "site",
+    "source": "github",
+    "sourceUrl": "https://github.com/SeanWong17/Future-Style-Periodic-Table",
+    "licenseUrl": "https://github.com/SeanWong17/Future-Style-Periodic-Table/blob/main/LICENSE",
+    "discoveryUrl": "https://github.com/521xueweihan/HelloGitHub/blob/master/content/HelloGitHub127.md",
+    "coverUrl": "/catalog/gitglow-v1/future-periodic-table.webp",
+    "coverNote": "原项目界面截图 GitGlow 版式",
+    "content": {
+      "zh": {
+        "title": "未来风元素周期表",
+        "summary": "赛博朋克风的交互式元素周期表，点开元素能拖着转 3D 原子模型。",
+        "sample": "SeanWong17/Future-Style-Periodic-Table",
+        "output": "一个中英双语的周期表网页：118 种元素的数据卡片、原子半径和电负性等热力图、可旋转缩放的 3D 原子结构。",
+        "inputs": "Node.js 20、22 或 24 以上（推荐 22），会一点 TypeScript 和 CSS 就能改。",
+        "decisions": "做同款时可以换主题（换成别的学科的「表」，比如氨基酸表、星座表）、换配色（颜色集中在 CSS 变量里）、换热力图的指标。周期表网格和 3D 模型的写法可以直接参考。",
+        "model": "不需要 AI 模型。",
+        "prompt": "参考 Future-Style-Periodic-Table 的写法，帮我做一个同样风格的 20 种氨基酸交互表：网格布局、分类高亮、点开看 3D 结构。",
+        "skill": "1. git clone https://github.com/SeanWong17/Future-Style-Periodic-Table.git && cd Future-Style-Periodic-Table\n2. npm install && npm run dev，打开 http://localhost:5173/\n3. 改 src/config/categories.ts 换分类和颜色，改 src/css/styles.css 换主题",
+        "sourceNote": "作者 SeanWong17，MIT 许可。HelloGitHub 第 127 期和科技爱好者周刊第 383 期推荐过。"
+      },
+      "en": {
+        "title": "Future-Style Periodic Table",
+        "summary": "A cyberpunk interactive periodic table where each element opens a draggable 3D atom.",
+        "sample": "SeanWong17/Future-Style-Periodic-Table",
+        "output": "A bilingual periodic table site: data cards for 118 elements, heat maps for atomic radius, electronegativity and more, and rotatable 3D atomic structures.",
+        "inputs": "Node.js 20, 22 or 24+ (22 recommended); a little TypeScript and CSS is enough to customise it.",
+        "decisions": "Change the subject (an amino-acid or constellation table), the palette (colors live in CSS variables) or the heat-map metrics. Reuse the grid and 3D model approach.",
+        "model": "No AI model required.",
+        "prompt": "Following Future-Style-Periodic-Table, build an interactive table of the 20 amino acids in the same style: grid layout, category highlights and a 3D structure view.",
+        "skill": "1. git clone https://github.com/SeanWong17/Future-Style-Periodic-Table.git && cd Future-Style-Periodic-Table\n2. npm install && npm run dev, then open http://localhost:5173/\n3. Edit src/config/categories.ts for categories and colors, and src/css/styles.css for the theme",
+        "sourceNote": "By SeanWong17, MIT license. Featured in HelloGitHub issue 127 and Tech Enthusiast Weekly issue 383."
+      }
+    }
   }
 ] satisfies readonly CatalogEntry[];

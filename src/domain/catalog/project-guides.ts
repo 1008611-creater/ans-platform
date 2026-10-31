@@ -1072,5 +1072,207 @@ export const PROJECT_GUIDES: readonly ProjectGuide[] = [
         "A diagram is not proof of implementation; check rights to shared assets."
       ]
     }
+  },
+  {
+    "slug": "diagram-design",
+    "sourceUrl": "https://github.com/cathrynlavery/diagram-design",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · cathrynlavery/diagram-design",
+        "href": "https://github.com/cathrynlavery/diagram-design"
+      },
+      {
+        "label": "Official site",
+        "href": "https://diagramdesign.dev"
+      }
+    ],
+    "zh": {
+      "audience": "要在作品集、比赛方案或 README 里放架构图、流程图的人",
+      "difficulty": "入门 · 会用 Agent 就行",
+      "access": "装进 Claude Code、Codex、Cursor 等支持 Agent Skills 的工具",
+      "cost": "MIT 开源；画图消耗你 Agent 的模型额度",
+      "result": "独立的 HTML + SVG 图表文件",
+      "steps": [
+        {
+          "title": "安装技能",
+          "body": "运行 npx skills add cathrynlavery/diagram-design；Claude Code 也可以用 /plugin marketplace add cathrynlavery/diagram-design。"
+        },
+        {
+          "title": "换成自己的配色",
+          "body": "对 Agent 说「onboard diagram-design to <你的网站>」，它会提取配色和字体，确认后生效。"
+        },
+        {
+          "title": "开始画图",
+          "body": "直接描述要画的系统或流程；想先看 45 种图表长什么样，打开官网示例。",
+          "href": "https://diagramdesign.dev"
+        }
+      ],
+      "cautions": [
+        "它负责把图画好看，图里的结构和数据是否正确要自己核对。",
+        "官方版本只在这个仓库发布，其他名字下的插件是非官方副本。"
+      ]
+    },
+    "en": {
+      "audience": "People who need architecture or flow diagrams for portfolios, pitches or READMEs",
+      "difficulty": "Beginner · just use your agent",
+      "access": "Install into Claude Code, Codex, Cursor or another Agent Skills host",
+      "cost": "MIT open source; drawing uses your agent's model quota",
+      "result": "A self-contained HTML + SVG diagram file",
+      "steps": [
+        {
+          "title": "Install the skill",
+          "body": "Run npx skills add cathrynlavery/diagram-design, or /plugin marketplace add cathrynlavery/diagram-design in Claude Code."
+        },
+        {
+          "title": "Use your own palette",
+          "body": "Tell your agent \"onboard diagram-design to <your site>\"; it extracts colors and fonts and applies them after you approve."
+        },
+        {
+          "title": "Draw",
+          "body": "Describe the system or flow you want; to see all 45 diagram types first, visit the official site.",
+          "href": "https://diagramdesign.dev"
+        }
+      ],
+      "cautions": [
+        "It makes diagrams look good; check the structure and figures yourself.",
+        "Official builds come only from this repository; listings under other names are unofficial copies."
+      ]
+    },
+    "experienceUrl": "https://diagramdesign.dev"
+  },
+  {
+    "slug": "word-atlas",
+    "sourceUrl": "https://github.com/designfuchen/word-atlas",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · designfuchen/word-atlas",
+        "href": "https://github.com/designfuchen/word-atlas"
+      },
+      {
+        "label": "Live site",
+        "href": "https://0xlei.tech/words/"
+      }
+    ],
+    "zh": {
+      "audience": "备考雅思、想做一个自己的背词工具的人",
+      "difficulty": "进阶 · 需要 Node.js，换词库要处理数据",
+      "access": "在线直接用，或本地运行开源版",
+      "cost": "代码 MIT、词库 CC BY 4.0；换词库生成插画和录音另计",
+      "result": "插画词卡、发音、间隔复习和词汇星图的背词网站",
+      "steps": [
+        {
+          "title": "先在线体验",
+          "body": "打开在线版，看一遍词卡、每日计划和星图。",
+          "href": "https://0xlei.tech/words/"
+        },
+        {
+          "title": "本地跑起来",
+          "body": "git clone --depth 1 https://github.com/designfuchen/word-atlas.git，进入目录后 npm ci && npm run dev，打开 http://localhost:5188。"
+        },
+        {
+          "title": "换成自己的词库",
+          "body": "读 docs/dataset.md 了解词条字段，按 docs/pipeline.md 生成自己的词条、例句和插画，先做几十个词试效果。"
+        }
+      ],
+      "cautions": [
+        "原项目说明内容经过自动校验，尚未逐条人工审校，释义可能有误。",
+        "在线版独立迭代，功能和仓库开源版可能不同。"
+      ]
+    },
+    "en": {
+      "audience": "IELTS learners who want to build their own vocabulary tool",
+      "difficulty": "Intermediate · needs Node.js; new word lists need data work",
+      "access": "Use online or run the open-source version locally",
+      "cost": "Code MIT, vocabulary CC BY 4.0; generating new illustrations and audio costs extra",
+      "result": "A vocabulary site with illustrated cards, audio, spaced repetition and a word star map",
+      "steps": [
+        {
+          "title": "Try it online",
+          "body": "Open the live site and look through the cards, daily plan and star map.",
+          "href": "https://0xlei.tech/words/"
+        },
+        {
+          "title": "Run it locally",
+          "body": "git clone --depth 1 https://github.com/designfuchen/word-atlas.git, then npm ci && npm run dev and open http://localhost:5188."
+        },
+        {
+          "title": "Use your own words",
+          "body": "Read docs/dataset.md for entry fields and follow docs/pipeline.md to generate entries, examples and illustrations; start with a few dozen words."
+        }
+      ],
+      "cautions": [
+        "Content is automatically checked but not yet reviewed entry by entry; definitions may contain errors.",
+        "The live site evolves separately and may differ from the repository."
+      ]
+    },
+    "experienceUrl": "https://0xlei.tech/words/"
+  },
+  {
+    "slug": "future-periodic-table",
+    "sourceUrl": "https://github.com/SeanWong17/Future-Style-Periodic-Table",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · SeanWong17/Future-Style-Periodic-Table",
+        "href": "https://github.com/SeanWong17/Future-Style-Periodic-Table"
+      },
+      {
+        "label": "Live demo",
+        "href": "https://seanwong17.github.io/Future-Style-Periodic-Table/"
+      }
+    ],
+    "zh": {
+      "audience": "想做一个酷炫学科可视化网页放进作品集的人",
+      "difficulty": "入门 · 会一点 TypeScript 和 CSS",
+      "access": "在线体验，或本地运行后改造",
+      "cost": "MIT 开源；不需要 AI 模型",
+      "result": "带热力图和 3D 原子模型的交互式周期表网页",
+      "steps": [
+        {
+          "title": "先在线体验",
+          "body": "点开几个元素，拖动 3D 原子模型，切换热力图。",
+          "href": "https://seanwong17.github.io/Future-Style-Periodic-Table/"
+        },
+        {
+          "title": "本地跑起来",
+          "body": "git clone https://github.com/SeanWong17/Future-Style-Periodic-Table.git，进入目录后 npm install && npm run dev，打开 http://localhost:5173/。"
+        },
+        {
+          "title": "改成你的版本",
+          "body": "改 src/config/categories.ts 换分类和颜色，改 src/css/styles.css 换主题，或把数据换成别的学科。"
+        }
+      ],
+      "cautions": [
+        "元素数据来自原项目，用在报告里前请对照权威资料核对。"
+      ]
+    },
+    "en": {
+      "audience": "People who want a striking subject visualisation for their portfolio",
+      "difficulty": "Beginner · a little TypeScript and CSS",
+      "access": "Try the live demo or run and modify it locally",
+      "cost": "MIT open source; no AI model required",
+      "result": "An interactive periodic table with heat maps and 3D atom models",
+      "steps": [
+        {
+          "title": "Try the demo",
+          "body": "Open a few elements, drag the 3D atom and switch heat maps.",
+          "href": "https://seanwong17.github.io/Future-Style-Periodic-Table/"
+        },
+        {
+          "title": "Run it locally",
+          "body": "git clone https://github.com/SeanWong17/Future-Style-Periodic-Table.git, then npm install && npm run dev and open http://localhost:5173/."
+        },
+        {
+          "title": "Make it yours",
+          "body": "Edit src/config/categories.ts for categories and colors, src/css/styles.css for the theme, or swap in data from another subject."
+        }
+      ],
+      "cautions": [
+        "Element data comes from the original project; verify it against authoritative sources before citing it."
+      ]
+    },
+    "experienceUrl": "https://seanwong17.github.io/Future-Style-Periodic-Table/"
   }
 ];
