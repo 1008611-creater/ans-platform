@@ -60,7 +60,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   const [open, setOpen] = useState(false), [showLatest, setShowLatest] = useState(false), [unread, setUnread] = useState(false);
   const [requestedTab, setRequestedTab] = useState<"none" | "pi" | "pet" | "wardrobe" | "secrets" | "adopt" | null>(null);
   const [speech, setSpeech] = useState<SpeechRequest | null>(null), [voiceStatus, setVoiceStatus] = useState("idle");
-  const sequence = useRef(0), welcomed = useRef(false), focusTarget = useRef<string | null>(null), list = useRef<HTMLDivElement>(null), lastAgentInput = useRef("");
+  const sequence = useRef(0), welcomed = useRef(false), focusTarget = useRef<string | null>(null), returnFocusId = useRef<string | null>(null), list = useRef<HTMLDivElement>(null), lastAgentInput = useRef("");
   const scrollState = useRef<Record<Mode, { top: number; follow: boolean; lastId: number | undefined }>>({ agent: { top: 0, follow: true, lastId: undefined }, guide: { top: 0, follow: true, lastId: undefined } });
   const titleId = useId(), taskId = useId(), composer = useRef<HTMLTextAreaElement>(null);
   const ime = useImeEnterGuard();
@@ -215,7 +215,9 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
       window.dispatchEvent(new CustomEvent("ans:dino-activate"));
     }
     function onOpenCompanionChat(event: Event) {
-      const custom = event as CustomEvent<{ draft?: string }>;
+      const custom = event as CustomEvent<{ draft?: string; returnFocusId?: string }>;
+      // 从别处（比如工作台顶栏）打开时，关闭后焦点回到那个按钮，而不是兔兔龙
+      returnFocusId.current = custom.detail?.returnFocusId ?? null;
       const incomingDraft = custom.detail?.draft?.trim();
       if (incomingDraft) {
         updateThread(mode, current => ({ ...current, draft: incomingDraft }));
@@ -327,6 +329,9 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
         const input = window.innerWidth >= 900 && agent.phase !== "confirm" ? composer.current : null;
         (input ?? document.getElementById("ans-companion-dismiss"))?.focus({ preventScroll: true });
       }} onCloseAutoFocus={event => {
+        const back = returnFocusId.current ? document.getElementById(returnFocusId.current) : null;
+        returnFocusId.current = null;
+        if (back && !focusTarget.current) { event.preventDefault(); back.focus({ preventScroll: true }); return; }
         const id = focusTarget.current; focusTarget.current = null;
         if (!id || id !== task?.targetId) return;
         const target = document.getElementById(id);

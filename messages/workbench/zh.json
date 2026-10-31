@@ -16,7 +16,6 @@
     "fileDownloaded": "已下载文件",
     "downloadFailed": "下载失败，请点击复制",
     "previewWindowFailed": "无法打开新窗口预览",
-    "agentOpened": "已唤起右下角 Agent 对话窗",
     "needIdeaFirst": "请先在输入框写下一句话想法，再点击补齐细节",
     "detailsExpanded": "已补齐结构化细节",
     "copied": "已复制内容",
@@ -27,6 +26,10 @@
     "editNickname": "改昵称",
     "saving": "保存中…",
     "collapse": "收起",
+    "closePanel": "关闭面板",
+    "backToChat": "返回对话",
+    "collapseSidebar": "收起侧栏",
+    "expandSidebar": "展开侧栏",
     "ask": "提问",
     "viewDiff": "查看 Diff",
     "guidedSamples": "引导范例",
@@ -149,9 +152,9 @@
     "analyzing": "正在分析当前代码与问题..."
   },
   "reply": {
-    "guestMode": "当前为访客预览模式，已在右侧生成可交互草稿与代码变更记录。登录账号后可调用云端模型算力。",
+    "guestMode": "当前为访客预览模式，已生成可交互草稿和代码变更，在预览面板里查看。登录账号后可调用云端模型算力。",
     "done": "已完成处理。",
-    "appliedChange": "已在当前文件 {p1} 基础上完成增量修改（+{p2} -{p3} 行），可点击右侧「± 变更」查看具体代码对比。",
+    "appliedChange": "已在当前文件 {p1} 基础上完成增量修改（+{p2} -{p3} 行），可在预览面板的「± 变更」里查看代码对比。",
     "localAnswer": "针对「{p1}」的本地解答\\n1. 当前文件为 {p2}，可在右侧「源码」或「变更」里直接检查结构。\\n2. 切换到「写代码」再发送，修改会直接应用到当前文件，并能查看变更。",
     "stopped": "已停止，这次没有改动文件。"
   },

@@ -49,42 +49,41 @@ function SecretAchievementBanner({
   onClose: () => void;
 }) {
   const ui = useTranslations("companion");
+  // 中性面、常规字重，不用金色渐变和「·」；Esc 可关，4.5 秒后自己消失（计时在父组件）
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
   return (
     <div
       role="status"
       aria-live="polite"
-      className="relative mb-2 overflow-hidden rounded-xl border border-amber-400/80 bg-gradient-to-r from-amber-500/20 via-yellow-400/15 to-amber-500/20 px-3 py-2 text-xs shadow-lg backdrop-blur-md"
+      className="relative mb-2 rounded-[12px] bg-card px-3 py-2 text-xs shadow-[inset_0_0_0_0.5px_var(--hairline)]"
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="space-y-0.5">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 px-2 py-0.5 text-xs font-black uppercase tracking-wider text-slate-950 shadow-sm">
-              🏆 {ui("bar.bannerSecretQUESTUNLOCKED")} · {quest.code}
-            </span>
-            <span className="rounded-full border border-amber-400/50 bg-amber-500/15 px-1.5 py-0.5 text-xs font-bold text-amber-700 dark:text-amber-200">
-              {quest.icon} {isZh ? quest.badgeZh : quest.badgeEn}
-            </span>
+        <div className="min-w-0 space-y-1">
+          <div className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
+            <span>{ui("bar.bannerSecretQUESTUNLOCKED")}</span>
+            <span className="ans-num">{quest.code}</span>
+            <span className="text-foreground">{quest.icon} {isZh ? quest.badgeZh : quest.badgeEn}</span>
           </div>
-          <p className="pt-0.5 text-xs font-extrabold text-amber-900 dark:text-amber-100">
-            {ui("bar.bannerQuestTitleEn", { title: isZh ? quest.titleZh : quest.titleEn })}{" "}
-            <span className="font-normal text-foreground/90">
-              {isZh ? quest.speechZh : quest.speechEn}
-            </span>
+          <p className="text-foreground [text-wrap:pretty]">
+            <span className="font-medium">{isZh ? quest.titleZh : quest.titleEn}</span>{" "}
+            <span className="text-muted-foreground">{isZh ? quest.speechZh : quest.speechEn}</span>
           </p>
-          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-            <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-background/85 px-2 py-0.5 text-xs font-bold text-amber-600 dark:text-amber-300">
-              🎁 {isZh ? quest.rewardLabelZh : quest.rewardLabelEn}
-            </span>
-            <span className="text-xs font-semibold text-amber-700/90 dark:text-amber-200/90">
-              +{quest.arcadeTokens} 🎰 · +{quest.starBeansBonus} 🪙 · +{quest.affectionBonus} ♥
-            </span>
+          <div className="ans-num flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
+            <span className="text-foreground">{isZh ? quest.rewardLabelZh : quest.rewardLabelEn}</span>
+            <span>+{quest.arcadeTokens} 🎰</span>
+            <span>+{quest.starBeansBonus} 🪙</span>
+            <span>+{quest.affectionBonus} ♥</span>
           </div>
         </div>
         <button
           type="button"
           onClick={onClose}
           aria-label={ui("bar.bannerDismissAchievementBanner")}
-          className="shrink-0 rounded-full px-1.5 py-0.5 text-xs font-bold text-amber-700 hover:bg-amber-500/20 dark:text-amber-200"
+          className="inline-flex size-7 shrink-0 items-center justify-center rounded-[8px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           ×
         </button>
@@ -92,6 +91,9 @@ function SecretAchievementBanner({
     </div>
   );
 }
+
+/** Agent 面板快捷入口：中性描边胶囊，常规字重，不用彩色边框和 emoji */
+const QUICK_CHIP = "inline-flex h-7 items-center rounded-full px-2.5 text-xs text-muted-foreground shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50";
 
 const HOVER_MOOD_IDS = ["hover0", "hover1", "hover2", "hover3", "hover4"] as const;
 const CLICK_MOOD_IDS = ["click0", "click1", "click2", "click3", "click4", "click5"] as const;
@@ -893,7 +895,8 @@ export function CompanionQuestPin({
       {/* 「Agent / 工作模式」两个入口：点开小恐龙后渲染进面板内部的槽位（不再浮在页面角落） */}
       {dialogOpen && dockSlot
         ? createPortal(
-            <div className="ans-companion-dock ans-companion-dock--inline" data-testid="ans-companion-dock" onClick={e => e.stopPropagation()}>
+            // 面板内的分段切换：当前就在 Agent 对话里，它是选中态；「工作模式」是次要入口，不再是两个实心主按钮
+            <div className="ans-companion-dock ans-companion-dock--inline rounded-full bg-muted p-0.5" data-testid="ans-companion-dock" onClick={e => e.stopPropagation()}>
               <button
                 type="button"
                 onClick={e => {
@@ -901,7 +904,8 @@ export function CompanionQuestPin({
                   window.dispatchEvent(new CustomEvent("ans:open-companion-chat"));
                 }}
                 title={ui("bar.dockOpenAgentChat1")}
-                className="rounded-full bg-emerald-700 px-2.5 py-0.5 text-xs font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
+                aria-current="true"
+                className="inline-flex h-7 items-center rounded-full bg-card px-3 text-xs text-foreground shadow-[inset_0_0_0_0.5px_var(--hairline)]"
               >
                 {ui("bar.dockAgent")}
               </button>
@@ -909,7 +913,7 @@ export function CompanionQuestPin({
                 type="button"
                 onClick={navigateToWorkMode}
                 title={ui("bar.dockOpenWorkMode")}
-                className="inline-flex rounded-full bg-slate-900 px-2.5 py-0.5 text-xs font-bold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-950"
+                className="inline-flex h-7 items-center rounded-full px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
               >
                 {ui("bar.dockWorkMode")}
               </button>
@@ -1573,7 +1577,7 @@ export function CompanionSanctuaryBar({
 
   useEffect(() => {
     if (!activeBannerQuest) return;
-    const timer = window.setTimeout(() => setActiveBannerQuest(null), 9000);
+    const timer = window.setTimeout(() => setActiveBannerQuest(null), 4500);
     return () => window.clearTimeout(timer);
   }, [activeBannerQuest]);
 
@@ -1710,9 +1714,9 @@ export function CompanionSanctuaryBar({
             title={ui("bar.quickbarDailyCheckIn5")}
             data-testid="pi-agent-action-checkin"
             onClick={() => void runPiAction("checkin")}
-            className="rounded-full border border-emerald-500/40 bg-background/90 px-2 py-0.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300"
+            className={QUICK_CHIP}
           >
-            📅 {ui("bar.quickbarCheckIn")}
+            {ui("bar.quickbarCheckIn")}
           </button>
           <button
             type="button"
@@ -1725,9 +1729,9 @@ export function CompanionSanctuaryBar({
                 (piPrompt || currentDraft).trim(),
               )
             }
-            className="rounded-full border border-purple-500/40 bg-background/90 px-2 py-0.5 text-xs font-bold text-purple-700 transition hover:bg-purple-500/15 disabled:opacity-50 dark:text-purple-300"
+            className={QUICK_CHIP}
           >
-            📝 {ui("bar.quickbarNewProject")}
+            {ui("bar.quickbarNewProject")}
           </button>
           <button
             type="button"
@@ -1735,9 +1739,9 @@ export function CompanionSanctuaryBar({
             title={ui("bar.quickbarFindMarketTools")}
             data-testid="pi-agent-action-market"
             onClick={() => void runPiAction("market", (piPrompt || currentDraft).trim())}
-            className="rounded-full border border-sky-500/40 bg-background/90 px-2 py-0.5 text-xs font-bold text-sky-700 transition hover:bg-sky-500/15 disabled:opacity-50 dark:text-sky-300"
+            className={QUICK_CHIP}
           >
-            🛒 {ui("bar.quickbarTools")}
+            {ui("bar.quickbarTools")}
           </button>
           <button
             type="button"
@@ -1745,9 +1749,9 @@ export function CompanionSanctuaryBar({
             title={ui("bar.quickbar5ptInstantRedeem")}
             data-testid="pi-agent-action-redeem"
             onClick={() => void runPiAction("redeem", (piPrompt || currentDraft).trim())}
-            className="rounded-full border border-rose-500/40 bg-background/90 px-2 py-0.5 text-xs font-bold text-rose-700 transition hover:bg-rose-500/15 disabled:opacity-50 dark:text-rose-300"
+            className={QUICK_CHIP}
           >
-            🎁 {ui("bar.quickbarRedeem")}
+            {ui("bar.quickbarRedeem")}
           </button>
           <button
             type="button"
@@ -1755,9 +1759,9 @@ export function CompanionSanctuaryBar({
             title={ui("bar.quickbarPlay3DClawMachine")}
             data-testid="pi-agent-action-claw"
             onClick={() => void runPiAction("claw")}
-            className="rounded-full border border-amber-500/40 bg-background/90 px-2 py-0.5 text-xs font-bold text-amber-700 transition hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300"
+            className={QUICK_CHIP}
           >
-            🕹️ {ui("bar.quickbarClaw")}
+            {ui("bar.quickbarClaw")}
           </button>
         </div>
 
@@ -1766,13 +1770,10 @@ export function CompanionSanctuaryBar({
             type="button"
             data-testid="pi-agent-tab-toggle"
             onClick={() => setTab(current => (current === "pi" ? "none" : "pi"))}
-            className={`rounded-full px-2 py-0.5 text-xs font-bold transition ${
-              tab === "pi"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "border border-emerald-500/40 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/25 dark:text-emerald-300"
-            }`}
+            className={`${QUICK_CHIP} ${tab === "pi" ? "bg-muted text-foreground" : ""}`}
+            aria-pressed={tab === "pi"}
           >
-            ⚡ {ui("bar.quickbarCommand")}
+            {ui("bar.quickbarCommand")}
           </button>
           <button
             type="button"
@@ -1780,9 +1781,9 @@ export function CompanionSanctuaryBar({
               window.dispatchEvent(new CustomEvent("ans:enter-dino-macro", { detail: { drawer: "wardrobe" } }));
             }}
             title={ui("bar.quickbarOpen3DCloseUp")}
-            className="rounded-full border border-purple-500/35 bg-purple-500/10 px-2 py-0.5 text-xs font-semibold text-purple-700 transition hover:bg-purple-500/20 dark:text-purple-300"
+            className={QUICK_CHIP}
           >
-            🎥 {ui("bar.quickbar3dStage")}
+            {ui("bar.quickbar3dStage")}
           </button>
         </div>
       </div>

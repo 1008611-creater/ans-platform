@@ -118,7 +118,7 @@
 .ans-companion-v2[data-open=true] .ans-dino-avatar { width: 120px; height: 144px; }
 .ans-companion-v2[data-open=true] .ans-dino-avatar > img { width: 120px; height: 120px; }
 .ans-companion-v2 .ans-dino-trigger[aria-expanded=true] { animation: none; }
-.ans-companion-panel :is(button, a, [tabindex="0"]):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.ans-companion-panel :is(button, a, [tabindex="0"]):focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .ans-companion-panel :is(button, a) { touch-action: manipulation; }
 .ans-companion-resize { position: absolute; z-index: 4; touch-action: none; user-select: none; color: var(--muted-foreground); background: transparent; }
 .ans-companion-resize.width { top: 22px; bottom: 22px; left: 0; width: 7px; cursor: ew-resize; }
@@ -182,6 +182,11 @@
   .ans-companion-v2[data-open=true][data-keyboard=true] .ans-dino-trigger { visibility: hidden; }
   .ans-agent-quote button, .ans-companion-undo button, .ans-agent-recover, .ans-agent-retry button { min-height: 44px; }
 }
+/* 有模态抽屉/对话框打开时（Radix 会给 body 加 data-scroll-locked），兔兔龙和气泡让位，不压在抽屉上 */
+body[data-scroll-locked] .ans-dino-guide.ans-companion-v2:not([data-open=true]),
+body[data-scroll-locked] #ans-dino-live-bubble { display: none !important; }
+/* 宽屏工作台打开右侧面板时，气泡不盖住预览和 diff */
+body.ans-workbench-split #ans-dino-live-bubble { display: none !important; }
 /* 窄屏工作台：输入框固定在底部，悬浮兔兔龙和气泡让位（顶栏有 Agent 入口） */
 @media (max-width: 899px) {
   body.ans-workbench-open .ans-dino-guide.ans-companion-v2:not([data-open=true]),
@@ -772,7 +777,8 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
 
 
 /* 「Agent / 工作模式」两个入口：位于面板内部（原先浮在页面右下角） */
-.ans-companion-dock-slot { display: flex; justify-content: flex-end; align-items: center; padding: 2px 10px 4px; }
+.ans-companion-dock-slot { display: flex; justify-content: flex-end; align-items: center; padding: 10px 12px 2px; }
+.ans-companion-dock-slot:empty { display: none; }
 .ans-companion-dock--inline { display: flex; align-items: center; gap: 4px; }
 .ans-companion-dock--inline > button { cursor: pointer; }
 

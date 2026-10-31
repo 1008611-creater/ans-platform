@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { WORKFLOWS, getWorkflow, type WorkflowId, type WorkflowTemplate } from "./workflow-registry";
 
@@ -42,7 +42,7 @@ export function WorkbenchHome({ composer, typed, workflow, onPickWorkflow, onPic
           </span>
           <span suppressHydrationWarning>{greeting()}，想做点什么？</span>
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">{manifest.sub}</p>
+        <p key={workflow} className="ans-fade-swap mt-2 text-sm text-muted-foreground">{manifest.sub}</p>
         <div className="mt-7 text-left">{composer}</div>
         <div className="mt-4 flex flex-wrap justify-center gap-2" role="group" aria-label="工作流">
           {WORKFLOWS.map(item => {
@@ -54,7 +54,7 @@ export function WorkbenchHome({ composer, typed, workflow, onPickWorkflow, onPic
                 aria-pressed={on}
                 data-workflow={item.id}
                 onClick={() => onPickWorkflow(item.id)}
-                className={`inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm transition-[background-color,color,transform] duration-200 [transition-timing-function:cubic-bezier(.23,1,.32,1)] hover:-translate-y-px active:translate-y-0 sm:h-9 ${
+                className={`inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm transition-transform duration-200 [transition-timing-function:cubic-bezier(.23,1,.32,1)] hover:-translate-y-px active:translate-y-0 sm:h-9 ${
                   on ? "bg-foreground text-background" : "bg-card text-muted-foreground shadow-[inset_0_0_0_0.5px_var(--hairline)] hover:text-foreground"
                 }`}
               >
@@ -81,18 +81,11 @@ export function WorkbenchHome({ composer, typed, workflow, onPickWorkflow, onPic
                 style={{ animationDelay: `${idx * 40}ms` }}
                 className={`ans-wb-rise group relative aspect-[3/4] overflow-hidden rounded-[14px] text-left shadow-[inset_0_0_0_0.5px_var(--hairline)] ${tpl.contain ? "bg-[#f3efe6]" : "bg-muted"}`}
               >
-                <Image
-                  src={tpl.image}
-                  alt=""
-                  fill
-                  sizes="(min-width: 640px) 200px, 45vw"
-                  unoptimized={tpl.image.endsWith(".svg")}
-                  className={`transition-transform duration-700 [transition-timing-function:cubic-bezier(.23,1,.32,1)] group-hover:scale-[1.04] ${tpl.contain ? "object-contain" : "object-cover"}`}
-                />
-                <span className="absolute right-2.5 top-2.5 inline-flex h-7 items-center rounded-full bg-white/90 px-2.5 text-xs text-[#1d1d1b] opacity-0 transition-[opacity,transform] duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
+                <TemplateImage src={tpl.image} contain={tpl.contain} />
+                <span className="absolute right-2.5 top-2.5 inline-flex h-7 items-center rounded-full bg-card/90 px-2.5 text-xs text-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
                   用这个
                 </span>
-                <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/60 to-transparent px-3 pb-2.5 pt-8 text-sm text-white">
+                <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-[rgb(11_11_10/60%)] to-transparent px-3 pb-2.5 pt-8 text-sm text-white">
                   <span className="truncate">{tpl.title}</span>
                   <span className="shrink-0 text-xs opacity-80">{tpl.sub}</span>
                 </span>
@@ -102,5 +95,21 @@ export function WorkbenchHome({ composer, typed, workflow, onPickWorkflow, onPic
         </section>
       )}
     </div>
+  );
+}
+
+/** 模板图：加载完再淡入，不在空白卡上突然蹦出来；悬停放大 300ms */
+function TemplateImage({ src, contain }: { src: string; contain?: boolean }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <Image
+      src={src}
+      alt=""
+      fill
+      sizes="(min-width: 640px) 200px, 45vw"
+      unoptimized={src.endsWith(".svg")}
+      onLoad={() => setLoaded(true)}
+      className={`transition-[opacity,transform] duration-300 [transition-timing-function:cubic-bezier(.23,1,.32,1)] group-hover:scale-[1.03] motion-reduce:transition-none ${loaded ? "opacity-100" : "opacity-0"} ${contain ? "object-contain" : "object-cover"}`}
+    />
   );
 }
