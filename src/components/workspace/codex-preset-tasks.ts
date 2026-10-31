@@ -11,7 +11,7 @@ export interface CodexTask {
   title: string;
   tag: string;
   model: string;
-  status: "completed" | "running" | "ready";
+  status: "completed" | "running" | "ready" | "stopped";
   mode?: "code" | "ask";
   branch?: string;
   durationSec?: number;

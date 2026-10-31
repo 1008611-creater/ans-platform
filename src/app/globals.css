@@ -1135,7 +1135,17 @@
   .ans-wb-composer:focus-within { box-shadow: var(--focus-ring), 0 6px 24px -12px rgb(26 26 25 / 12%); }
   .ans-wb :focus-visible { outline: none; box-shadow: var(--focus-ring); }
   .ans-wb-composer textarea:focus-visible { box-shadow: none; }
+  /* 输入框上方的上下文条：灰色托盘从输入框背后露出顶边 */
+  .ans-wb-tray { border-radius: 20px; background: var(--muted); }
+  /* 侧栏拖宽把手：只在悬停和拖动时显出一条发丝线 */
+  .ans-wb-grip { position: absolute; inset-block: 0; right: -3px; width: 6px; cursor: col-resize; z-index: 5; }
+  .ans-wb-grip::after { content: ""; position: absolute; inset-block: 0; left: 2.5px; width: 1px; background: transparent; transition: background-color 150ms; }
+  .ans-wb-grip:hover::after, .ans-wb-grip[data-dragging="true"]::after { background: var(--hairline-strong, var(--hairline)); }
+  /* 首屏建议逐条浮入：下移 6px、透明，每条错开 25ms，150ms 到位 */
+  .ans-wb-rise { animation: ans-wb-rise 150ms cubic-bezier(.23, 1, .32, 1) both; }
 }
+@keyframes ans-wb-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .ans-wb-rise { animation: none; } }
 
 /* 丝滑折叠：外层 grid 0fr→1fr，内层裁切，不用 JS 量高度 */
 .ans-collapse { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 280ms var(--ease-out-cubic), opacity 200ms var(--ease-out-cubic); opacity: 0; }
