@@ -204,5 +204,15 @@
   "projectGuideLabel": "这些项目怎么用？",
   "mobileCredits": "积分",
   "aboutHelp": "关于与帮助",
-  "mobileApp": "手机端 App"
+  "mobileApp": "手机端 App",
+  "me": {
+    "available": "可用积分",
+    "claim": "领积分",
+    "ledger": "积分明细",
+    "shortcuts": "我的常用入口",
+    "projects": "我的项目",
+    "teams": "我的战队",
+    "favorites": "收藏",
+    "models": "模型广场"
+  }
 }

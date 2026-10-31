@@ -204,5 +204,15 @@
   "projectGuideLabel": "How do I use these projects?",
   "mobileCredits": "Credits",
   "aboutHelp": "About & help",
-  "mobileApp": "Mobile App"
+  "mobileApp": "Mobile App",
+  "me": {
+    "available": "Available points",
+    "claim": "Get points",
+    "ledger": "Ledger",
+    "shortcuts": "My shortcuts",
+    "projects": "My projects",
+    "teams": "My teams",
+    "favorites": "Favorites",
+    "models": "Models"
+  }
 }
