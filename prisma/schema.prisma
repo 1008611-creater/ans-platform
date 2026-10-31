@@ -3429,6 +3429,8 @@ model CommunityPost {
   relayOfId     String?
   relayOf       CommunityPost?      @relation("CommunityRelay", fields: [relayOfId], references: [id], onDelete: SetNull)
   relays        CommunityPost[]     @relation("CommunityRelay")
+  /// 做同款：帖子附的项目广场项目（catalog slug），看帖的人点「做同款」从这个项目开始做。
+  catalogSlug   String?             @db.VarChar(80)
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
   replies       CommunityReply[]
@@ -3441,6 +3443,7 @@ model CommunityPost {
   @@index([board, status, createdAt])
   @@index([authorId, createdAt])
   @@index([relayOfId, createdAt])
+  @@index([catalogSlug, createdAt])
   @@map("community_posts")
 }
 

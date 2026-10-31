@@ -10,6 +10,8 @@ import { getComposeOptions, listMyStalls } from "@/server/community/posts";
 import { suggestFollows } from "@/server/community/follows";
 import { FollowButton } from "@/components/community/follow-button";
 import { PostCompose } from "@/components/community/post-compose";
+import { loadRemixProjects } from "@/server/community/remix";
+import { catalogSlugSchema } from "@/contracts/community-posts";
 import { CommunityFeed } from "@/components/community/community-feed";
 import { CheckInHeatmap } from "@/components/community/check-in-heatmap";
 import { CommunityPanel } from "@/components/community/community-panel";
@@ -24,7 +26,7 @@ export async function generateMetadata() {
   return { title: t("title"), description: t("description") };
 }
 
-type SearchParams = Promise<{ c?: string | string[]; tab?: string | string[]; sort?: string | string[] }>;
+type SearchParams = Promise<{ c?: string | string[]; tab?: string | string[]; sort?: string | string[]; project?: string | string[] }>;
 
 const tabClass = (active: boolean) => `border-b-2 px-1 pb-2 text-sm font-semibold transition-colors ${active ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`;
 
@@ -36,13 +38,17 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
   const showGrowth = Boolean(userId) && params.tab === "growth";
   const channel = parseCommunityChannel(params.c, Boolean(userId));
   const sort = parseCommunitySort(params.sort);
-  const [growth, feed, compose, stalls, suggestions] = await Promise.all([
+  // 从项目广场「晒我的同款」进来：弹窗直接打开，项目已经附好。
+  const projectSlug = userId && typeof params.project === "string" && catalogSlugSchema.safeParse(params.project).success ? params.project : null;
+  const [growth, feed, compose, stalls, suggestions, remixProjects] = await Promise.all([
     userId ? getGrowthProfile(userId) : null,
     showGrowth ? null : listCommunityFeed(channel, sort, userId ?? null),
     userId ? getComposeOptions(userId) : null,
     userId && !showGrowth ? listMyStalls(userId) : [],
     userId && !showGrowth ? suggestFollows(userId) : [],
+    loadRemixProjects([projectSlug]),
   ]);
+  const remixProject = projectSlug ? remixProjects.get(projectSlug) : undefined;
   const channels = COMMUNITY_CHANNELS.filter((id) => id !== "following" || Boolean(userId));
   const suggestReason = (person: (typeof suggestions)[number]) => person.reason === "fan" ? t("suggestFan") : t(person.reason === "relays" ? "suggestRelays" : "suggestPosts", { count: person.count });
   const channelHref = (id: string, nextSort = sort) => {
@@ -61,7 +67,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
         <div className="flex items-center gap-2">
           <Button asChild size="sm" variant="outline" className="gap-1.5"><Link href="/community/bottles" data-testid="community-bottles-link"><Waves className="h-4 w-4" aria-hidden="true" />{t("bottlesLink")}</Link></Button>
           {compose
-            ? <PostCompose teams={compose.teams} competitions={compose.competitions} />
+            ? <PostCompose teams={compose.teams} competitions={compose.competitions} project={remixProject && { slug: remixProject.slug, title: remixProject.title }} defaultOpen={Boolean(remixProject)} />
             : <Button asChild size="sm"><Link href="/login?callbackUrl=/community">{t("publish")}</Link></Button>}
         </div>
       </header>

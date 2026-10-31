@@ -3355,7 +3355,11 @@
       "inspect": "See what the project provides",
       "prepare": "Gather your own inputs",
       "decide": "Choose your approach and start"
-    }
+    },
+    "remixHeading": "Made by the community",
+    "remixCount": "{count} shared",
+    "remixShare": "Share mine",
+    "remixEmpty": "Nobody has shared this one yet. Finish yours and be the first."
   },
   "workflowDetail": {
     "notFoundTitle": "Workflow not found · ANS",
@@ -3723,7 +3727,9 @@
     "suggestPosts": "{count} posts in the last two weeks",
     "relayOf": "Relay of “{title}”",
     "relayOfHidden": "The original post is hidden",
-    "relayCount": "{count} relays"
+    "relayCount": "{count} relays",
+    "remix": "Make your own",
+    "remixOf": "Project: {title}"
   },
   "modelPlaza": {
     "title": "Model plaza",
@@ -4131,7 +4137,11 @@
       "submitting": "Posting…",
       "counter": "{count}/{max}",
       "success": "Posted",
-      "loginToPost": "Sign in to post"
+      "loginToPost": "Sign in to post",
+      "project": "Attach a project",
+      "projectSearch": "Search projects in Explore",
+      "projectEmpty": "No matching projects",
+      "removeProject": "Remove attached project"
     },
     "detail": {
       "back": "Community",
@@ -4195,7 +4205,10 @@
       "reportSubmit": "Send report",
       "reported": "Report received. We'll review it soon.",
       "loginToAct": "Sign in to join in",
-      "done": "Done"
+      "done": "Done",
+      "remixHeading": "Attached project",
+      "remixCta": "Make your own",
+      "remixCount": "Shared by {count}"
     },
     "errors": {
       "UNAUTHORIZED": "Please sign in",
@@ -4223,7 +4236,8 @@
       "BOTTLE_PICK_LIMIT": "You've picked 10 bottles today. Come back tomorrow.",
       "NOT_PICKED": "You can only reply to bottles you picked up",
       "ALREADY_REPLIED": "One reply per bottle",
-      "INVALID_RELAY": "This post can't be relayed. It may be hidden."
+      "INVALID_RELAY": "This post can't be relayed. It may be hidden.",
+      "INVALID_PROJECT": "This project is no longer listed"
     },
     "relay": {
       "title": "Relays {count}",

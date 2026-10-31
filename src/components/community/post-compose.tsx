@@ -4,7 +4,7 @@ import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ImagePlus, Minus, Plus, Repeat2, X } from "lucide-react";
+import { GitFork, ImagePlus, Minus, Plus, Repeat2, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   COMMUNITY_BOARDS,
@@ -37,16 +37,18 @@ function dayInput(offsetDays: number) {
 
 /** 「接一下」时要接的原帖：板块跟着原帖走，只能发笔记或一句话。 */
 export type RelayTarget = { id: string; label: string; authorName: string; board: CommunityBoardId; count: number; cover: string | null };
+/** 「附项目」选中的项目广场项目。 */
+export type RemixPick = { slug: string; title: string };
 
-export function PostCompose({ teams, competitions, defaultBoard, relay, triggerClassName }: { teams: Array<{ id: string; name: string }>; competitions: Array<{ id: string; title: string }>; defaultBoard?: CommunityBoardId; relay?: RelayTarget; triggerClassName?: string }) {
+export function PostCompose({ teams, competitions, defaultBoard, relay, project: initialProject, defaultOpen = false, triggerClassName }: { teams: Array<{ id: string; name: string }>; competitions: Array<{ id: string; title: string }>; defaultBoard?: CommunityBoardId; relay?: RelayTarget; project?: RemixPick; defaultOpen?: boolean; triggerClassName?: string }) {
   const t = useTranslations("product.communityPost.compose");
   const r = useTranslations("product.communityPost.relay");
   const page = useTranslations("product.communityPage");
   const router = useRouter();
   const { send, pending } = useCommunityRequest();
   const id = useId();
-  const [open, setOpen] = useState(false);
-  const [kind, setKind] = useState<CommunityPostKindId>(relay ? "NOTE" : "STALL");
+  const [open, setOpen] = useState(defaultOpen);
+  const [kind, setKind] = useState<CommunityPostKindId>(relay || initialProject ? "NOTE" : "STALL");
   const [stall, setStall] = useState<CommunityStallKindId>("SEEK");
   const [board, setBoard] = useState<CommunityBoardId>(relay?.board ?? defaultBoard ?? "CAMPUS");
   const [title, setTitle] = useState("");
@@ -59,6 +61,9 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, triggerC
   const [roles, setRoles] = useState<CommunityTeamRole[]>([]);
   const [roleDraft, setRoleDraft] = useState("");
   const [deadline, setDeadline] = useState(dayInput(14));
+  const [project, setProject] = useState<RemixPick | null>(initialProject ?? null);
+  const [projectQuery, setProjectQuery] = useState("");
+  const [projectResults, setProjectResults] = useState<RemixPick[] | null>(null);
 
   useEffect(() => {
     if (!open || kind !== "NOTE") return;
@@ -66,6 +71,20 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, triggerC
     fetch("/api/config/storage").then((res) => res.json()).then((data: { supportsUpload?: boolean }) => { if (alive) setCanUpload(Boolean(data.supportsUpload)); }).catch(() => {});
     return () => { alive = false; };
   }, [open, kind]);
+
+  // 搜项目：停手 250ms 再查，只在笔记、还没选项目时查。
+  useEffect(() => {
+    const query = projectQuery.trim();
+    if (!open || kind !== "NOTE" || project || !query) return;
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      fetch(`/api/community/projects?q=${encodeURIComponent(query)}`, { signal: controller.signal })
+        .then((res) => res.ok ? res.json() : { projects: [] })
+        .then((data: { projects?: RemixPick[] }) => setProjectResults(data.projects ?? []))
+        .catch(() => {});
+    }, 250);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [open, kind, project, projectQuery]);
 
   const pickStall = (next: CommunityStallKindId) => {
     setStall(next);
@@ -107,7 +126,7 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, triggerC
     if (!ready || pending) return;
     const relayOfId = relay?.id;
     const payload = kind === "TEXT" ? { kind, board, body, relayOfId }
-      : kind === "NOTE" ? { kind, board, title, body, images, relayOfId }
+      : kind === "NOTE" ? { kind, board, title, body, images, relayOfId, catalogSlug: project?.slug }
         : {
           kind, stall, board, title, body,
           // 截止日当天结束前都算有效。
@@ -120,7 +139,7 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, triggerC
     if (!result) return;
     toast.success(t("success"));
     setOpen(false);
-    setTitle(""); setBody(""); setImages([]); setRoles([]);
+    setTitle(""); setBody(""); setImages([]); setRoles([]); setProject(null); setProjectQuery("");
     router.push(`/community/posts/${result.id}`);
   };
 
@@ -222,6 +241,24 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, triggerC
                 <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" disabled={uploading} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void upload(file); }} />
               </label>}
             </div>
+          </div>}
+
+          {kind === "NOTE" && <div className="flex flex-col gap-1.5">
+            <label htmlFor={`${id}-project`} className={LABEL}>{t("project")}</label>
+            {project
+              ? <div className="flex items-center gap-2 rounded-lg bg-muted py-1 pl-3 pr-1">
+                <GitFork className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <span id={`${id}-project`} className="min-w-0 flex-1 truncate text-sm font-semibold">{project.title}</span>
+                <Button type="button" size="icon" variant="ghost" className="h-8 w-8" aria-label={t("removeProject")} onClick={() => { setProject(null); setProjectQuery(""); }}><X className="h-3.5 w-3.5" aria-hidden="true" /></Button>
+              </div>
+              : <>
+                <input id={`${id}-project`} type="search" value={projectQuery} maxLength={40} placeholder={t("projectSearch")} onKeyDown={imeSubmitGuard} onChange={(event) => setProjectQuery(event.target.value)} className={FIELD} />
+                {projectQuery.trim() && projectResults && (projectResults.length > 0
+                  ? <ul className="flex flex-wrap gap-1.5">{projectResults.map((item) => <li key={item.slug}>
+                    <button type="button" onClick={() => setProject(item)} className="h-8 max-w-full truncate rounded-full bg-muted px-3 text-sm transition-colors hover:bg-surface-raised">{item.title}</button>
+                  </li>)}</ul>
+                  : <p className="text-xs text-muted-foreground">{t("projectEmpty")}</p>)}
+              </>}
           </div>}
 
           {kind === "STALL" && <div className="flex max-w-56 flex-col gap-1.5">

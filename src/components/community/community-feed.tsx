@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Check, Clock, Heart, MessageCircle, Repeat2 } from "lucide-react";
+import { Check, Clock, GitFork, Heart, MessageCircle, Repeat2 } from "lucide-react";
 import type { CommunityBoardId as CommunityBoard } from "@/contracts/community-posts";
 import { BOARD_CHANNEL, type CommunityFeedItem } from "@/server/community/feed";
 import type { CommunityPostSummary } from "@/server/community/posts";
+import { loadRemixProjects, type RemixProject } from "@/server/community/remix";
 import { helpVerb } from "@/contracts/community-posts";
 
 /** 板块标签的颜色，亮暗主题各一套，文字对比度都在 4.5:1 以上。 */
@@ -72,6 +73,13 @@ function RelayCount({ post, t }: { post: CommunityPostSummary; t: Labels }) {
   </p>;
 }
 
+/** 附了项目的笔记：「做同款」直接去项目的开始入口，浮在整卡链接上面。 */
+function RemixLink({ project, t }: { project: RemixProject; t: Labels }) {
+  return <Link href={project.href} prefetch={false} title={t("remixOf", { title: project.title })} className="relative z-10 inline-flex max-w-full items-center gap-1 self-start rounded-lg bg-muted px-2 py-1 text-xs hover:bg-surface-raised">
+    <GitFork className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /><span className="shrink-0 font-semibold">{t("remix")}</span><span className="truncate text-muted-foreground">{project.title}</span>
+  </Link>;
+}
+
 function StallCard({ post, t, date }: { post: CommunityPostSummary; t: Labels; date: (value: Date) => string }) {
   const href = `/community/posts/${post.id}`;
   const verb = helpVerb(post.stall);
@@ -100,7 +108,7 @@ function StallCard({ post, t, date }: { post: CommunityPostSummary; t: Labels; d
   </article>;
 }
 
-function NoteCard({ post, t }: { post: CommunityPostSummary; t: Labels }) {
+function NoteCard({ post, t, project }: { post: CommunityPostSummary; t: Labels; project?: RemixProject }) {
   const cover = post.images[0];
   return <article className={CARD}>
     {cover
@@ -110,6 +118,7 @@ function NoteCard({ post, t }: { post: CommunityPostSummary; t: Labels }) {
       {post.relayOf && <RelayQuote relayOf={post.relayOf} t={t} />}
       {cover && <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-pretty">{post.title}</h3>}
       <Link href={`/community/posts/${post.id}`} prefetch={false} className={`${STRETCH} line-clamp-2 block text-sm leading-snug text-foreground/80`}>{post.body}</Link>
+      {project && <RemixLink project={project} t={t} />}
       <RelayCount post={post} t={t} />
       <Byline author={{ name: displayName(post.author), avatar: post.author.avatar }}><Counts likes={post._count.likes} replies={post._count.replies} t={t} /></Byline>
     </div>
@@ -142,11 +151,12 @@ export async function CommunityFeed({ items }: { items: CommunityFeedItem[] }) {
   const [t, locale] = await Promise.all([getTranslations("product.communityPage"), getLocale().catch(() => "zh")]);
   const formatter = new Intl.DateTimeFormat(locale === "en" ? "en-US" : "zh-CN", { month: "short", day: "numeric", timeZone: "Asia/Shanghai" });
   const date = (value: Date) => formatter.format(value);
+  const remix = await loadRemixProjects(items.map((item) => item.type === "work" ? null : item.post.catalogSlug));
   return <ul className="columns-2 gap-3 md:columns-3 2xl:columns-4" data-testid="community-feed">
     {items.map((item) => <li key={`${item.type}:${item.id}`} className="mb-3 break-inside-avoid">
       {item.type === "work" ? <WorkCard item={item} t={t} />
         : item.post.kind === "STALL" ? <StallCard post={item.post} t={t} date={date} />
-          : item.post.kind === "NOTE" ? <NoteCard post={item.post} t={t} />
+          : item.post.kind === "NOTE" ? <NoteCard post={item.post} t={t} project={item.post.catalogSlug ? remix.get(item.post.catalogSlug) : undefined} />
             : <TextCard post={item.post} t={t} />}
     </li>)}
   </ul>;

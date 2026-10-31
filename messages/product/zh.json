@@ -3355,7 +3355,11 @@
       "inspect": "看清项目能提供什么",
       "prepare": "整理你的输入与资料",
       "decide": "确认做法，再开始使用"
-    }
+    },
+    "remixHeading": "社区里的同款",
+    "remixCount": "{count} 条",
+    "remixShare": "晒我的同款",
+    "remixEmpty": "还没人晒这个项目的同款，做完来当第一个。"
   },
   "workflowDetail": {
     "notFoundTitle": "工作流不存在 · ANS",
@@ -3723,7 +3727,9 @@
     "suggestPosts": "最近两周发帖 {count} 条",
     "relayOf": "接力「{title}」",
     "relayOfHidden": "接力的原帖已隐藏",
-    "relayCount": "{count} 人接力"
+    "relayCount": "{count} 人接力",
+    "remix": "做同款",
+    "remixOf": "附项目：{title}"
   },
   "modelPlaza": {
     "title": "模型广场",
@@ -4131,7 +4137,11 @@
       "submitting": "发布中…",
       "counter": "{count}/{max}",
       "success": "已发布",
-      "loginToPost": "登录后发帖"
+      "loginToPost": "登录后发帖",
+      "project": "附项目",
+      "projectSearch": "搜项目广场里的项目",
+      "projectEmpty": "没找到相关项目",
+      "removeProject": "去掉附的项目"
     },
     "detail": {
       "back": "社区",
@@ -4195,7 +4205,10 @@
       "reportSubmit": "提交举报",
       "reported": "已收到举报，我们会尽快处理",
       "loginToAct": "登录后参与",
-      "done": "已完成"
+      "done": "已完成",
+      "remixHeading": "附的项目",
+      "remixCta": "做同款",
+      "remixCount": "{count} 人晒了同款"
     },
     "errors": {
       "UNAUTHORIZED": "请先登录",
@@ -4223,7 +4236,8 @@
       "BOTTLE_PICK_LIMIT": "今天捞了 10 个了，明天再来",
       "NOT_PICKED": "只能回自己捞到的瓶子",
       "ALREADY_REPLIED": "每个瓶子只能回一句",
-      "INVALID_RELAY": "这条帖子不能接力，可能已被隐藏"
+      "INVALID_RELAY": "这条帖子不能接力，可能已被隐藏",
+      "INVALID_PROJECT": "这个项目已下架或不存在"
     },
     "relay": {
       "title": "接力 {count}",

@@ -28,6 +28,8 @@ export const FOLLOWER_NOTIFY_MAX = 500;
 const board = z.enum(COMMUNITY_BOARDS);
 const imageUrl = z.string().trim().max(500).url().refine((value) => value.startsWith("https://"), "IMAGE_URL");
 const optionalId = z.string().trim().min(1).max(40).optional();
+/** 做同款附的项目广场项目，格式和项目广场的 slug 一致。 */
+export const catalogSlugSchema = z.string().trim().min(3).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 
 export const teamRoleSchema = z.object({
   name: z.string().trim().min(1).max(20),
@@ -43,6 +45,7 @@ export const createCommunityPostSchema = z.discriminatedUnion("kind", [
     body: z.string().trim().min(2).max(POST_BODY_MAX),
     images: z.array(imageUrl).max(POST_IMAGE_MAX).default([]),
     relayOfId: optionalId,
+    catalogSlug: catalogSlugSchema.optional(),
   }),
   z.object({
     kind: z.literal("TEXT"),

@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Check, ChevronLeft, ChevronRight, Clock, Heart, Repeat2, Trophy } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Clock, GitFork, Heart, Repeat2, Trophy } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { helpVerb } from "@/contracts/community-posts";
 import { BOARD_CHANNEL } from "@/server/community/feed";
 import { getCommunityPost } from "@/server/community/posts";
 import { getFollowRelation } from "@/server/community/follows";
+import { countRemixPosts, loadRemixProjects } from "@/server/community/remix";
 import { FollowButton } from "@/components/community/follow-button";
 import { PostCompose, type RelayTarget } from "@/components/community/post-compose";
 import { BOARD_CHIP } from "@/components/community/community-feed";
@@ -39,16 +40,19 @@ export default async function CommunityPostPage({ params }: { params: Params }) 
   const viewerId = session?.user?.id ?? null;
   const post = await getCommunityPost(id, viewerId);
   if (!post) notFound();
-  const [t, page, r, locale, relation] = await Promise.all([
+  const [t, page, r, locale, relation, remixProjects, remixCount] = await Promise.all([
     getTranslations("product.communityPost.detail"),
     getTranslations("product.communityPage"),
     getTranslations("product.communityPost.relay"),
     getLocale().catch(() => "zh"),
     viewerId && !post.isAuthor ? getFollowRelation(viewerId, post.author.id) : null,
+    loadRemixProjects([post.catalogSlug]),
+    post.catalogSlug ? countRemixPosts(post.catalogSlug) : 0,
   ]);
   const date = new Intl.DateTimeFormat(locale === "en" ? "en-US" : "zh-CN", { month: "short", day: "numeric", timeZone: "Asia/Shanghai" });
   const time = new Intl.DateTimeFormat(locale === "en" ? "en-US" : "zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Shanghai" });
   const channel = BOARD_CHANNEL[post.board];
+  const remix = post.catalogSlug ? remixProjects.get(post.catalogSlug) ?? null : null;
   const verb = helpVerb(post.stall);
   const isTeam = post.stall === "TEAM";
   const openRoles = post.vacancies.filter((role) => role.filled < role.slots).map((role) => role.name);
@@ -83,6 +87,20 @@ export default async function CommunityPostPage({ params }: { params: Params }) 
           </div>
           {post.body && <p className={`whitespace-pre-wrap break-words leading-relaxed ${post.kind === "TEXT" ? "text-xl font-semibold" : "text-[15px] text-foreground/90"}`}>{post.body}</p>}
           {post.images.length > 0 && <div className="grid grid-cols-2 gap-2">{post.images.map((url) => <img key={url} src={url} alt="" referrerPolicy="no-referrer" className="w-full rounded-xl border object-cover" />)}</div>}
+
+          {remix && <section aria-labelledby="remix-heading" className="flex flex-col gap-3 rounded-xl bg-muted p-3 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              {remix.cover
+                ? <img src={remix.cover} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
+                : <span aria-hidden="true" className="grid h-14 w-14 shrink-0 place-items-center rounded-lg bg-background"><GitFork className="h-5 w-5 text-muted-foreground" /></span>}
+              <div className="min-w-0 space-y-0.5">
+                <h2 id="remix-heading" className="text-xs text-muted-foreground">{t("remixHeading")}</h2>
+                <Link href={`/explore/${remix.slug}`} className="block truncate text-sm font-semibold hover:underline">{remix.title}</Link>
+                {remixCount > 1 && <Link href={`/explore/${remix.slug}#remix`} className="ans-num block text-xs text-muted-foreground hover:text-foreground">{t("remixCount", { count: remixCount })}</Link>}
+              </div>
+            </div>
+            <Button asChild variant="outline" className="h-11 shrink-0 sm:h-9"><Link href={remix.href}><GitFork className="h-4 w-4" aria-hidden="true" />{t("remixCta")}</Link></Button>
+          </section>}
 
           {isTeam && post.vacancies.length > 0 && <section aria-labelledby="roles-heading" className="space-y-2.5">
             <h2 id="roles-heading" className="text-sm font-semibold">{t("roles")}</h2>

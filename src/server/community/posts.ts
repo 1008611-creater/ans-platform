@@ -12,6 +12,7 @@ import { db } from "@/lib/db";
 import { CommunityError } from "@/server/community/errors";
 import { notifyCommunity } from "@/server/community/notifications";
 import { notifyFollowersOfPost } from "@/server/community/follows";
+import { isPublishedCatalogSlug } from "@/server/community/remix";
 import { awardGrowthEvent, safeAwardGrowthEvent } from "@/server/growth/service";
 import { TEAM_MEMBER_CAP, teamPermissions } from "@/server/teams/service";
 
@@ -85,7 +86,10 @@ export async function createCommunityPost(userId: string, raw: unknown) {
 
   const relayRoot = input.kind !== "STALL" && input.relayOfId ? await resolveRelayRoot(input.relayOfId) : null;
   const data: Prisma.CommunityPostUncheckedCreateInput = { authorId: userId, kind: input.kind, board: relayRoot?.board ?? input.board as CommunityBoard, body: input.body, images: [], relayOfId: relayRoot?.id ?? null };
-  if (input.kind === "NOTE") Object.assign(data, { title: input.title, images: input.images });
+  if (input.kind === "NOTE") {
+    if (input.catalogSlug && !(await isPublishedCatalogSlug(input.catalogSlug))) throw new CommunityError(400, "INVALID_PROJECT");
+    Object.assign(data, { title: input.title, images: input.images, catalogSlug: input.catalogSlug ?? null });
+  }
   if (input.kind === "STALL") {
     const now = Date.now();
     if (input.expiresAt.getTime() <= now || input.expiresAt.getTime() > now + STALL_MAX_DAYS * DAY_MS) throw new CommunityError(400, "INVALID_DEADLINE");
@@ -106,7 +110,7 @@ export async function createCommunityPost(userId: string, raw: unknown) {
 
   const post = await db.$transaction(async (tx) => {
     const created = await tx.communityPost.create({ data, select: { id: true } });
-    await tx.auditLog.create({ data: { actorId: userId, action: "COMMUNITY_POST_CREATED", resourceType: "community_post", resourceId: created.id, metadata: { kind: input.kind, board: data.board, relayOfId: data.relayOfId ?? null } } });
+    await tx.auditLog.create({ data: { actorId: userId, action: "COMMUNITY_POST_CREATED", resourceType: "community_post", resourceId: created.id, metadata: { kind: input.kind, board: data.board, relayOfId: data.relayOfId ?? null, catalogSlug: data.catalogSlug ?? null } } });
     return created;
   });
   const label = (input.kind === "STALL" || input.kind === "NOTE" ? input.title : "") || input.body;

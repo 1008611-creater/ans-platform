@@ -9,6 +9,7 @@ import { catalogText } from "@/domain/catalog/content";
 import { CATALOG_PROJECTS } from "@/domain/catalog/projects";
 import { getProjectGuide, relatedCatalogProjects } from "@/domain/catalog/project-detail";
 import { CatalogProjectDetail } from "@/components/catalog/project-detail";
+import { RemixStrip } from "@/components/community/remix-strip";
 
 export const dynamic = "force-dynamic";
 
@@ -37,5 +38,5 @@ export default async function CatalogDetailPage({ params }: { params: Promise<{ 
     accountId ? isFavorited(accountId, "PROJECT", project.slug) : Promise.resolve(false),
     getProjectConnections(project),
   ]);
-  return <CatalogProjectDetail project={project} guide={getProjectGuide(project)} related={relatedCatalogProjects(project, catalog)} connections={connections} accountId={accountId} favorited={saved} />;
+  return <CatalogProjectDetail project={project} guide={getProjectGuide(project)} related={relatedCatalogProjects(project, catalog)} connections={connections} accountId={accountId} favorited={saved} community={<RemixStrip slug={project.slug} accountId={accountId} />} />;
 }
