@@ -1,3 +1,5 @@
+import type { WorkflowId } from "./workflow-registry";
+
 export interface CodexTaskLink {
   labelZh?: string;
   labelEn?: string;
@@ -13,6 +15,9 @@ export interface CodexTask {
   model: string;
   status: "completed" | "running" | "ready" | "stopped";
   mode?: "code" | "ask";
+  /** 用哪个工作流跑的，见 workflow-registry */
+  workflow?: WorkflowId;
+  params?: Record<string, string>;
   branch?: string;
   durationSec?: number;
   diffAdditions?: number;

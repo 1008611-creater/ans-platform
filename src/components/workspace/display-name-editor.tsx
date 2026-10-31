@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import {
   ArrowDown, ArrowRight, ArrowUp, ArrowUpRight, BookOpen, Bot, CalendarCheck, Check, ChevronDown, Code2, Coins, Copy, CopyPlus,
   Download, ExternalLink, Eye, FileCode2, FileText, FolderOpen, FolderPlus, Gift, GitBranch, GitCompareArrows, Lightbulb,
-  ListChecks, Loader2, MessageSquare, Monitor, PanelLeft, PanelRightClose, PanelRightOpen, Pencil, Plus, ReceiptText, RotateCw,
+  Loader2, MessageSquare, Monitor, PanelLeft, PanelRightClose, PanelRightOpen, Pencil, Plus, ReceiptText, RotateCw,
   Smartphone, Square, SquareTerminal, Store, Trash2, Undo2, Wand2, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,11 @@ export interface CodexWorkbenchProps {
 }
 
 import { INITIAL_CODEX_TASKS, type CodexTask } from "./codex-preset-tasks";
+import { WORKFLOWS, defaultParams, getWorkflow, type WorkflowId } from "./workflow-registry";
+import { WorkbenchHome } from "./workbench-home";
+import { WorkflowRunNode } from "./workflow-run-node";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { usePausedRunModels, useRunModelMultipliers } from "@/components/providers/run-model-pricing";
 import { imeBlocks } from "@/lib/ui/ime-enter-guard";
 import { ResizableSplit } from "@/lib/ui/resizable-split";
@@ -290,6 +295,8 @@ interface QueuedPrompt {
   id: string;
   text: string;
   mode: "code" | "ask";
+  workflow: WorkflowId;
+  params: Record<string, string>;
 }
 
 const WORKBENCH_MODEL_OPTIONS = [
@@ -297,6 +304,42 @@ const WORKBENCH_MODEL_OPTIONS = [
   { key: "gpt-6.1-sol", labelKey: "model.sol" },
   { key: "gpt-6-astra", labelKey: "model.astra" },
 ] as const;
+
+/** 对话里的回复：Markdown 渲染。刚跑完时，短句逐字晕开，长文整体从模糊到清楚 */
+function ThreadReply({ text, fresh }: { text: string; fresh: boolean }) {
+  const plain = text.length <= 80 && !/[#*`|>\n-]/.test(text);
+  if (fresh && plain) {
+    return (
+      <p className="text-sm leading-7 [text-wrap:pretty]">
+        {Array.from(text).map((ch, i) => (
+          <span key={i} className="ans-stream-char" style={{ animationDelay: `${i * 30}ms` }}>{ch}</span>
+        ))}
+      </p>
+    );
+  }
+  return (
+    <div className={`ans-wb-md text-sm ${fresh ? "ans-wb-reveal" : ""}`}>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} skipHtml disallowedElements={["img", "input", "script"]}>
+        {text}
+      </ReactMarkdown>
+    </div>
+  );
+}
+
+/** 发送按钮上冒出的一圈薄荷绿碎片，播完自己消失 */
+function SendSparks() {
+  return (
+    <span className="pointer-events-none absolute inset-0" aria-hidden="true">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <span
+          key={i}
+          className="ans-wb-spark"
+          style={{ "--spark-angle": `${i * 45 + 20}deg` } as React.CSSProperties}
+        />
+      ))}
+    </span>
+  );
+}
 
 function PiCodexWorkbench({
   actorId,
@@ -314,9 +357,12 @@ function PiCodexWorkbench({
   const [model, setModel] = useState<"deepseek-v4.1-flash" | "gpt-6-astra" | "gpt-6.1-sol">("deepseek-v4.1-flash");
   const multipliers = useRunModelMultipliers();
   const paused = usePausedRunModels();
-  const [composerMode, setComposerMode] = useState<"code" | "ask">("code");
+  const [workflowId, setWorkflowId] = useState<WorkflowId>("code");
+  const [wfParams, setWfParams] = useState<Record<string, string>>({});
+  const [freshId, setFreshId] = useState<string | null>(null);
+  const [sparkKey, setSparkKey] = useState<number>(0);
+  const composerMode = getWorkflow(workflowId).mode;
   const [iterateOnCurrent, setIterateOnCurrent] = useState<boolean>(true);
-  const [traceExpanded, setTraceExpanded] = useState<boolean>(false);
   // 首屏是「想做点什么？」空状态；点开任务或发出指令后进入对话视图
   const [home, setHome] = useState<boolean>(true);
   const [panelOpen, setPanelOpen] = useState<boolean>(true);
@@ -376,7 +422,7 @@ function PiCodexWorkbench({
     if (running || queue.length === 0 || holdQueueRef.current) return;
     const [next, ...rest] = queue;
     setQueue(rest);
-    void executeRef.current(next.text, "playground", undefined, next.mode);
+    void executeRef.current(next.text, "playground", undefined, next.mode, { id: next.workflow, params: next.params });
   }, [running, queue]);
 
   function formatDuration(sec: number) {
@@ -544,8 +590,12 @@ function PiCodexWorkbench({
     intent: "playground" | "checkin" | "claw" | "redeem" | "scaffold" = "playground",
     baseTasksOverride?: CodexTask[],
     overrideMode?: "code" | "ask",
+    wf?: { id: WorkflowId; params: Record<string, string> },
   ) {
-    const runMode = overrideMode ?? composerMode;
+    const wfManifest = getWorkflow(wf?.id ?? (overrideMode === "ask" ? "ask" : "code"));
+    const runParams = wf?.params ?? {};
+    const isWorkflowRun = Boolean(wfManifest.brief);
+    const runMode = overrideMode ?? wfManifest.mode;
     const q = (customPrompt ?? promptInput).trim();
     if (!q && intent === "playground") return;
     if (running) return;
@@ -644,7 +694,8 @@ function PiCodexWorkbench({
     abortRef.current = controller;
     const baseTasks = baseTasksOverride ?? (userTasks.length > 0 ? userTasks : readStoredUserTasks());
     const shouldIterateCurrent =
-      intent === "playground" && !home && iterateOnCurrent && Boolean(activeTask?.artifactCode);
+      intent === "playground" && !home && iterateOnCurrent && Boolean(activeTask?.artifactCode) &&
+      (wfManifest.id === "ask" || (activeTask.workflow ?? "code") === wfManifest.id);
     const contextBaseline = shouldIterateCurrent ? activeTask.artifactCode : "";
     const isUpdatingExistingUserTask =
       shouldIterateCurrent && baseTasks.some(t => t.id === activeTask.id);
@@ -663,7 +714,10 @@ function PiCodexWorkbench({
       ? runMode === "ask"
         ? activeTask.artifactCode
         : applySmartLocalCodeEdit(activeTask.artifactCode, q)
-      : buildLocalStarterHtml(q || shortTitle);
+      : isWorkflowRun
+        ? `# ${q || shortTitle}\n\n登录后，Agent 会按${wfManifest.name}工作流写出完整方案。`
+        : buildLocalStarterHtml(q || shortTitle);
+    const draftFile = isWorkflowRun ? `${wfManifest.id}-plan.md` : "local-draft.html";
 
     const diffBaselineForFallback =
       shouldIterateCurrent && runMode === "ask"
@@ -679,9 +733,11 @@ function PiCodexWorkbench({
     const runningTask: CodexTask = {
       id: taskId,
       title: shortTitle,
-      tag: runMode === "ask" ? w("tag.archQA") : shouldIterateCurrent ? "增量迭代" : intent === "playground" ? "我的任务" : "快捷操作",
+      tag: isWorkflowRun ? wfManifest.name : runMode === "ask" ? w("tag.archQA") : shouldIterateCurrent ? "增量迭代" : intent === "playground" ? "我的任务" : "快捷操作",
       model,
       mode: runMode,
+      workflow: wfManifest.id,
+      params: runParams,
       branch: activeTask.branch || "ans-workspace/main",
       durationSec: 1,
       diffAdditions: initialDiff.additions,
@@ -690,8 +746,8 @@ function PiCodexWorkbench({
       prompt: q || shortTitle,
       trace: runningTrace,
       summary: runMode === "ask" ? w("progress.analyzing") : "正在执行代码构建与差异对比...",
-      artifactType: shouldIterateCurrent ? activeTask.artifactType : "html",
-      artifactFile: shouldIterateCurrent ? activeTask.artifactFile : "my-output.html",
+      artifactType: shouldIterateCurrent ? activeTask.artifactType : isWorkflowRun ? "markdown" : "html",
+      artifactFile: shouldIterateCurrent ? activeTask.artifactFile : isWorkflowRun ? draftFile : "my-output.html",
       previousCode: diffBaselineForFallback,
       artifactCode: shouldIterateCurrent ? activeTask.artifactCode : fallbackCode,
     };
@@ -701,7 +757,6 @@ function PiCodexWorkbench({
       : [runningTask, ...baseTasks];
     saveUserTasks(nextWithRunning);
     focusTask(taskId);
-    setTraceExpanded(true);
     if (customPrompt === undefined) setPromptInput("");
     setTerminalLogs(prev => [
       ...prev,
@@ -715,7 +770,7 @@ function PiCodexWorkbench({
         body: JSON.stringify({
           action: "pi_action",
           intent,
-          prompt: q,
+          prompt: wfManifest.brief && q ? wfManifest.brief(q, runParams) : q,
           model,
           mode: runMode,
           contextCode: shouldIterateCurrent ? contextBaseline.slice(0, 12000) : undefined,
@@ -750,7 +805,7 @@ function PiCodexWorkbench({
                       : w("reply.guestMode"),
                 links: [{ labelZh: w("link.signInForCompute"), href: "/login?callbackUrl=%2Fworkspace" }],
                 artifactType: runningTask.artifactType,
-                artifactFile: shouldIterateCurrent ? runningTask.artifactFile : "local-draft.html",
+                artifactFile: shouldIterateCurrent ? runningTask.artifactFile : draftFile,
                 previousCode: diffBaselineForFallback,
                 artifactCode: fallbackCode,
               }
@@ -800,7 +855,9 @@ function PiCodexWorkbench({
           ? "my-live-app.html"
           : resolvedType === "python"
             ? "script.py"
-            : "document.md";
+            : isWorkflowRun
+              ? draftFile
+              : "document.md";
 
       const effectivePreviousCode =
         shouldIterateCurrent && nextArtifactCode === activeTask.artifactCode
@@ -825,7 +882,12 @@ function PiCodexWorkbench({
               diffAdditions: computedDiff.additions,
               diffDeletions: computedDiff.deletions,
               trace: serverTrace,
-              summary: reply,
+              // 代码和文档已经放进右侧面板，对话里只留说明文字
+              summary: codeMatch
+                ? reply.replace(codeMatch[0], "").trim() || w("reply.done")
+                : isWorkflowRun && resolvedType === "markdown"
+                  ? `${wfManifest.name}方案写好了，放在右侧 ${resolvedFile}。想改哪里直接说。`
+                  : reply,
               links: Array.isArray(data?.links) ? data.links : [],
               artifactType: resolvedType,
               artifactFile: resolvedFile,
@@ -876,7 +938,7 @@ function PiCodexWorkbench({
               ],
               summary: "已生成本地可编辑草稿，支持在右侧查看预览、Diff 变更与源码。",
               artifactType: runningTask.artifactType,
-              artifactFile: shouldIterateCurrent ? runningTask.artifactFile : "local-draft.html",
+              artifactFile: shouldIterateCurrent ? runningTask.artifactFile : draftFile,
               previousCode: diffBaselineForFallback,
               artifactCode: fallbackCode,
             }
@@ -887,6 +949,7 @@ function PiCodexWorkbench({
       abortRef.current = null;
       setRunStartedAt(null);
       setRunning(false);
+      setFreshId(taskId);
       noteDone(taskId);
     }
   }
@@ -1012,17 +1075,32 @@ function PiCodexWorkbench({
   const addTone = "text-emerald-700 dark:text-emerald-300";
   const delTone = "text-rose-700 dark:text-rose-300";
 
+  function pickWorkflow(id: WorkflowId) {
+    setWorkflowId(id);
+    setWfParams(defaultParams(getWorkflow(id)));
+  }
+
+  function cycleParam(key: string) {
+    const param = getWorkflow(workflowId).params.find(item => item.key === key);
+    if (!param) return;
+    setWfParams(prev => {
+      const idx = param.options.indexOf(prev[key] ?? param.options[0]);
+      return { ...prev, [key]: param.options[(idx + 1) % param.options.length] };
+    });
+  }
+
   function submitComposer(mode: "code" | "ask" = composerMode) {
     setToolsOpen(false);
+    if (promptInput.trim()) setSparkKey(k => k + 1);
     holdQueueRef.current = false;
     const text = promptInput.trim();
     if (running) {
       if (!text) return;
-      setQueue(prev => [...prev, { id: `queued-${Date.now()}`, text, mode }]);
+      setQueue(prev => [...prev, { id: `queued-${Date.now()}`, text, mode, workflow: workflowId, params: wfParams }]);
       setPromptInput("");
       return;
     }
-    void executeCodexTask(undefined, "playground", undefined, mode);
+    void executeCodexTask(undefined, "playground", undefined, mode, { id: workflowId, params: wfParams });
   }
 
   function startSidebarDrag(event: React.PointerEvent<HTMLDivElement>) {
@@ -1101,6 +1179,8 @@ function PiCodexWorkbench({
                   >
                     {t.status === "running" ? (
                       <Loader2 className="size-3.5 shrink-0 animate-spin text-muted-foreground motion-reduce:animate-none" aria-hidden="true" />
+                    ) : t.workflow && getWorkflow(t.workflow).brief ? (
+                      <span className="mx-[3px] size-2 shrink-0 rounded-full" style={{ background: getWorkflow(t.workflow).color }} aria-hidden="true" />
                     ) : t.mode === "ask" ? (
                       <MessageSquare className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                     ) : (
@@ -1126,6 +1206,33 @@ function PiCodexWorkbench({
           )}
         </section>
 
+        <section>
+          <div className="flex h-7 items-center px-2.5 text-xs text-muted-foreground">工作流</div>
+          <ul className="space-y-px">
+            {WORKFLOWS.filter(item => item.brief).map(item => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  aria-current={home && workflowId === item.id ? "true" : undefined}
+                  onClick={() => {
+                    pickWorkflow(item.id);
+                    goHome();
+                  }}
+                  className="ans-wb-row"
+                >
+                  <span className="mx-[3px] size-2 shrink-0 rounded-full" style={{ background: item.color }} aria-hidden="true" />
+                  <span className="min-w-0 flex-1 truncate">{item.name}</span>
+                </button>
+              </li>
+            ))}
+            <li>
+              <Link href="/market" className="ans-wb-row text-muted-foreground hover:text-foreground">
+                <Plus className="size-3.5 shrink-0" aria-hidden="true" />
+                从市场添加
+              </Link>
+            </li>
+          </ul>
+        </section>
       </div>
 
       <div className="space-y-px">
@@ -1196,9 +1303,9 @@ function PiCodexWorkbench({
         placeholder={
           running
             ? w("placeholder.queue")
-            : !home && iterateOnCurrent
+            : !home && iterateOnCurrent && activeTask.artifactCode && (activeTask.workflow ?? "code") === workflowId
               ? w("placeholder.iterate", { file: activeTask.artifactFile })
-              : w("placeholder.newTask")
+              : getWorkflow(workflowId).placeholder
         }
         className="block max-h-[200px] min-h-[52px] w-full resize-none bg-transparent px-2 py-1.5 text-sm leading-6 text-foreground placeholder:text-muted-foreground focus:outline-none [field-sizing:content]"
         onKeyDown={e => {
@@ -1264,7 +1371,7 @@ function PiCodexWorkbench({
       </div>
 
       <div className="flex items-center justify-between gap-1">
-        <div className="flex min-w-0 items-center gap-0.5">
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
           <button
             type="button"
             aria-expanded={toolsOpen}
@@ -1275,33 +1382,32 @@ function PiCodexWorkbench({
           >
             <Plus className={`size-4 transition-transform ${toolsOpen ? "rotate-45" : ""}`} aria-hidden="true" />
           </button>
-          <div className="inline-flex items-center rounded-full bg-muted p-0.5 text-xs" role="group" aria-label={w("mode.codeShort")}>
+          {!home && workflowId !== "code" && (
             <button
               type="button"
-              data-testid="codex-mode-ask"
-              aria-pressed={composerMode === "ask"}
-              onClick={() => setComposerMode("ask")}
-              title={w("title.askMode")}
-              className={`inline-flex h-7 items-center gap-1 rounded-full px-2.5 transition-colors ${
-                composerMode === "ask" ? "bg-card text-foreground shadow-[inset_0_0_0_0.5px_var(--hairline)]" : "text-muted-foreground hover:text-foreground"
-              }`}
+              data-testid="codex-workflow-chip"
+              onClick={() => pickWorkflow("code")}
+              title={`${getWorkflow(workflowId).name}，点一下退回写代码`}
+              className="ans-wb-chip-in inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-medium"
+              style={{ background: `color-mix(in srgb, ${getWorkflow(workflowId).color} 14%, transparent)`, color: getWorkflow(workflowId).color }}
             >
-              <MessageSquare className="size-3.5" aria-hidden="true" />
-              {w("label.ask")}
+              {getWorkflow(workflowId).name}
+              <X className="size-3 opacity-70" aria-hidden="true" />
             </button>
-            <button
-              type="button"
-              data-testid="codex-mode-code"
-              aria-pressed={composerMode === "code"}
-              onClick={() => setComposerMode("code")}
-              title={w("title.codeMode")}
-              className={`inline-flex h-7 items-center gap-1 rounded-full px-2.5 transition-colors ${
-                composerMode === "code" ? "bg-card text-foreground shadow-[inset_0_0_0_0.5px_var(--hairline)]" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Code2 className="size-3.5" aria-hidden="true" />
-              {w("label.writeCode")}
-            </button>
+          )}
+          <div className="contents">
+            {home && getWorkflow(workflowId).params.map((param, idx) => (
+              <button
+                key={`${workflowId}-${param.key}`}
+                type="button"
+                onClick={() => cycleParam(param.key)}
+                title="点一下换一个"
+                style={{ animationDelay: `${(idx + 1) * 40}ms` }}
+                className="ans-wb-chip-in inline-flex h-8 shrink-0 items-center rounded-full px-3 text-xs text-muted-foreground shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-colors hover:bg-muted hover:text-foreground"
+              >
+                {wfParams[param.key] ?? param.options[0]}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -1333,23 +1439,26 @@ function PiCodexWorkbench({
               <Square className="size-3 fill-current" aria-hidden="true" />
             </button>
           )}
+          <span className="relative inline-flex">
+          {sparkKey > 0 && <SendSparks key={sparkKey} />}
           <button
             type="submit"
             data-testid="codex-send"
             disabled={!promptInput.trim()}
             aria-label={running ? w("label.queued") : w("label.send")}
-            title={composerMode === "ask" ? w("title.askMode") : w("title.codeMode")}
+            title={getWorkflow(workflowId).name}
             className="inline-flex size-8 items-center justify-center rounded-full bg-foreground text-background transition-opacity hover:opacity-90 disabled:opacity-30"
           >
             <ArrowUp className="size-4" aria-hidden="true" />
           </button>
+          </span>
         </div>
       </div>
     </form>
   );
 
   // 有产物时，输入框背后露出一条灰色上下文条：基于哪个文件继续改，点一下切换
-  const composer = !home && activeTask.artifactCode ? (
+  const composer = !home && !(running && activeTask.status === "running") && activeTask.artifactCode ? (
     <div className="ans-wb-tray">
       <button
         type="button"
@@ -1405,37 +1514,32 @@ function PiCodexWorkbench({
       </div>
 
       <div className="space-y-3">
-        {activeTask.trace && activeTask.trace.length > 0 && (
-          <div data-testid="codex-execution-trace">
-            <button
-              type="button"
-              onClick={() => setTraceExpanded(v => !v)}
-              aria-expanded={traceExpanded}
-              className="inline-flex items-center gap-1.5 rounded-md py-0.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {taskRunning ? (
-                <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
-              ) : (
-                <ListChecks className="size-3.5" aria-hidden="true" />
-              )}
-              <span className="ans-num">{runStatusLabel}</span>
-              <span className="ans-num text-muted-foreground/70">{w("label.steps", { n: activeTask.trace.length })}</span>
-              <ChevronDown className={`size-3.5 transition-transform ${traceExpanded ? "rotate-180" : "-rotate-90"}`} aria-hidden="true" />
-            </button>
-            <div className="ans-collapse" data-open={traceExpanded}>
-              <div inert={!traceExpanded}>
-                <ol className="ml-[7px] mt-2 space-y-1 py-1 pl-4 font-mono text-xs leading-5 text-muted-foreground shadow-[inset_1px_0_0_var(--hairline)]">
-                  {activeTask.trace.map((step, idx) => (
-                    <li key={idx} className="break-all">{step}</li>
-                  ))}
-                </ol>
-              </div>
-            </div>
-          </div>
+        {((activeTask.trace && activeTask.trace.length > 0) || taskRunning) && (
+          <WorkflowRunNode
+            key={`${activeTask.id}-${activeTask.status}`}
+            workflow={activeTask.workflow ?? (activeTask.mode === "ask" ? "ask" : "code")}
+            params={activeTask.params}
+            status={activeTask.status}
+            trace={activeTask.trace ?? []}
+            statusLabel={runStatusLabel}
+          />
         )}
 
-        <div className="whitespace-pre-wrap text-sm leading-7 [text-wrap:pretty]">{activeTask.summary}</div>
+        {!taskRunning && (
+          <ThreadReply text={activeTask.summary} fresh={freshId === activeTask.id} />
+        )}
 
+        {!taskRunning && activeTask.status === "completed" && getWorkflow(activeTask.workflow).next && (
+          <a
+            href={getWorkflow(activeTask.workflow).next!.href}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-foreground px-4 text-sm text-background transition-opacity hover:opacity-90"
+          >
+            {getWorkflow(activeTask.workflow).next!.label}
+            <ArrowRight className="size-3.5" aria-hidden="true" />
+          </a>
+        )}
+
+        {!taskRunning && (<>
         <button
           type="button"
           onClick={() => {
@@ -1505,6 +1609,7 @@ function PiCodexWorkbench({
             <Download className="size-3.5" aria-hidden="true" />
           </button>
         </div>
+        </>)}
       </div>
     </div>
   );
@@ -1597,8 +1702,18 @@ function PiCodexWorkbench({
 
       <div className="flex min-h-0 flex-1 flex-col p-2">
         {canvasTab === "preview" && (
-          activeTask.artifactType === "html" ? (
-            <div className="flex min-h-0 flex-1 items-stretch justify-center rounded-[12px] bg-muted p-1">
+          taskRunning ? (
+            <div className="flex min-h-0 flex-1 flex-col gap-3 rounded-[12px] bg-card p-6 shadow-[inset_0_0_0_0.5px_var(--hairline)]" aria-busy="true">
+              <span className="text-xs text-muted-foreground">{getWorkflow(activeTask.workflow).name}正在写 {activeTask.artifactFile}</span>
+              {[72, 92, 64, 84, 48].map((width, idx) => (
+                <span key={idx} className="ans-wb-skeleton h-3 rounded-full" style={{ width: `${width}%`, animationDelay: `${idx * 120}ms` }} />
+              ))}
+            </div>
+          ) : activeTask.artifactType === "html" ? (
+            <div
+              key={freshId === activeTask.id ? `fresh-${activeTask.id}` : activeTask.id}
+              className={`flex min-h-0 flex-1 items-stretch justify-center rounded-[12px] bg-muted p-1 ${freshId === activeTask.id ? "ans-wb-reveal" : ""}`}
+            >
               <iframe
                 key={`${activeTask.id}-${previewKey}`}
                 title="Live Artifact Preview"
@@ -1618,7 +1733,11 @@ function PiCodexWorkbench({
                 </span>
                 <span className="shrink-0 font-mono">{activeTask.model}</span>
               </div>
-              <div className="whitespace-pre-wrap [text-wrap:pretty]">{activeTask.artifactCode}</div>
+              <div className="ans-wb-md">
+                <ReactMarkdown remarkPlugins={[remarkGfm]} skipHtml disallowedElements={["img", "input", "script"]}>
+                  {activeTask.artifactCode}
+                </ReactMarkdown>
+              </div>
             </article>
           ) : (
             <pre className="min-h-0 flex-1 overflow-auto rounded-[12px] bg-card p-4 font-mono text-xs leading-6 shadow-[inset_0_0_0_0.5px_var(--hairline)]">
@@ -1708,10 +1827,20 @@ function PiCodexWorkbench({
     <section className="relative flex h-full min-h-0 flex-1 flex-col bg-card">
       <div ref={threadRef} className="min-h-0 flex-1 overflow-y-auto">
         {home ? (
-          <div className="mx-auto flex min-h-full w-full max-w-[768px] flex-col justify-center gap-6 px-4 py-10 sm:px-6">
-            <h1 className="text-center text-[28px] font-medium leading-9 tracking-tight [text-wrap:balance]">{w("home.title")}</h1>
-            {composer}
-          </div>
+          <WorkbenchHome
+            composer={composer}
+            typed={promptInput.length}
+            workflow={workflowId}
+            onPickWorkflow={id => {
+              pickWorkflow(id);
+              document.getElementById("codex-composer-input")?.focus();
+            }}
+            onPickTemplate={tpl => {
+              if (tpl.workflow && tpl.workflow !== workflowId) pickWorkflow(tpl.workflow);
+              setPromptInput(tpl.prompt);
+              document.getElementById("codex-composer-input")?.focus();
+            }}
+          />
         ) : (
           thread
         )}
