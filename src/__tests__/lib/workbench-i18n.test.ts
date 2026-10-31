@@ -43,7 +43,8 @@ it("中文词条保留原文（英文是新增词条，不替换原文）", () =
 
 it("组件里用到的每一个 workbench 词条都能解析到（含嵌套路径）", () => {
   const source = readFileSync(join(process.cwd(), "src/components/workspace/display-name-editor.tsx"), "utf8");
-  const used = [...new Set([...source.matchAll(/w\("([^"]+)"\)/g)].map(match => match[1]))].sort();
+  // 只认独立的 w("…") 调用，别把 pickWorkflow("code") 这类以 w 结尾的函数名也算进来。
+  const used = [...new Set([...source.matchAll(/(?<![\w.$])w\("([^"]+)"\)/g)].map(match => match[1]))].sort();
   expect(used.length).toBeGreaterThanOrEqual(90);
   const unresolvedZh = used.filter(key => !(key in zhFlat));
   const unresolvedEn = used.filter(key => !(key in enFlat));
