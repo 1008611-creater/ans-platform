@@ -29,3 +29,11 @@ describe("persistent root frame during real route changes", () => {
     expect(screen.getByRole("heading", { name: "Page content" })).toBeInTheDocument();
   });
 });
+describe("mobile tab bar only on tab pages", () => {
+  it.each([["/explore", true], ["/competitions/agrihackathon", true], ["/explore/some-project", false], ["/workspace/credits", false]])("on %s shows the tab bar: %s", (pathname, visible) => {
+    route.pathname = pathname;
+    render(view());
+    expect(!!screen.queryByRole("navigation", { name: "Mobile navigation" })).toBe(visible);
+    expect(screen.getByRole("contentinfo")).toBeInTheDocument();
+  });
+});

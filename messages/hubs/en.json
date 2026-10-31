@@ -201,5 +201,8 @@
   "noOfficialWorkflows": "No official workflows yet.",
   "guideLabel": "What is a Hub?",
   "workflowGuideLabel": "How do workflows work?",
-  "projectGuideLabel": "How do I use these projects?"
+  "projectGuideLabel": "How do I use these projects?",
+  "mobileCredits": "Credits",
+  "aboutHelp": "About & help",
+  "mobileApp": "Mobile App"
 }

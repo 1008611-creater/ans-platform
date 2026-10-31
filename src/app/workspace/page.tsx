@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getLevelProgress, formatLevel } from "@/lib/level";
 import { DisplayNameEditor } from "@/components/workspace/display-name-editor";
+import { MobileAboutLinks } from "@/components/layout/mobile-about-links";
 
 export async function generateMetadata() {
   const t = await getTranslations("product.workspace");
@@ -46,6 +47,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
         levelName={levelName}
         initialPrompt={initialPrompt}
       />
+      <MobileAboutLinks />
     </div>
   );
 }

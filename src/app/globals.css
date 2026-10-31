@@ -1148,3 +1148,14 @@ details.ans-details::details-content > * { min-height: 0; overflow: hidden; }
   .ans-stream-char, .ans-pop, .ans-feedback-leaving { animation: none; }
   .ans-collapse, details.ans-details::details-content, .ans-spring-drag { transition: none; }
 }
+
+/* 手机端 App 壳层：data-app-shell 由服务端按 UA（安卓壳）或客户端按 standalone（iOS 主屏）标记。
+   App 里不再出现网页页脚和「下载 App」入口；整页不做下拉回弹。 */
+html[data-app-shell] .ans-site-footer,
+html[data-app-shell] .ans-app-install-link {
+  display: none;
+}
+html[data-app-shell],
+html[data-app-shell] body {
+  overscroll-behavior-y: none;
+}
