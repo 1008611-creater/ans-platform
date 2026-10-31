@@ -10,6 +10,7 @@ import { browseCatalog, catalogBrowseHref, type CatalogBrowseQuery, type Catalog
 import { ProjectCard } from "@/components/catalog/project-card";
 import { CatalogPagination } from "@/components/catalog/catalog-pagination";
 import { RevealDetails } from "@/components/catalog/reveal-details";
+import { CenterCurrentPill } from "@/components/catalog/center-current-pill";
 import { ProjectCoverflow } from "@/components/homepage/project-coverflow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,22 +50,23 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
           </form>
           <div className={styles.heroActions}><Button asChild variant="outline"><Link href="/explore/submit">{t("realProject.submit")}</Link></Button></div>
         </div>
-        {hero && <ProjectCoverflow projects={(showcase.length ? showcase : [hero]).map(project => ({
+        {hero && <div className={styles.spotlight}><ProjectCoverflow projects={(showcase.length ? showcase : [hero]).map(project => ({
           slug: project.slug,
           href: resolveCatalogShowcaseHref(project),
           title: catalogText(project, t, "title", locale),
           summary: catalogText(project, t, "summary", locale),
           category: t(`categories.${project.category}`),
           coverUrl: resolveProjectCovers(project).outerCoverUrl,
-        }))} labels={{ title: t("home.spotlight"), open: t("detail"), carousel: t("home.projectCarousel"), info: t("catalogBrowse.introduction"), pause: t("home.pauseProjects"), play: t("home.playProjects") }} />}
+        }))} labels={{ title: t("home.spotlight"), open: t("detail"), carousel: t("home.projectCarousel"), info: t("catalogBrowse.introduction"), pause: t("home.pauseProjects"), play: t("home.playProjects") }} /></div>}
       </div>
     </section>}
     <div className={`ans-product-container ans-page-content ${styles.page}`}>
-    <nav aria-label={t("categoriesLabel")} className={`ans-category-row ${styles.categories}`}>
+    <nav id="explore-categories" aria-label={t("categoriesLabel")} className={`ans-category-row ${styles.categories}`}>
       <Link href={filterHref({ category: undefined, subcategory: undefined })} aria-current={!category ? "page" : undefined} className="ans-category-pill">{t("all")}</Link>
       {PROJECT_CATEGORIES.map(item => <Link key={item.id} href={filterHref({ category: item.id, subcategory: undefined })} aria-current={category?.id === item.id ? "page" : undefined} className="ans-category-pill">{t(`categories.${item.id}`)}<span className="ms-2 text-xs opacity-70">{catalog.filter(project => project.category === item.id).length}</span></Link>)}
     </nav>
-    {category && <nav aria-label={t("subcategoriesLabel")} className="mb-6 flex flex-wrap gap-2 text-sm">
+    <CenterCurrentPill rowId="explore-categories" />
+    {category && <nav aria-label={t("subcategoriesLabel")} className={`mb-6 flex flex-wrap gap-2 text-sm ${styles.subcategories}`}>
       <Link href={filterHref({ subcategory: undefined })} aria-current={!subcategory ? "page" : undefined} className="ans-subcategory">{t("allChildren")}</Link>
       {category.children.map(child => <Link key={child} href={filterHref({ subcategory: child })} aria-current={subcategory === child ? "page" : undefined} className="ans-subcategory">{t(`children.${child}`)}</Link>)}
     </nav>}

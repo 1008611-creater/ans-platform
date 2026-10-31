@@ -44,6 +44,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { NotificationBell } from "@/components/layout/notification-bell";
+import { HeaderPointsPill } from "@/components/layout/header-points-pill";
 import { SiteSettings } from "@/components/settings/site-settings";
 import { BilingualToggle } from "@/components/layout/bilingual-toggle";
 import { setLocale } from "@/lib/i18n/client";
@@ -267,14 +268,7 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
             </Button>
           )}
 
-          {user && (
-            <Link href="/workspace/credits" className="flex h-11 shrink-0 items-center md:hidden">
-              <span className="flex h-7 items-center gap-1 rounded-full bg-muted px-2.5 text-xs font-medium">
-                <Coins className="h-3.5 w-3.5" aria-hidden="true" />
-                {hubText("mobileCredits")}
-              </span>
-            </Link>
-          )}
+          {user && <HeaderPointsPill userId={user.id} label={hubText("mobileCredits")} />}
 
           {/* Notifications */}
           {user && <NotificationBell />}

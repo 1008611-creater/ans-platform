@@ -158,3 +158,9 @@ export async function adjustQuota(actorId: string, userId: string, amount: numbe
     return user.quotaPoints;
   });
 }
+
+/** A member's spendable points, or null when the account no longer exists. */
+export async function readMemberPoints(userId: string): Promise<number | null> {
+  const user = await db.user.findUnique({ where: { id: userId }, select: { quotaPoints: true } });
+  return user ? Number(user.quotaPoints) : null;
+}
