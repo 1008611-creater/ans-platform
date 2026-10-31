@@ -46,12 +46,23 @@
   .filters { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 }
 
-@media (max-width: 640px) {
-  .page { padding-block: 28px 48px; }
-  .projects { gap: 20px; }
-  .page .categories { flex-wrap: nowrap; overflow-x: auto; padding-block: 4px; scrollbar-width: thin; }
-  .categories > a { flex-shrink: 0; white-space: nowrap; }
-  .filters > nav { flex-wrap: nowrap; min-width: 0; overflow-x: auto; padding-block: 4px; scrollbar-width: thin; }
-  .filters > nav > * { flex-shrink: 0; white-space: nowrap; }
+/* 手机（<768）：分类、子分类、筛选都是单行横滑，不折行；封面轮播收起，首屏直接看到分类和第一张项目卡。 */
+@media (max-width: 767.98px) {
+  .page { padding-block: 16px 48px; }
+  .projects { gap: 16px; }
+  .spotlight { display: none; }
+  .heroIntro { padding-block: 20px; gap: 0; }
+  .heroIntro h1 { font-size: 28px; }
+  .heroActions { margin-top: 12px; }
+  .page .categories, .page .subcategories, .filters > nav {
+    flex-wrap: nowrap; min-width: 0; overflow-x: auto; overflow-y: hidden; padding-block: 4px;
+    touch-action: pan-x pan-y; overscroll-behavior-x: contain; scrollbar-width: none;
+    mask-image: linear-gradient(to right, transparent, white 8px, white calc(100% - 24px), transparent);
+  }
+  .page .categories::-webkit-scrollbar, .page .subcategories::-webkit-scrollbar, .filters > nav::-webkit-scrollbar { display: none; }
+  .categories > a, .subcategories > a, .filters > nav > * { flex-shrink: 0; white-space: nowrap; }
+  .categories > a { min-height: 44px; }
+  .categories { margin-bottom: 12px; }
+  .filters { margin-bottom: 16px; padding-block: 8px; }
 }
 .page :global(#project-results) { scroll-margin-top: 88px; }
