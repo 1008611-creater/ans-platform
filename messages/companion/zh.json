@@ -192,6 +192,8 @@
   "resizeChatHeight": "调整聊天框高度",
   "resizeChat": "调整聊天框大小",
   "resizeChatHint": "拖拽边角可调大小；方向键微调，双击恢复默认尺寸",
+  "sheetGrabber": "拖动调整抽屉高度",
+  "sheetGrabberHint": "上拉展开，下滑收起；方向键也可以调整",
   "agentConsentDetails": "费用与隐私详情",
   "agentUsedPoints": "本轮 {points} 积分",
   "agentBillingNotice": "按实际用量结算积分",

@@ -1459,3 +1459,61 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
   .ans-dino-pixel-aura,
   .ans-dino-pixel-stage { animation: none !important; }
 }
+
+/* 手机端（< 768px）：圆章收起，展开成底部抽屉（PRD v1.1 4.5 / UI 规范 3.5） */
+.ans-companion-grabber { display: none; }
+@media (max-width: 767px) {
+  .ans-companion-v2 { inset-inline-end: 16px; bottom: calc(4rem + 16px + env(safe-area-inset-bottom)); }
+  .ans-companion-v2:not([data-open=true]) .ans-dino-trigger { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: var(--card) !important; box-shadow: inset 0 0 0 0.5px var(--hairline) !important; }
+  .ans-companion-v2:not([data-open=true]) .ans-dino-trigger:hover { transform: none; }
+  .ans-companion-v2:not([data-open=true]) :is(.ans-dino-avatar, .ans-dino-pixel-stage) { width: 44px; height: 44px; }
+  .ans-companion-v2:not([data-open=true]) .ans-dino-avatar > img { width: 40px; height: 40px; }
+  .ans-companion-v2:not([data-open=true]) .ans-dino-pip { top: 4px; inset-inline-end: 4px; width: 8px; height: 8px; }
+
+  /* 展开时小恐龙站在抽屉上沿，跟着拖动走 */
+  .ans-companion-v2[data-open=true] {
+    z-index: 56; right: auto; inset-inline-end: auto; left: 50%; transform: translateX(-50%);
+    bottom: calc(var(--ans-sheet-kb, 0px) + var(--ans-sheet-h, 60dvh) + max(0px, -1 * var(--ans-sheet-drag, 0px)) - max(0px, var(--ans-sheet-drag, 0px)) + 8px);
+  }
+  .ans-companion-v2[data-open=true] :is(.ans-dino-avatar, .ans-dino-pixel-stage) { width: 88px; height: 92px; }
+  .ans-companion-v2[data-open=true] .ans-dino-avatar > img { width: 88px; height: 88px; }
+  :root[data-ans-sheet-dragging] .ans-companion-v2 { transition: none; }
+
+  .ans-companion-scrim { position: fixed; inset: 0; z-index: 54; background: rgb(26 26 25 / 32%); animation: ans-sheet-scrim-in 200ms var(--ease-out-cubic, ease-out); }
+  [data-radix-popper-content-wrapper]:has(> .ans-companion-panel[data-sheet]) {
+    position: fixed !important; inset: auto 0 var(--ans-sheet-kb, 0px) 0 !important; transform: none !important; min-width: 0 !important;
+  }
+  .ans-companion-panel[data-sheet] {
+    width: 100% !important; max-width: none; max-height: none;
+    height: min(calc(var(--ans-sheet-h, 60dvh) + max(0px, -1 * var(--ans-sheet-drag, 0px))), calc(var(--ans-sheet-vh, 100dvh) - 56px)) !important;
+    border-radius: 20px 20px 0 0; border: 0; box-shadow: 0 -8px 40px oklch(.18 .035 290 / .14);
+    transform: translateY(max(0px, var(--ans-sheet-drag, 0px)));
+    transition: height var(--spring-drag-duration) var(--spring-drag), transform var(--spring-drag-duration) var(--spring-drag);
+  }
+  .ans-companion-panel[data-sheet][data-state=open] { animation: ans-sheet-in var(--spring-drag-duration) var(--spring-drag) !important; }
+  .ans-companion-panel[data-sheet][data-state=closed] { animation: ans-sheet-out 200ms var(--ease-out-cubic, ease-out) forwards !important; }
+  :root[data-ans-sheet-dragging] .ans-companion-panel[data-sheet] { transition: none; }
+  .ans-companion-panel[data-sheet] .ans-companion-grabber {
+    display: block; position: relative; flex-shrink: 0; width: 100%; height: 20px; cursor: grab; touch-action: none;
+  }
+  .ans-companion-panel[data-sheet] .ans-companion-grabber::after {
+    content: ""; position: absolute; left: 50%; top: 8px; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--muted);
+  }
+  .ans-companion-panel[data-sheet] .ans-companion-grabber:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+  .ans-companion-panel[data-sheet] .ans-companion-header { padding-top: 0; }
+  /* 60% 档只留一行快捷入口，把高度让给对话；3D 剧场和灵魂插件上拉到 80% 档再出现 */
+  .ans-companion-panel[data-sheet] [data-testid="pi-agent-quickbar"] { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; }
+  .ans-companion-panel[data-sheet] [data-testid="pi-agent-quickbar"]::-webkit-scrollbar { display: none; }
+  .ans-companion-panel[data-sheet] [data-testid="pi-agent-quickbar"] > div { flex-wrap: nowrap; flex-shrink: 0; }
+  .ans-companion-panel[data-sheet] [data-testid="pi-agent-quickbar"] button { flex-shrink: 0; white-space: nowrap; }
+  .ans-companion-panel[data-sheet][data-snap=half] :is(.ans-mascot-stage-deck, .ans-dino-soul-bar) { display: none; }
+  .ans-companion-panel[data-sheet] .ans-companion-composer { padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+}
+@keyframes ans-sheet-in { from { transform: translateY(100%); } }
+@keyframes ans-sheet-out { to { transform: translateY(100%); } }
+@keyframes ans-sheet-scrim-in { from { opacity: 0; } }
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  .ans-companion-panel[data-sheet], .ans-companion-v2 { transition: none !important; }
+  .ans-companion-panel[data-sheet][data-state] { animation: none !important; }
+  .ans-companion-scrim { animation: none; }
+}
