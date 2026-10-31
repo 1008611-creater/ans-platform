@@ -182,6 +182,11 @@
   .ans-companion-v2[data-open=true][data-keyboard=true] .ans-dino-trigger { visibility: hidden; }
   .ans-agent-quote button, .ans-companion-undo button, .ans-agent-recover, .ans-agent-retry button { min-height: 44px; }
 }
+/* 窄屏工作台：输入框固定在底部，悬浮兔兔龙和气泡让位（顶栏有 Agent 入口） */
+@media (max-width: 899px) {
+  body.ans-workbench-open .ans-dino-guide.ans-companion-v2:not([data-open=true]),
+  body.ans-workbench-open #ans-dino-live-bubble { display: none !important; }
+}
 @media (max-width: 640px) {
   .ans-companion-v2 { inset-inline-end: 10px; bottom: calc(66px + env(safe-area-inset-bottom)); }
   .ans-companion-v2 .ans-dino-avatar { width: 52px; height: 56px; }
