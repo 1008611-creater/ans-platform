@@ -30,7 +30,7 @@ export interface CodexTask {
 export const INITIAL_CODEX_TASKS: CodexTask[] = [
   {
     id: "task-3d-agri-dashboard",
-    title: "🌾 农田温湿度监测看板",
+    title: "农田温湿度监测看板",
     tag: "网页范例",
     model: "deepseek-v4.1-flash",
     status: "completed",
@@ -135,7 +135,7 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
   },
   {
     id: "task-canvas-director",
-    title: "🎬 多模态 4 镜头分镜台",
+    title: "多模态 4 镜头分镜台",
     tag: "分镜范例",
     model: "gpt-6-astra",
     status: "completed",
@@ -202,7 +202,7 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
   },
   {
     id: "task-cyber-snake",
-    title: "🎮 Canvas 贪吃蛇小游戏",
+    title: "Canvas 贪吃蛇小游戏",
     tag: "小游戏范例",
     model: "deepseek-v4.1-flash",
     status: "completed",
@@ -295,7 +295,7 @@ export const INITIAL_CODEX_TASKS: CodexTask[] = [
   },
   {
     id: "task-agrihackathon-kit",
-    title: "🐍 FastAPI 植保诊断接口",
+    title: "FastAPI 植保诊断接口",
     tag: "后端范例",
     model: "deepseek-v4.1-flash",
     status: "completed",

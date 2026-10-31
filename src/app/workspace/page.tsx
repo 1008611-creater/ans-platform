@@ -37,7 +37,7 @@ export default async function WorkspacePage({ searchParams }: WorkspacePageProps
   const levelName = locale === "zh" ? formatLevel(xp) : progress.level.nameEn;
 
   return (
-    <div className="ans-product-container ans-page-content ans-workspace-page">
+    <div className="ans-workspace-page">
       <DisplayNameEditor
         codexWorkbench
         actorId={userId ?? "guest"}
