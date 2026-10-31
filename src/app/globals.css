@@ -1145,7 +1145,36 @@
   .ans-wb-rise { animation: ans-wb-rise 150ms cubic-bezier(.23, 1, .32, 1) both; }
 }
 @keyframes ans-wb-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-@media (prefers-reduced-motion: reduce) { .ans-wb-rise { animation: none; } }
+.ans-wb-serif { font-family: "Songti SC", "Noto Serif SC", "Source Han Serif SC", serif; }
+@keyframes ans-wb-bob { 50% { transform: translateY(-3px) rotate(-3deg); } }
+.ans-wb-bob { animation: ans-wb-bob 3.2s ease-in-out infinite; }
+@keyframes ans-wb-skeleton { 50% { opacity: .45; } }
+.ans-wb-skeleton { background: var(--muted); animation: ans-wb-skeleton 1.4s ease-in-out infinite; }
+.ans-wb-md { line-height: 1.75; text-wrap: pretty; }
+.ans-wb-md > * + * { margin-top: .75em; }
+.ans-wb-md h1 { font-size: 20px; font-weight: 600; line-height: 1.4; }
+.ans-wb-md h2 { font-size: 16px; font-weight: 600; margin-top: 1.4em; }
+.ans-wb-md h3 { font-size: 14px; font-weight: 600; margin-top: 1.2em; }
+.ans-wb-md ul { list-style: disc; padding-left: 1.25em; }
+.ans-wb-md ol { list-style: decimal; padding-left: 1.25em; }
+.ans-wb-md li + li { margin-top: .25em; }
+.ans-wb-md table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.ans-wb-md th, .ans-wb-md td { padding: 6px 10px; text-align: left; box-shadow: inset 0 -0.5px 0 var(--hairline); }
+.ans-wb-md th { font-weight: 500; color: var(--muted-foreground); }
+.ans-wb-md code { font-size: 12px; padding: 1px 5px; border-radius: 5px; background: var(--muted); }
+.ans-wb-md blockquote { padding-left: 12px; color: var(--muted-foreground); box-shadow: inset 2px 0 0 var(--hairline); }
+@keyframes ans-wb-chip-in { from { opacity: 0; transform: scale(.92); } }
+.ans-wb-chip-in { animation: ans-wb-chip-in 280ms cubic-bezier(.23, 1, .32, 1) both; }
+/* 跑完那一刻：结果从模糊变清楚 */
+@keyframes ans-wb-reveal { from { opacity: .3; filter: blur(12px); } to { opacity: 1; filter: blur(0); } }
+.ans-wb-reveal { animation: ans-wb-reveal 600ms cubic-bezier(.215, .61, .355, 1) both; }
+/* 打字时兔兔龙跳一下：欠阻尼微弹 */
+@keyframes ans-wb-hop { 30% { transform: translateY(-6px) scale(1.04); } 60% { transform: translateY(1px); } }
+.ans-wb-hop { animation: ans-wb-hop 380ms var(--spring-pop) both; }
+/* 发送碎片 */
+@keyframes ans-wb-spark { from { opacity: 1; transform: rotate(var(--spark-angle)) translateX(6px) scale(1); } to { opacity: 0; transform: rotate(var(--spark-angle)) translateX(26px) scale(.4); } }
+.ans-wb-spark { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px; border-radius: 9999px; background: #3fbf94; animation: ans-wb-spark 520ms cubic-bezier(.23, 1, .32, 1) both; }
+@media (prefers-reduced-motion: reduce) { .ans-wb-rise, .ans-wb-bob, .ans-wb-chip-in, .ans-wb-skeleton, .ans-wb-reveal, .ans-wb-hop, .ans-wb-spark { animation: none; } .ans-wb-spark { display: none; } }
 
 /* 丝滑折叠：外层 grid 0fr→1fr，内层裁切，不用 JS 量高度 */
 .ans-collapse { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 280ms var(--ease-out-cubic), opacity 200ms var(--ease-out-cubic); opacity: 0; }
