@@ -1413,6 +1413,12 @@
         "cta": "入围与展示",
         "href": "/competitions/agrihackathon/showcase"
       }
+    },
+    "segments": {
+      "label": "农客松内容分段",
+      "pipeline": "闯关",
+      "tracks": "赛道",
+      "guide": "指南"
     }
   },
   "templates": {

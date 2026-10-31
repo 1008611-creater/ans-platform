@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeading } from "@/components/layout/page-heading";
 import { CompetitionDetails } from "@/components/competitions/competition-details";
+import { AgriMobileSegments } from "@/components/competitions/agri-mobile-segments";
 import { AGRI_AWARDS, AGRI_DELIVERABLES, AGRI_PHASES, AGRI_TRACKS } from "@/lib/agrihackathon/cluster";
 import { readAgriPublicGuide } from "@/server/competitions/agrihackathon/workspace";
 import { findAgriHackathonCompetition } from "@/server/competitions/service";
@@ -21,6 +22,7 @@ const PIPELINE_KEYS = ["rules", "compute", "submit", "star", "ranking"] as const
 const pipelineIcons = { rules: Compass, compute: Cpu, submit: FileCheck2, star: Star, ranking: Trophy } as const;
 const trackStyles = { people: { icon: Sprout }, discovery: { icon: Telescope }, action: { icon: Compass } };
 const linkClass = "inline-flex min-h-9 items-center gap-1.5 rounded-md py-1 text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const mobileStepCta = " max-md:min-h-0 max-md:w-auto max-md:border-0 max-md:bg-transparent max-md:p-0 max-md:after:absolute max-md:after:inset-0 max-md:after:rounded-xl max-md:hover:bg-transparent";
 const stepCtaClass = "inline-flex min-h-10 w-full items-center justify-between gap-2 rounded-lg border bg-muted/40 px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:border-primary/50 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const primaryStepCtaClass = "inline-flex min-h-10 w-full items-center justify-between gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const visualFrameClass = "overflow-hidden rounded-2xl border bg-slate-950/90 shadow-sm";
@@ -107,45 +109,46 @@ export default async function AgriHackathonPage() {
       <PageHeading title={t("title")} description={t("intro")}
         actions={<Button asChild size="lg" className="h-auto min-h-11 w-full whitespace-normal sm:w-auto"><Link href="/explore/submit?event=agrihackathon">{wall("publish")}<ArrowRight className="size-4 shrink-0" aria-hidden="true" /></Link></Button>} />
 
-      <section aria-labelledby="agri-pipeline-heading" className="space-y-3 rounded-2xl border bg-card/60 p-4 sm:p-5">
+      <AgriMobileSegments label={t("segments.label")} labels={{ pipeline: t("segments.pipeline"), tracks: t("segments.tracks"), guide: t("segments.guide") }}>
+      <section data-agri-segment="pipeline" aria-labelledby="agri-pipeline-heading" className="space-y-3 rounded-2xl border bg-card/60 p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="font-mono text-[11px]">STEP 01 → 05</Badge>
             <h2 id="agri-pipeline-heading" className="text-lg font-semibold">{t("pipelineTitle")}</h2>
           </div>
-          <p className="text-xs text-muted-foreground">{t("pipelineDescription")}</p>
+          <p className="text-xs text-muted-foreground max-md:hidden">{t("pipelineDescription")}</p>
         </div>
-        <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <ol className="grid gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-5">
           {pipelineSteps.map((step) => {
             const StepIcon = step.icon;
             const isCoreSubmit = step.id === "submit";
-            const ctaStyle = isCoreSubmit ? primaryStepCtaClass : stepCtaClass;
+            const ctaStyle = (isCoreSubmit ? primaryStepCtaClass : stepCtaClass) + mobileStepCta;
             return (
               <li
                 key={step.id}
                 className={
                   isCoreSubmit
-                    ? "flex min-w-0 flex-col justify-between rounded-xl border-2 border-primary/45 bg-primary/[0.04] p-3.5 shadow-xs"
-                    : "flex min-w-0 flex-col justify-between rounded-xl border bg-card p-3.5"
+                    ? "relative flex min-w-0 flex-col justify-between rounded-xl border-2 border-primary/45 bg-primary/[0.04] p-3.5 shadow-xs max-md:min-h-14 max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-2.5"
+                    : "relative flex min-w-0 flex-col justify-between rounded-xl border bg-card p-3.5 max-md:min-h-14 max-md:flex-row max-md:items-center max-md:gap-3 max-md:py-2.5"
                 }
               >
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 max-md:flex max-md:min-w-0 max-md:flex-1 max-md:items-center max-md:gap-2.5 max-md:space-y-0">
                   <div className="flex items-center justify-between gap-2">
-                    <Badge variant={isCoreSubmit ? "default" : "outline"} className="font-mono text-[10px]">{step.step}</Badge>
-                    <StepIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                    <Badge variant={isCoreSubmit ? "default" : "outline"} className="font-mono text-[10px] max-md:text-xs">{step.step}</Badge>
+                    <StepIcon className="size-4 shrink-0 text-primary max-md:hidden" aria-hidden="true" />
                   </div>
-                  <h3 className="text-sm font-semibold leading-snug">{step.title}</h3>
-                  <p className="text-xs leading-5 text-muted-foreground">{step.description}</p>
+                  <h3 className="text-sm font-semibold leading-snug max-md:truncate">{step.title}</h3>
+                  <p className="text-xs leading-5 text-muted-foreground max-md:hidden">{step.description}</p>
                 </div>
-                <div className="mt-3 pt-1">
+                <div className="mt-3 pt-1 max-md:mt-0 max-md:pt-0">
                   {step.href.startsWith("#") ? (
                     <a href={step.href} className={ctaStyle}>
-                      <span>{step.cta}</span>
+                      <span className="max-md:sr-only">{step.cta}</span>
                       <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
                     </a>
                   ) : (
                     <Link href={step.href} className={ctaStyle}>
-                      <span>{step.cta}</span>
+                      <span className="max-md:sr-only">{step.cta}</span>
                       <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
                     </Link>
                   )}
@@ -162,7 +165,7 @@ export default async function AgriHackathonPage() {
         </nav>
       </section>
 
-      <aside aria-labelledby="agri-rules-pending" className="min-w-0 rounded-xl border bg-muted/25 px-4 py-3">
+      <aside data-agri-segment="pipeline" aria-labelledby="agri-rules-pending" className="min-w-0 rounded-xl border bg-muted/25 px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 id="agri-rules-pending" className="text-sm font-semibold">{guide ? management("rulesTitle") : pending("rulesPendingTitle")}</h2>
           {guide && <span className="text-xs text-muted-foreground">{management("publishedVersion")}: {guide.rule.version}</span>}
@@ -173,7 +176,7 @@ export default async function AgriHackathonPage() {
         </> : <p className="mt-1 max-w-3xl text-xs leading-5 text-muted-foreground">{pending("rulesPendingBody")}</p>}
       </aside>
 
-      <section id="tracks" aria-labelledby="agri-tracks-title" className="scroll-mt-24 space-y-3">
+      <section data-agri-segment="tracks" id="tracks" aria-labelledby="agri-tracks-title" className="scroll-mt-24 space-y-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="agri-tracks-title" className="text-xl font-semibold">{t("tracksTitle")}</h2>
           <p className="text-xs text-muted-foreground">{t("tracksDescription")}</p>
@@ -190,7 +193,7 @@ export default async function AgriHackathonPage() {
         </article>; })}</div>
       </section>
 
-      <section aria-labelledby="agri-guide-title" className="space-y-3">
+      <section data-agri-segment="guide" aria-labelledby="agri-guide-title" className="space-y-3">
         <h2 id="agri-guide-title" className="text-xl font-semibold">{t("guideTitle")}</h2>
         <CompetitionDetails title={t("phasesTitle")}>
           <p className="max-w-3xl text-muted-foreground">{t("phasesDescription")}</p>
@@ -253,6 +256,7 @@ export default async function AgriHackathonPage() {
           </div>)}</div>
         </CompetitionDetails>
       </section>
+      </AgriMobileSegments>
     </div>
   </div>;
 }
