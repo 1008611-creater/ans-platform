@@ -830,14 +830,7 @@ function PiCodexWorkbench({
       const elapsedSec = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
       if (res.status === 401 || !res.ok) {
         const localDiff = computeUnifiedDiff(diffBaselineForFallback, fallbackCode);
-        const guestTrace = [
-          `[1/4] agent.read_workspace → ${shouldIterateCurrent ? w("trace.readBaseline", { p1: activeTask.artifactFile }) : w("trace.createSandbox")}`,
-          w("trace.planChanges", { p1: q.slice(0, 36) }),
-          runMode === "ask"
-            ? w("trace.answerQuery")
-            : w("trace.applyPatch", { p1: localDiff.additions, p2: localDiff.deletions }),
-          w("trace.verifyOutput", { p1: elapsedSec }),
-        ];
+        // 没有调用模型，就不编造「读需求、规划、写入、检查」四步；只标记成本地草稿
         const updated = nextWithRunning.map(item =>
           item.id === taskId
             ? {
@@ -846,7 +839,8 @@ function PiCodexWorkbench({
                 durationSec: elapsedSec,
                 diffAdditions: localDiff.additions,
                 diffDeletions: localDiff.deletions,
-                trace: guestTrace,
+                trace: [],
+                local: "guest" as const,
                 summary:
                   runMode === "ask"
                     ? w("reply.localAnswer", { p1: q, p2: runningTask.artifactFile })
@@ -932,6 +926,7 @@ function PiCodexWorkbench({
               diffAdditions: computedDiff.additions,
               diffDeletions: computedDiff.deletions,
               trace: serverTrace,
+              local: undefined,
               // 代码和文档已经放进右侧面板，对话里只留说明文字
               summary: codeMatch
                 ? reply.replace(codeMatch[0], "").trim() || w("reply.done")
@@ -981,11 +976,8 @@ function PiCodexWorkbench({
               durationSec: elapsedSec,
               diffAdditions: localDiff.additions,
               diffDeletions: localDiff.deletions,
-              trace: [
-                w("trace.offlineSandbox"),
-                w("trace.generateArtifact", { p1: runningTask.artifactFile, p2: localDiff.additions, p3: localDiff.deletions }),
-                w("trace.draftReady", { p1: elapsedSec }),
-              ],
+              trace: [],
+              local: "offline" as const,
               summary: "已生成本地可编辑草稿，可以在预览面板里看预览、变更和源码。",
               artifactType: runningTask.artifactType,
               artifactFile: shouldIterateCurrent ? runningTask.artifactFile : draftFile,
@@ -1134,9 +1126,11 @@ function PiCodexWorkbench({
     ? "bg-emerald-500"
     : isViewingGuideSample
       ? "bg-amber-400"
-      : activeTask.mode === "ask"
-        ? "bg-sky-500"
-        : "bg-emerald-500";
+      : activeTask.local
+        ? "bg-muted-foreground/50"
+        : activeTask.mode === "ask"
+          ? "bg-sky-500"
+          : "bg-emerald-500";
   const addTone = "text-emerald-700 dark:text-emerald-300";
   const delTone = "text-rose-700 dark:text-rose-300";
 
@@ -1608,6 +1602,13 @@ function PiCodexWorkbench({
             trace={activeTask.trace ?? []}
             statusLabel={runStatusLabel}
           />
+        )}
+
+        {!taskRunning && activeTask.local && (
+          <p data-testid="codex-local-draft" className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="size-1.5 shrink-0 rounded-full bg-muted-foreground/50" aria-hidden="true" />
+            {activeTask.local === "guest" ? w("status.localGuest") : w("status.localOffline")}
+          </p>
         )}
 
         {!taskRunning && (
@@ -2107,6 +2108,8 @@ function PiCodexWorkbench({
                       ? w("status.guidedSample")
                       : activeTask.status === "stopped"
                         ? runStatusLabel
+                        : activeTask.local
+                        ? w("status.notRun")
                         : activeTask.mode === "ask"
                         ? w("status.askMode")
                         : w("status.applied")}

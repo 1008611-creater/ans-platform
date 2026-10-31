@@ -152,7 +152,7 @@
     "analyzing": "Analysing the current code and question..."
   },
   "reply": {
-    "guestMode": "You are in guest preview mode: an interactive draft and change log are ready in the preview panel. Sign in to use cloud model compute.",
+    "guestMode": "The draft and diff are in the preview panel. Sign in and Agent will run a cloud model for real.",
     "done": "Done.",
     "appliedChange": "Applied an incremental change on top of {p1} (+{p2} -{p3} lines). Open the Changes tab to review the diff.",
     "localAnswer": "Local answer for “{p1}”:\\n1. The current file is {p2} — inspect its structure under “Source” or “± Diff” on the right.\\n2. Switch to “Write code” mode and send an instruction to apply the edits and review the diff.",
@@ -212,6 +212,9 @@
     "running": "Running",
     "askMode": "Q&A mode",
     "applied": "Changes applied",
+    "notRun": "Model not run",
+    "localGuest": "Guest preview: a local draft was generated without calling a model",
+    "localOffline": "Could not reach the service: a local draft was generated without calling a model",
     "working": "Working",
     "workedFor": "Worked for {time}",
     "stoppedAfter": "You stopped after {time}"
