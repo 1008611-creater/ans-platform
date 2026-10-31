@@ -3711,7 +3711,8 @@
     "myStalls": "My posts",
     "myStallTeam": "{count} applications to review",
     "myStallHelp": "{count} responses",
-    "myStallNone": "No responses yet"
+    "myStallNone": "No responses yet",
+    "bottlesLink": "Drift bottles"
   },
   "modelPlaza": {
     "title": "Model plaza",
@@ -4206,7 +4207,57 @@
       "APPLICATION_STALE": "The application changed, refresh to see",
       "TEAM_FULL": "The team is at its member limit",
       "REQUEST_TOO_LARGE": "That's too long",
-      "SERVER_ERROR": "Something went wrong, try again later"
+      "SERVER_ERROR": "Something went wrong, try again later",
+      "BOTTLE_THROW_LIMIT": "You've thrown 3 bottles today. Come back tomorrow.",
+      "BOTTLE_PICK_LIMIT": "You've picked 10 bottles today. Come back tomorrow.",
+      "NOT_PICKED": "You can only reply to bottles you picked up",
+      "ALREADY_REPLIED": "One reply per bottle"
     }
+  },
+  "communityBottle": {
+    "title": "Drift bottles",
+    "description": "Write something anonymously and toss it out. Whoever picks it up can send one reply, which only you can see.",
+    "back": "Community",
+    "floating": "{count} bottles are floating",
+    "loginToPlay": "Sign in to throw a bottle",
+    "throwTitle": "Write a bottle",
+    "throwLabel": "Your message",
+    "throwPlaceholder": "Something on your mind, a question, a rant… your name stays hidden",
+    "throw": "Toss it",
+    "thrown": "Your bottle is drifting away",
+    "pick": "Pick one up",
+    "seaEmpty": "No new bottles right now. Try again later.",
+    "pickedTitle": "Bottles I picked up",
+    "pickedEmpty": "You haven't picked up any bottles yet.",
+    "thrownOn": "Thrown {date}",
+    "myReply": "My reply:",
+    "replyLabel": "Reply",
+    "replyPlaceholder": "Reply anonymously",
+    "reply": "Reply",
+    "replied": "Reply sent",
+    "report": "Report",
+    "reportSubmit": "Submit report",
+    "reported": "Thanks, we'll review it soon",
+    "mineTitle": "Bottles I threw",
+    "mineEmpty": "You haven't thrown any bottles yet.",
+    "pickedBy": "Picked up by {count}",
+    "stillFloating": "Still drifting",
+    "hiddenNote": "This bottle was reported and is under review. Others can't pick it up for now."
+  },
+  "communityReports": {
+    "title": "Community reports",
+    "body": "Posts reported by 3 people and bottles reported by 2 are hidden automatically. Remove keeps them hidden; restore puts them back.",
+    "forbidden": "You don't have permission to review reports.",
+    "empty": "No reports waiting.",
+    "targetPost": "Post",
+    "targetBottle": "Bottle",
+    "autoHidden": "Auto-hidden",
+    "author": "By {name}",
+    "open": "Open post",
+    "remove": "Remove",
+    "restore": "Restore",
+    "removed": "Removed",
+    "restored": "Restored",
+    "failed": "Something went wrong. Refresh and try again."
   }
 }

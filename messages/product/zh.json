@@ -3711,7 +3711,8 @@
     "myStalls": "我的摊位",
     "myStallTeam": "{count} 人申请，等你处理",
     "myStallHelp": "{count} 人回应",
-    "myStallNone": "还没有人回应"
+    "myStallNone": "还没有人回应",
+    "bottlesLink": "漂流瓶"
   },
   "modelPlaza": {
     "title": "模型广场",
@@ -4206,7 +4207,57 @@
       "APPLICATION_STALE": "申请状态已变化，刷新看看",
       "TEAM_FULL": "队伍人数已达上限",
       "REQUEST_TOO_LARGE": "内容太长了",
-      "SERVER_ERROR": "出了点问题，稍后再试"
+      "SERVER_ERROR": "出了点问题，稍后再试",
+      "BOTTLE_THROW_LIMIT": "今天已经扔了 3 个瓶子，明天再来",
+      "BOTTLE_PICK_LIMIT": "今天捞了 10 个了，明天再来",
+      "NOT_PICKED": "只能回自己捞到的瓶子",
+      "ALREADY_REPLIED": "每个瓶子只能回一句"
     }
+  },
+  "communityBottle": {
+    "title": "漂流瓶",
+    "description": "匿名写一段话扔进海里，被随机捞到的人可以回你一句。回复只有你看得到。",
+    "back": "社区",
+    "floating": "海里漂着 {count} 个瓶子",
+    "loginToPlay": "登录后扔瓶子",
+    "throwTitle": "写一个瓶子",
+    "throwLabel": "瓶子里的话",
+    "throwPlaceholder": "最近在想的事、一个问题、一句吐槽……不会显示你是谁",
+    "throw": "扔进海里",
+    "thrown": "瓶子已经漂走了",
+    "pick": "捞一个",
+    "seaEmpty": "海里暂时没有新瓶子，过会儿再来",
+    "pickedTitle": "我捞到的",
+    "pickedEmpty": "还没捞过瓶子。",
+    "thrownOn": "{date}扔出",
+    "myReply": "我回了：",
+    "replyLabel": "回一句",
+    "replyPlaceholder": "回一句，对方看不到你是谁",
+    "reply": "回复",
+    "replied": "已经回给对方了",
+    "report": "举报",
+    "reportSubmit": "提交举报",
+    "reported": "已收到举报，我们会尽快处理",
+    "mineTitle": "我扔出的瓶子",
+    "mineEmpty": "还没扔过瓶子。",
+    "pickedBy": "{count} 人捞到",
+    "stillFloating": "还在漂",
+    "hiddenNote": "这个瓶子被举报，正在复核，别人暂时捞不到。"
+  },
+  "communityReports": {
+    "title": "社区举报复核",
+    "body": "被 3 人举报的帖子、被 2 人举报的漂流瓶会先自动收起。下架会保持收起；举报不成立就恢复显示。",
+    "forbidden": "你没有处理举报的权限。",
+    "empty": "没有待处理的举报。",
+    "targetPost": "帖子",
+    "targetBottle": "漂流瓶",
+    "autoHidden": "已自动收起",
+    "author": "作者 {name}",
+    "open": "查看帖子",
+    "remove": "确认违规，下架",
+    "restore": "举报不成立，恢复",
+    "removed": "已下架",
+    "restored": "已恢复显示",
+    "failed": "操作失败，刷新后再试"
   }
 }

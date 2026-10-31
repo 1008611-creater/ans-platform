@@ -2,6 +2,16 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
+/** 点提醒跳到哪：社区帖子直达详情，需要处理的跳到操作区，漂流瓶回到「我的瓶子」。 */
+function notificationHref(n: { type: string; communityPostId: string | null; bottleId: string | null }) {
+  if (n.type === "BOTTLE_REPLY") return "/community/bottles#mine";
+  if (n.communityPostId) {
+    const needsAction = n.type === "COMMUNITY_APPLICATION" || n.type === "COMMUNITY_HELP_OFFER";
+    return `/community/posts/${n.communityPostId}${needsAction ? "#act" : ""}`;
+  }
+  return "/community";
+}
+
 const DEFAULT_RESPONSE = { 
   pendingChangeRequests: 0,
   unreadComments: 0,
@@ -23,18 +33,19 @@ export async function GET() {
 
   try {
     // Independent account-scoped reads must not wait for one another.
-    const [pendingCount, commentNotifications] = await Promise.all([db.changeRequest.count({
+    const [pendingCount, unreadCount, commentNotifications] = await Promise.all([db.changeRequest.count({
       where: {
         status: "PENDING",
         prompt: {
           authorId: session.user.id,
         },
       },
+    }), db.notification.count({
+      where: { userId: session.user.id, read: false },
     }), db.notification.findMany({
       where: {
         userId: session.user.id,
         read: false,
-        type: { in: ["COMMENT", "REPLY"] },
       },
       include: {
         actor: {
@@ -65,11 +76,13 @@ export async function GET() {
       actor: n.actor,
       promptId: n.promptId,
       promptTitle: n.promptId ? promptMap.get(n.promptId) : null,
+      excerpt: n.excerpt,
+      href: notificationHref(n),
     }));
 
     return NextResponse.json({ 
       pendingChangeRequests: pendingCount,
-      unreadComments: commentNotifications.length,
+      unreadComments: unreadCount,
       commentNotifications: formattedNotifications,
     });
   } catch (error) {

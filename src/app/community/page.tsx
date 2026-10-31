@@ -13,6 +13,7 @@ import { CheckInHeatmap } from "@/components/community/check-in-heatmap";
 import { CommunityPanel } from "@/components/community/community-panel";
 import { ProfileGrowthPanel } from "@/components/growth/profile-growth-panel";
 import { Button } from "@/components/ui/button";
+import { Waves } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -52,9 +53,12 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
     <div className="ans-product-container ans-page-content ans-community-page space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
-        {compose
-          ? <PostCompose teams={compose.teams} competitions={compose.competitions} />
-          : <Button asChild size="sm"><Link href="/login?callbackUrl=/community">{t("publish")}</Link></Button>}
+        <div className="flex items-center gap-2">
+          <Button asChild size="sm" variant="outline" className="gap-1.5"><Link href="/community/bottles" data-testid="community-bottles-link"><Waves className="h-4 w-4" aria-hidden="true" />{t("bottlesLink")}</Link></Button>
+          {compose
+            ? <PostCompose teams={compose.teams} competitions={compose.competitions} />
+            : <Button asChild size="sm"><Link href="/login?callbackUrl=/community">{t("publish")}</Link></Button>}
+        </div>
       </header>
 
       {userId && <nav className="flex gap-6 border-b" aria-label={t("title")}>

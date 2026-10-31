@@ -84,3 +84,13 @@ export function helpVerb(stall: CommunityStallKindId | null | undefined): "help"
   if (stall === "OFFER") return "want";
   return null;
 }
+
+export const BOTTLE_BODY_MAX = 280;
+export const BOTTLE_REPLY_MAX = 280;
+
+export const throwBottleSchema = z.object({ body: z.string().trim().min(2).max(BOTTLE_BODY_MAX) });
+
+export const bottleActionSchema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("reply"), body: z.string().trim().min(1).max(BOTTLE_REPLY_MAX) }),
+  z.object({ action: z.literal("report"), reason: z.enum(COMMUNITY_REPORT_REASONS) }),
+]);

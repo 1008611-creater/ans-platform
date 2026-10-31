@@ -10,6 +10,7 @@ import {
 } from "@/contracts/community-posts";
 import { db } from "@/lib/db";
 import { CommunityError } from "@/server/community/errors";
+import { notifyCommunity } from "@/server/community/notifications";
 import { awardGrowthEvent, safeAwardGrowthEvent } from "@/server/growth/service";
 import { TEAM_MEMBER_CAP, teamPermissions } from "@/server/teams/service";
 
@@ -49,7 +50,7 @@ function oneDayAgo(now = new Date()) {
   return new Date(now.getTime() - DAY_MS);
 }
 
-async function requireActiveUser(userId: string) {
+export async function requireActiveUser(userId: string) {
   const user = await db.user.findFirst({ where: { id: userId, deletedAt: null }, select: { id: true, flagged: true } });
   if (!user) throw new CommunityError(401, "UNAUTHORIZED");
   if (user.flagged) throw new CommunityError(403, "ACCOUNT_RESTRICTED");
@@ -181,12 +182,17 @@ export async function getComposeOptions(userId: string) {
 async function loadPostForAction(postId: string) {
   const post = await db.communityPost.findUnique({
     where: { id: postId },
-    select: { id: true, authorId: true, kind: true, stall: true, status: true, expiresAt: true, teamId: true, roles: true },
+    select: { id: true, authorId: true, kind: true, stall: true, status: true, expiresAt: true, teamId: true, roles: true, title: true, body: true },
   });
   if (!post || post.status === "HIDDEN") throw new CommunityError(404, "NOT_FOUND");
   return post;
 }
 type ActionPost = Awaited<ReturnType<typeof loadPostForAction>>;
+
+/** 提醒里显示的帖子名：有标题用标题，一句话帖子用正文开头。 */
+function postLabel(post: ActionPost) {
+  return post.title || post.body;
+}
 
 function requireAuthor(post: ActionPost, userId: string) {
   if (post.authorId !== userId) throw new CommunityError(403, "FORBIDDEN");
@@ -201,6 +207,7 @@ async function addReply(post: ActionPost, userId: string, body: string) {
   if (today >= REPLIES_PER_DAY) throw new CommunityError(429, "DAILY_LIMIT");
   const reply = await db.communityReply.create({ data: { postId: post.id, authorId: userId, body }, select: { id: true } });
   if (post.authorId !== userId) await safeAwardGrowthEvent({ userId, type: "COMMENT", reason: "COMMENT", sourceType: "community_reply", sourceId: reply.id });
+  await notifyCommunity({ userId: post.authorId, actorId: userId, type: "COMMUNITY_REPLY", communityPostId: post.id, excerpt: body });
   return { replyId: reply.id };
 }
 
@@ -227,6 +234,7 @@ async function offerHelp(post: ActionPost, userId: string, message?: string) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return { offered: true };
     throw error;
   }
+  await notifyCommunity({ userId: post.authorId, actorId: userId, type: "COMMUNITY_HELP_OFFER", communityPostId: post.id, excerpt: message || postLabel(post) });
   return { offered: true };
 }
 
@@ -246,6 +254,7 @@ async function resolvePost(post: ActionPost, userId: string, helperId?: string) 
     const result = await awardGrowthEvent({ userId: helperId, type: "COMMUNITY_HELP", reason: "COMMUNITY_REWARD", sourceType: "community_help", sourceId: post.id, xp: HELP_REWARD_XP, dailyCap: 3, note: "在社区帮到了别人" });
     rewarded = result.awarded;
   }
+  if (helperId) await notifyCommunity({ userId: helperId, actorId: userId, type: "COMMUNITY_HELPED", communityPostId: post.id, excerpt: postLabel(post) });
   return { status: "RESOLVED" as const, rewarded };
 }
 
@@ -270,6 +279,7 @@ async function applyToTeam(post: ActionPost, userId: string, roleName: string, m
   if (accepted >= role.slots) throw new CommunityError(409, "ROLE_FULL");
   try {
     const application = await db.communityTeamApplication.create({ data: { postId: post.id, applicantId: userId, role: roleName, message: message || null }, select: { id: true } });
+    await notifyCommunity({ userId: post.authorId, actorId: userId, type: "COMMUNITY_APPLICATION", communityPostId: post.id, excerpt: roleName });
     return { applicationId: application.id };
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") throw new CommunityError(409, "ALREADY_APPLIED");
@@ -286,7 +296,8 @@ async function decideApplication(post: ActionPost, userId: string, applicationId
   if (application.status !== "PENDING") throw new CommunityError(409, "APPLICATION_STALE");
 
   if (decision === "DECLINE") {
-    await db.communityTeamApplication.updateMany({ where: { id: application.id, status: "PENDING" }, data: { status: "DECLINED", decidedAt: new Date() } });
+    const declined = await db.communityTeamApplication.updateMany({ where: { id: application.id, status: "PENDING" }, data: { status: "DECLINED", decidedAt: new Date() } });
+    if (declined.count === 1) await notifyCommunity({ userId: application.applicantId, actorId: userId, type: "COMMUNITY_APPLICATION_DECLINED", communityPostId: post.id, excerpt: postLabel(post) });
     return { status: "DECLINED" as const };
   }
 
@@ -295,7 +306,7 @@ async function decideApplication(post: ActionPost, userId: string, applicationId
   const role = roles.find((item) => item.name === application.role);
   if (!role) throw new CommunityError(400, "INVALID_ROLE");
 
-  return db.$transaction(async (tx) => {
+  const result = await db.$transaction(async (tx) => {
     // 先锁住帖子，两个队长端并发点同意时只有一个能占到最后一个位置。
     await tx.$queryRaw`SELECT id FROM community_posts WHERE id = ${post.id} FOR UPDATE`;
     const accepted = await tx.communityTeamApplication.findMany({ where: { postId: post.id, status: "ACCEPTED" }, select: { role: true } });
@@ -318,6 +329,8 @@ async function decideApplication(post: ActionPost, userId: string, applicationId
     if (full) await tx.communityPost.update({ where: { id: post.id }, data: { status: "RESOLVED", resolvedAt: new Date() } });
     return { status: "ACCEPTED" as const, postStatus: full ? "RESOLVED" as const : "OPEN" as const };
   });
+  await notifyCommunity({ userId: application.applicantId, actorId: userId, type: "COMMUNITY_APPLICATION_ACCEPTED", communityPostId: post.id, excerpt: postLabel(post) });
+  return result;
 }
 
 async function reportPost(post: ActionPost, userId: string, reason: string, details?: string) {
