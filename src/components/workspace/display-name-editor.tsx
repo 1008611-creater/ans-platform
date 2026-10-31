@@ -1126,25 +1126,6 @@ function PiCodexWorkbench({
           )}
         </section>
 
-        <section>
-          <div className="flex h-7 items-center px-2.5 text-xs text-muted-foreground">{w("label.guidedSamples")}</div>
-          <ul className="space-y-px">
-            {guideTasks.map(t => (
-              <li key={t.id}>
-                <button
-                  type="button"
-                  onClick={() => focusTask(t.id)}
-                  title={t.summary}
-                  aria-current={!home && t.id === activeTask.id ? "true" : undefined}
-                  className="ans-wb-row"
-                >
-                  <Lightbulb className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                  <span className="min-w-0 flex-1 truncate">{t.title}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
       </div>
 
       <div className="space-y-px">
@@ -1265,20 +1246,6 @@ function PiCodexWorkbench({
               >
                 <Plus className="size-3" aria-hidden="true" />
                 {term.label.zh}
-              </button>
-            ))}
-            {[
-              [w("quickPrompt.themeLabel"), "把当前页面配色改为清新浅色主题，并增加一个顶部状态横幅"],
-              [w("quickPrompt.chartLabel"), "请用单文件 HTML5 + CSS + JS 写一个简洁好用的实验数据记录与折线图网页"],
-              [w("quickPrompt.briefLabel"), "帮我梳理一份中国农大农客松智慧农业参赛项目痛点、方案与分工提纲"],
-            ].map(([label, sample]) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => setPromptInput(sample)}
-                className="inline-flex h-7 items-center rounded-[8px] px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                {label}
               </button>
             ))}
             <button
@@ -1744,25 +1711,6 @@ function PiCodexWorkbench({
           <div className="mx-auto flex min-h-full w-full max-w-[768px] flex-col justify-center gap-6 px-4 py-10 sm:px-6">
             <h1 className="text-center text-[28px] font-medium leading-9 tracking-tight [text-wrap:balance]">{w("home.title")}</h1>
             {composer}
-            {/* 范例收成一排轻标签，逐条浮入；点开是引导范例，不冒充用户自己的任务 */}
-            <div className="space-y-2">
-              <div className="text-center text-xs text-muted-foreground">{w("home.samples")}</div>
-              <div className="flex flex-wrap justify-center gap-2">
-                {guideTasks.map((t, idx) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => focusTask(t.id)}
-                    title={t.summary}
-                    style={{ animationDelay: `${idx * 25}ms` }}
-                    className="ans-wb-rise inline-flex h-11 max-w-full items-center gap-1.5 rounded-full px-3.5 text-sm text-muted-foreground shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-colors hover:bg-muted hover:text-foreground sm:h-9"
-                  >
-                    <Lightbulb className="size-3.5 shrink-0" aria-hidden="true" />
-                    <span className="truncate">{t.title}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
         ) : (
           thread
