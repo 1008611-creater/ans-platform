@@ -3667,6 +3667,7 @@
     "growth": "My growth",
     "channelsLabel": "Community boards",
     "channels": {
+      "following": "Following",
       "all": "For you",
       "team": "Teams",
       "career": "Careers",
@@ -3712,7 +3713,17 @@
     "myStallTeam": "{count} applications to review",
     "myStallHelp": "{count} responses",
     "myStallNone": "No responses yet",
-    "bottlesLink": "Drift bottles"
+    "bottlesLink": "Drift bottles",
+    "followingHint": "Posts from the {count} people you follow",
+    "followingEmpty": "You are not following anyone yet. Tap Follow next to an author's name and their posts will show up here.",
+    "followingQuiet": "The people you follow have not posted recently.",
+    "suggestTitle": "People to follow",
+    "suggestFan": "Follows you",
+    "suggestRelays": "{count} relays in the last two weeks",
+    "suggestPosts": "{count} posts in the last two weeks",
+    "relayOf": "Relay of “{title}”",
+    "relayOfHidden": "The original post is hidden",
+    "relayCount": "{count} relays"
   },
   "modelPlaza": {
     "title": "Model plaza",
@@ -4211,7 +4222,22 @@
       "BOTTLE_THROW_LIMIT": "You've thrown 3 bottles today. Come back tomorrow.",
       "BOTTLE_PICK_LIMIT": "You've picked 10 bottles today. Come back tomorrow.",
       "NOT_PICKED": "You can only reply to bottles you picked up",
-      "ALREADY_REPLIED": "One reply per bottle"
+      "ALREADY_REPLIED": "One reply per bottle",
+      "INVALID_RELAY": "This post can't be relayed. It may be hidden."
+    },
+    "relay": {
+      "title": "Relays {count}",
+      "hint": "Everyone's version, oldest first",
+      "open": "Relay",
+      "dialogTitle": "Add your version",
+      "from": "Relaying {name}, {count} so far",
+      "kindLabel": "Relay format",
+      "boardNote": "Posted in “{board}” like the original. It joins the relay chain and reaches your followers.",
+      "submit": "Post relay",
+      "empty": "No relays yet. Be the first.",
+      "loginToRelay": "Sign in to relay",
+      "rootLink": "See the original and all relays",
+      "index": "#{n}"
     }
   },
   "communityBottle": {
@@ -4259,5 +4285,20 @@
     "removed": "Removed",
     "restored": "Restored",
     "failed": "Something went wrong. Refresh and try again."
+  },
+  "communityFollow": {
+    "follow": "Follow",
+    "followBack": "Follow back",
+    "following": "Following",
+    "mutual": "Mutual",
+    "unfollow": "Unfollow",
+    "followers": "followers",
+    "followingCount": "following",
+    "relays": "relays",
+    "followersTab": "Followers {count}",
+    "followingTab": "Following {count}",
+    "noFollowers": "No followers yet.",
+    "noFollowing": "Not following anyone yet.",
+    "peopleLabel": "Connections"
   }
 }

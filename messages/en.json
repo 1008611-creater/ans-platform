@@ -850,7 +850,10 @@
       "COMMUNITY_APPLICATION_ACCEPTED": "accepted your team application",
       "COMMUNITY_APPLICATION_DECLINED": "passed on your team application this time",
       "COMMUNITY_HELPED": "confirmed you helped out",
-      "BOTTLE_REPLY": "Someone replied to your drift bottle"
+      "BOTTLE_REPLY": "Someone replied to your drift bottle",
+      "COMMUNITY_RELAY": "relayed your post",
+      "COMMUNITY_FOLLOWED": "followed you",
+      "COMMUNITY_FOLLOWEE_POST": "posted something new"
     }
   },
   "errors": {

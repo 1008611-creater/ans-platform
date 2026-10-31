@@ -11,6 +11,7 @@ import {
 import { db } from "@/lib/db";
 import { CommunityError } from "@/server/community/errors";
 import { notifyCommunity } from "@/server/community/notifications";
+import { notifyFollowersOfPost } from "@/server/community/follows";
 import { awardGrowthEvent, safeAwardGrowthEvent } from "@/server/growth/service";
 import { TEAM_MEMBER_CAP, teamPermissions } from "@/server/teams/service";
 
@@ -57,6 +58,18 @@ export async function requireActiveUser(userId: string) {
   return user;
 }
 
+/**
+ * 接力的目标：只能接笔记和一句话；接一条接力帖等于接它的原帖，所以串只有一层。
+ * 板块跟着原帖走。
+ */
+async function resolveRelayRoot(relayOfId: string) {
+  const select = { id: true, kind: true, status: true, board: true, authorId: true, title: true, body: true, relayOfId: true } as const;
+  const target = await db.communityPost.findUnique({ where: { id: relayOfId }, select });
+  const root = target?.relayOfId ? await db.communityPost.findUnique({ where: { id: target.relayOfId }, select }) : target;
+  if (!root || root.status === "HIDDEN" || root.kind === "STALL") throw new CommunityError(400, "INVALID_RELAY");
+  return root;
+}
+
 async function requireTeamLead(teamId: string, userId: string) {
   const membership = await db.teamMember.findFirst({ where: { teamId, userId, status: "ACTIVE" }, select: { role: true } });
   if (!membership || !teamPermissions(membership.role).canInvite) throw new CommunityError(403, "NOT_TEAM_LEAD");
@@ -70,7 +83,8 @@ export async function createCommunityPost(userId: string, raw: unknown) {
   const today = await db.communityPost.count({ where: { authorId: userId, createdAt: { gte: oneDayAgo() } } });
   if (today >= POSTS_PER_DAY) throw new CommunityError(429, "DAILY_LIMIT");
 
-  const data: Prisma.CommunityPostUncheckedCreateInput = { authorId: userId, kind: input.kind, board: input.board as CommunityBoard, body: input.body, images: [] };
+  const relayRoot = input.kind !== "STALL" && input.relayOfId ? await resolveRelayRoot(input.relayOfId) : null;
+  const data: Prisma.CommunityPostUncheckedCreateInput = { authorId: userId, kind: input.kind, board: relayRoot?.board ?? input.board as CommunityBoard, body: input.body, images: [], relayOfId: relayRoot?.id ?? null };
   if (input.kind === "NOTE") Object.assign(data, { title: input.title, images: input.images });
   if (input.kind === "STALL") {
     const now = Date.now();
@@ -90,11 +104,16 @@ export async function createCommunityPost(userId: string, raw: unknown) {
     });
   }
 
-  return db.$transaction(async (tx) => {
-    const post = await tx.communityPost.create({ data, select: { id: true } });
-    await tx.auditLog.create({ data: { actorId: userId, action: "COMMUNITY_POST_CREATED", resourceType: "community_post", resourceId: post.id, metadata: { kind: input.kind, board: input.board } } });
-    return post;
+  const post = await db.$transaction(async (tx) => {
+    const created = await tx.communityPost.create({ data, select: { id: true } });
+    await tx.auditLog.create({ data: { actorId: userId, action: "COMMUNITY_POST_CREATED", resourceType: "community_post", resourceId: created.id, metadata: { kind: input.kind, board: data.board, relayOfId: data.relayOfId ?? null } } });
+    return created;
   });
+  const label = (input.kind === "STALL" || input.kind === "NOTE" ? input.title : "") || input.body;
+  // 同一条原帖被多人接，原作者没读之前合成一条提醒，点开看整串接力。
+  if (relayRoot) await notifyCommunity({ userId: relayRoot.authorId, actorId: userId, type: "COMMUNITY_RELAY", communityPostId: relayRoot.id, excerpt: label });
+  await notifyFollowersOfPost(userId, post.id, label);
+  return post;
 }
 
 const feedInclude = {
@@ -103,20 +122,31 @@ const feedInclude = {
   team: { select: { name: true, slug: true } },
   competition: { select: { id: true, title: true } },
   applications: { where: { status: "ACCEPTED" }, select: { role: true } },
-  _count: { select: { likes: true, replies: true, helpOffers: true } },
+  relayOf: { select: { id: true, title: true, body: true, status: true } },
+  relays: { where: { status: { in: [...VISIBLE] } }, orderBy: { createdAt: "asc" }, take: 3, select: { author: { select: authorSelect } } },
+  _count: { select: { likes: true, replies: true, helpOffers: true, relays: { where: { status: { in: [...VISIBLE] } } } } },
 } satisfies Prisma.CommunityPostInclude;
 
-export async function listCommunityPosts({ board, sort = "latest", take = 40 }: { board?: CommunityBoard; sort?: CommunityFeedSort; take?: number }) {
+/** 接力帖上引用的原帖。原帖被隐藏了就只说「原帖已隐藏」，不露内容。 */
+function relayQuote(relayOf: { id: string; title: string | null; body: string; status: string } | null) {
+  if (!relayOf) return null;
+  return relayOf.status === "HIDDEN" ? { id: relayOf.id, label: null } : { id: relayOf.id, label: relayOf.title || relayOf.body };
+}
+
+export async function listCommunityPosts({ board, sort = "latest", take = 40, authorIds }: { board?: CommunityBoard; sort?: CommunityFeedSort; take?: number; authorIds?: string[] }) {
   const now = new Date();
   const where: Prisma.CommunityPostWhereInput = {
     ...(board ? { board } : {}),
+    ...(authorIds ? { authorId: { in: authorIds } } : {}),
     ...(sort === "open"
       ? { status: "OPEN", kind: "STALL", stall: { in: ["SEEK", "TEAM"] }, expiresAt: { gt: now } }
       : { status: { in: [...VISIBLE] }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }, { status: "RESOLVED" }] }),
   };
   const rows = await db.communityPost.findMany({ where, include: feedInclude, orderBy: { createdAt: "desc" }, take: Math.min(Math.max(take, 1), 60) });
-  return rows.map(({ applications, roles, ...post }) => ({
+  return rows.map(({ applications, roles, relayOf, relays, ...post }) => ({
     ...post,
+    relayOf: relayQuote(relayOf),
+    relayers: relays.map((relay) => relay.author),
     active: isPostActive(post, now),
     vacancies: roleVacancies(parseRoles(roles), applications),
   }));
@@ -134,16 +164,24 @@ export async function getCommunityPost(id: string, viewerId: string | null) {
       replies: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 200, select: { id: true, body: true, createdAt: true, author: { select: authorSelect } } },
       applications: { orderBy: { createdAt: "asc" }, select: { id: true, role: true, message: true, status: true, createdAt: true, applicantId: true, applicant: { select: authorSelect } } },
       helpOffers: { orderBy: { createdAt: "asc" }, select: { id: true, message: true, createdAt: true, userId: true, user: { select: authorSelect } } },
-      _count: { select: { likes: true } },
+      relayOf: { select: { id: true, title: true, body: true, status: true } },
+      relays: {
+        where: { status: { in: [...VISIBLE] } },
+        orderBy: { createdAt: "asc" },
+        take: 60,
+        select: { id: true, kind: true, title: true, body: true, images: true, board: true, createdAt: true, author: { select: authorSelect }, _count: { select: { likes: true } } },
+      },
+      _count: { select: { likes: true, relays: { where: { status: { in: [...VISIBLE] } } } } },
     },
   });
   if (!post) return null;
   const isAuthor = viewerId === post.authorId;
   if (post.status === "HIDDEN" && !isAuthor) return null;
   const liked = viewerId ? Boolean(await db.communityPostLike.findUnique({ where: { userId_postId: { userId: viewerId, postId: id } }, select: { userId: true } })) : false;
-  const { applications, helpOffers, roles, ...rest } = post;
+  const { applications, helpOffers, roles, relayOf, ...rest } = post;
   return {
     ...rest,
+    relayOf: relayQuote(relayOf),
     isAuthor,
     liked,
     active: isPostActive(post),

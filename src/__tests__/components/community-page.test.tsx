@@ -2,17 +2,19 @@ import { beforeEach, expect, it, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import CommunityPage from "@/app/community/page";
 
-const mocks = vi.hoisted(() => ({ auth: vi.fn(), redirect: vi.fn(), growth: vi.fn(), growthPanel: vi.fn(), communityPanel: vi.fn(), feed: vi.fn(), compose: vi.fn(), stalls: vi.fn() }));
+const mocks = vi.hoisted(() => ({ auth: vi.fn(), redirect: vi.fn(), growth: vi.fn(), growthPanel: vi.fn(), communityPanel: vi.fn(), feed: vi.fn(), compose: vi.fn(), stalls: vi.fn(), suggest: vi.fn() }));
 vi.mock("next-auth/react", () => ({ useSession: () => ({ status: "authenticated", data: { user: { id: "self" } } }) }));
 vi.mock("@/lib/auth", () => ({ auth: mocks.auth }));
 vi.mock("@/server/growth/service", () => ({ getGrowthProfile: mocks.growth }));
 vi.mock("@/server/community/feed", () => ({
-  COMMUNITY_CHANNELS: ["all", "team"],
-  parseCommunityChannel: (value: unknown) => value === "team" ? "team" : "all",
+  COMMUNITY_CHANNELS: ["following", "all", "team"],
+  parseCommunityChannel: (value: unknown, signedIn = true) => value === "team" ? "team" : value === "following" && signedIn ? "following" : "all",
   parseCommunitySort: (value: unknown) => value === "open" ? "open" : "latest",
   listCommunityFeed: mocks.feed,
 }));
 vi.mock("@/server/community/posts", () => ({ getComposeOptions: mocks.compose, listMyStalls: mocks.stalls }));
+vi.mock("@/server/community/follows", () => ({ suggestFollows: mocks.suggest }));
+vi.mock("@/components/community/follow-button", () => ({ FollowButton: ({ userId, relation }: { userId: string; relation: { followedBy: boolean } }) => <button type="button" data-user={userId}>{relation.followedBy ? "followBack" : "follow"}</button> }));
 vi.mock("@/components/community/post-compose", () => ({ PostCompose: () => <button type="button">compose</button> }));
 vi.mock("next-intl/server", () => ({ getTranslations: async () => (key: string) => key }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect, notFound: () => { throw new Error("NOT_FOUND"); }, useRouter: () => ({ refresh: vi.fn() }) }));
@@ -25,7 +27,8 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.redirect.mockImplementation(() => { throw new Error("REDIRECT"); });
   mocks.growth.mockResolvedValue(profile);
-  mocks.feed.mockResolvedValue({ feed: [note] });
+  mocks.feed.mockResolvedValue({ feed: [note], followingCount: null });
+  mocks.suggest.mockResolvedValue([]);
   mocks.compose.mockResolvedValue({ teams: [], competitions: [] });
   mocks.stalls.mockResolvedValue([]);
 });
@@ -36,7 +39,10 @@ it("shows the public feed to visitors without loading private growth", async () 
   expect(mocks.growth).not.toHaveBeenCalled();
   expect(mocks.growthPanel).not.toHaveBeenCalled();
   expect(mocks.compose).not.toHaveBeenCalled();
-  expect(mocks.feed).toHaveBeenCalledExactlyOnceWith("team", "open");
+  expect(mocks.feed).toHaveBeenCalledExactlyOnceWith("team", "open", null);
+  expect(mocks.suggest).not.toHaveBeenCalled();
+  // 「关注」频道只给登录的人。
+  expect(screen.queryByRole("link", { name: "channels.following" })).not.toBeInTheDocument();
   expect(screen.getByTestId("community-feed").children).toHaveLength(1);
   expect(screen.getByTestId("community-guest-preview")).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "publish" })).toHaveAttribute("href", "/login?callbackUrl=/community");
@@ -47,7 +53,7 @@ it("shows the public feed to visitors without loading private growth", async () 
 });
 it("shows an honest empty state instead of padding the feed", async () => {
   mocks.auth.mockResolvedValue(null);
-  mocks.feed.mockResolvedValue({ feed: [] });
+  mocks.feed.mockResolvedValue({ feed: [], followingCount: null });
   render(await CommunityPage({ searchParams: Promise.resolve({}) }));
   expect(screen.queryByTestId("community-feed")).not.toBeInTheDocument();
   expect(screen.getByText("empty")).toBeInTheDocument();
@@ -84,4 +90,20 @@ it("does not manufacture growth for a removed or unavailable account", async () 
   mocks.growth.mockResolvedValue(null);
   await expect(CommunityPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("NOT_FOUND");
   expect(mocks.growthPanel).not.toHaveBeenCalled();
+});
+
+it("gives members a following channel that points to real people when it is empty", async () => {
+  mocks.auth.mockResolvedValue({ user: { id: "self", username: "real-member" } });
+  mocks.feed.mockResolvedValue({ feed: [], followingCount: 0 });
+  mocks.suggest.mockResolvedValue([{ id: "u2", username: "kai", nickname: null, avatar: null, reason: "fan", count: 0 }, { id: "u3", username: "bai", nickname: "白榆", avatar: null, reason: "relays", count: 4 }]);
+  render(await CommunityPage({ searchParams: Promise.resolve({ c: "following" }) }));
+  expect(mocks.feed).toHaveBeenCalledExactlyOnceWith("following", "latest", "self");
+  expect(mocks.suggest).toHaveBeenCalledExactlyOnceWith("self");
+  expect(screen.getByRole("link", { name: "channels.following" })).toHaveAttribute("aria-current", "page");
+  const empty = screen.getByTestId("community-following-empty");
+  expect(empty).toHaveTextContent("followingEmpty");
+  // 关注了我的人显示「回关」，其余显示「关注」。
+  expect(empty.querySelector('button[data-user="u2"]')).toHaveTextContent("followBack");
+  expect(empty.querySelector('button[data-user="u3"]')).toHaveTextContent("follow");
+  expect(screen.getByTestId("community-follow-suggestions")).toBeInTheDocument();
 });

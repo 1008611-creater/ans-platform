@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Check, Clock, Heart, MessageCircle } from "lucide-react";
+import { Check, Clock, Heart, MessageCircle, Repeat2 } from "lucide-react";
 import type { CommunityBoardId as CommunityBoard } from "@/contracts/community-posts";
 import { BOARD_CHANNEL, type CommunityFeedItem } from "@/server/community/feed";
 import type { CommunityPostSummary } from "@/server/community/posts";
@@ -53,6 +53,25 @@ function displayName(user: { nickname: string | null; username: string }) {
   return user.nickname || user.username;
 }
 
+/** 接力帖顶部的引用：点了去原帖看整串接力。卡片整体是一个大链接，这个链接要浮在上面。 */
+function RelayQuote({ relayOf, t, onTint = false }: { relayOf: NonNullable<CommunityPostSummary["relayOf"]>; t: Labels; onTint?: boolean }) {
+  const chip = `relative z-10 inline-flex max-w-full items-center gap-1 self-start rounded-lg px-2 py-1 text-xs text-foreground/80 ${onTint ? "bg-card" : "bg-muted"}`;
+  const label = relayOf.label ? t("relayOf", { title: relayOf.label.length > 24 ? `${relayOf.label.slice(0, 24)}…` : relayOf.label }) : t("relayOfHidden");
+  const content = <><Repeat2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /><span className="truncate">{label}</span></>;
+  return relayOf.label
+    ? <Link href={`/community/posts/${relayOf.id}#relays`} prefetch={false} className={`${chip} hover:text-foreground`}>{content}</Link>
+    : <span className={chip}>{content}</span>;
+}
+
+/** 原帖上的接力人数，带最早几个接力人的头像。 */
+function RelayCount({ post, t }: { post: CommunityPostSummary; t: Labels }) {
+  if (post._count.relays === 0) return null;
+  return <p className="flex items-center gap-1.5 text-xs text-foreground/80">
+    <span className="flex" aria-hidden="true">{post.relayers.map((person, index) => <span key={person.id} className={`rounded-full ring-2 ring-card ${index > 0 ? "-ml-1.5" : ""}`}><Avatar name={displayName(person)} src={person.avatar} /></span>)}</span>
+    <span className="ans-num">{t("relayCount", { count: post._count.relays })}</span>
+  </p>;
+}
+
 function StallCard({ post, t, date }: { post: CommunityPostSummary; t: Labels; date: (value: Date) => string }) {
   const href = `/community/posts/${post.id}`;
   const verb = helpVerb(post.stall);
@@ -87,9 +106,11 @@ function NoteCard({ post, t }: { post: CommunityPostSummary; t: Labels }) {
     {cover
       ? <img src={cover} alt="" loading="lazy" referrerPolicy="no-referrer" className="aspect-[4/5] w-full object-cover" />
       : <div className={`flex aspect-[4/3] items-end p-4 ${BOARD_TINT[post.board]}`}><p className="line-clamp-4 text-lg font-bold leading-snug">{post.title}</p></div>}
-    <div className="space-y-2 p-3">
-      {cover && <h3 className="line-clamp-2 text-sm font-semibold leading-snug">{post.title}</h3>}
+    <div className="flex flex-col gap-2 p-3">
+      {post.relayOf && <RelayQuote relayOf={post.relayOf} t={t} />}
+      {cover && <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-pretty">{post.title}</h3>}
       <Link href={`/community/posts/${post.id}`} prefetch={false} className={`${STRETCH} line-clamp-2 block text-sm leading-snug text-foreground/80`}>{post.body}</Link>
+      <RelayCount post={post} t={t} />
       <Byline author={{ name: displayName(post.author), avatar: post.author.avatar }}><Counts likes={post._count.likes} replies={post._count.replies} t={t} /></Byline>
     </div>
   </article>;
@@ -97,7 +118,9 @@ function NoteCard({ post, t }: { post: CommunityPostSummary; t: Labels }) {
 
 function TextCard({ post, t }: { post: CommunityPostSummary; t: Labels }) {
   return <article className={`${CARD} gap-4 px-4 py-5 ${BOARD_TINT[post.board]}`}>
-    <p className="text-lg font-semibold leading-relaxed"><Link href={`/community/posts/${post.id}`} prefetch={false} className={STRETCH}>{post.body}</Link></p>
+    {post.relayOf && <RelayQuote relayOf={post.relayOf} t={t} onTint />}
+    <p className="text-lg font-semibold leading-relaxed text-pretty"><Link href={`/community/posts/${post.id}`} prefetch={false} className={STRETCH}>{post.body}</Link></p>
+    <RelayCount post={post} t={t} />
     <Byline author={{ name: displayName(post.author), avatar: post.author.avatar }}><Counts likes={post._count.likes} replies={post._count.replies} t={t} /></Byline>
   </article>;
 }

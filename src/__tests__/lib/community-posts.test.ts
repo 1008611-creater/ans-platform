@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
     communityTeamApplication: { findFirst: vi.fn(), findMany: vi.fn(), count: vi.fn(), create: vi.fn(), updateMany: vi.fn() },
     communityPostReport: { create: vi.fn(), count: vi.fn() },
     notification: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
+    communityFollow: { findMany: vi.fn().mockResolvedValue([]) },
     auditLog: { create: vi.fn() },
     $transaction: vi.fn(),
     $queryRaw: vi.fn(),

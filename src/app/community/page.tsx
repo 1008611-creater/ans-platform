@@ -7,6 +7,8 @@ import { formatLevel } from "@/lib/level";
 import { getGrowthProfile } from "@/server/growth/service";
 import { COMMUNITY_CHANNELS, listCommunityFeed, parseCommunityChannel, parseCommunitySort } from "@/server/community/feed";
 import { getComposeOptions, listMyStalls } from "@/server/community/posts";
+import { suggestFollows } from "@/server/community/follows";
+import { FollowButton } from "@/components/community/follow-button";
 import { PostCompose } from "@/components/community/post-compose";
 import { CommunityFeed } from "@/components/community/community-feed";
 import { CheckInHeatmap } from "@/components/community/check-in-heatmap";
@@ -32,14 +34,17 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
   const t = await getTranslations("product.communityPage");
   const userId = session?.user?.id;
   const showGrowth = Boolean(userId) && params.tab === "growth";
-  const channel = parseCommunityChannel(params.c);
+  const channel = parseCommunityChannel(params.c, Boolean(userId));
   const sort = parseCommunitySort(params.sort);
-  const [growth, feed, compose, stalls] = await Promise.all([
+  const [growth, feed, compose, stalls, suggestions] = await Promise.all([
     userId ? getGrowthProfile(userId) : null,
-    showGrowth ? null : listCommunityFeed(channel, sort),
+    showGrowth ? null : listCommunityFeed(channel, sort, userId ?? null),
     userId ? getComposeOptions(userId) : null,
     userId && !showGrowth ? listMyStalls(userId) : [],
+    userId && !showGrowth ? suggestFollows(userId) : [],
   ]);
+  const channels = COMMUNITY_CHANNELS.filter((id) => id !== "following" || Boolean(userId));
+  const suggestReason = (person: (typeof suggestions)[number]) => person.reason === "fan" ? t("suggestFan") : t(person.reason === "relays" ? "suggestRelays" : "suggestPosts", { count: person.count });
   const channelHref = (id: string, nextSort = sort) => {
     const query = new URLSearchParams();
     if (id !== "all") query.set("c", id);
@@ -77,7 +82,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <nav className="-mx-1 flex min-w-0 gap-2 overflow-x-auto px-1 pb-1" aria-label={t("channelsLabel")}>
-              {COMMUNITY_CHANNELS.map((id) => <Link key={id} href={channelHref(id)} aria-current={id === channel ? "page" : undefined}
+              {channels.map((id) => <Link key={id} href={channelHref(id)} aria-current={id === channel ? "page" : undefined}
                 className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm transition-colors ${id === channel ? "bg-foreground font-semibold text-background" : "bg-muted text-foreground/80 hover:text-foreground"}`}>
                 {t(`channels.${id}`)}
               </Link>)}
@@ -90,9 +95,20 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
             </nav>
           </div>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
-            <section aria-labelledby="community-feed-heading" className="min-w-0">
+            <section aria-labelledby="community-feed-heading" className="min-w-0 space-y-3">
               <h2 id="community-feed-heading" className="sr-only">{t(`channels.${channel}`)}</h2>
-              {feed.feed.length > 0 ? <CommunityFeed items={feed.feed} /> : (
+              {channel === "following" && feed.followingCount !== null && feed.followingCount > 0 && <p className="text-xs text-muted-foreground ans-num">{t("followingHint", { count: feed.followingCount })}</p>}
+              {feed.feed.length > 0 ? <CommunityFeed items={feed.feed} /> : channel === "following" ? (
+                <div className="space-y-4 rounded-2xl bg-card px-5 py-6 shadow-[inset_0_0_0_0.5px_var(--hairline)]" data-testid="community-following-empty">
+                  <p className="text-sm text-muted-foreground text-pretty">{feed.followingCount ? t("followingQuiet") : t("followingEmpty")}</p>
+                  {suggestions.length > 0 && <ul className="grid gap-2 sm:grid-cols-3">
+                    {suggestions.map((person) => <li key={person.id} className="flex items-center gap-2.5 rounded-xl bg-muted px-3 py-2.5">
+                      <Link href={`/@${person.username}`} className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{person.nickname || person.username}</span><span className="block truncate text-xs text-muted-foreground ans-num">{suggestReason(person)}</span></Link>
+                      <FollowButton userId={person.id} relation={{ following: false, followedBy: person.reason === "fan" }} size="sm" />
+                    </li>)}
+                  </ul>}
+                </div>
+              ) : (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed px-5 py-6 text-sm text-muted-foreground">
                   <span>{t("empty")}</span>
                   {!compose && <Link href="/login?callbackUrl=/community" className="font-semibold text-primary hover:underline">{t("emptyAction")}</Link>}
@@ -100,6 +116,20 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
               )}
             </section>
             <aside className="hidden space-y-4 lg:block">
+              {userId && suggestions.length > 0 && <AccountContentBoundary actorId={userId}>
+                <section aria-labelledby="community-suggest-heading" className="space-y-3 rounded-2xl bg-card p-4 shadow-[inset_0_0_0_0.5px_var(--hairline)]" data-testid="community-follow-suggestions">
+                  <h2 id="community-suggest-heading" className="text-sm font-semibold">{t("suggestTitle")}</h2>
+                  <ul className="space-y-3">
+                    {suggestions.map((person) => <li key={person.id} className="flex items-center gap-2.5">
+                      {person.avatar
+                        ? <img src={person.avatar} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+                        : <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-muted text-sm font-semibold">{(person.nickname || person.username).charAt(0).toUpperCase()}</span>}
+                      <Link href={`/@${person.username}`} className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{person.nickname || person.username}</span><span className="block truncate text-xs text-muted-foreground ans-num">{suggestReason(person)}</span></Link>
+                      <FollowButton userId={person.id} relation={{ following: false, followedBy: person.reason === "fan" }} size="sm" />
+                    </li>)}
+                  </ul>
+                </section>
+              </AccountContentBoundary>}
               {userId && stalls.length > 0 && <AccountContentBoundary actorId={userId}>
                 <div className="space-y-2.5 rounded-2xl border bg-card p-4" data-testid="community-my-stalls">
                   <h2 className="text-sm font-semibold">{t("myStalls")}</h2>

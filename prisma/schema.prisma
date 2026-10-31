@@ -170,6 +170,8 @@ model User {
   communityBottlePicks CommunityBottlePick[]
   communityBottleReplies CommunityBottleReply[]
   communityBottleReports CommunityBottleReport[]
+  communityFollowing CommunityFollow[] @relation("CommunityFollower")
+  communityFollowers CommunityFollow[] @relation("CommunityFollowee")
   artifactReports ArtifactReport[] @relation("ArtifactReportAuthor")
   marketListings MarketListing[] @relation("MarketSeller")
   marketCheckouts MarketExternalCheckout[]
@@ -571,6 +573,9 @@ enum NotificationType {
   COMMUNITY_APPLICATION_DECLINED
   COMMUNITY_HELPED
   BOTTLE_REPLY
+  COMMUNITY_RELAY
+  COMMUNITY_FOLLOWED
+  COMMUNITY_FOLLOWEE_POST
 }
 
 enum UserRole {
@@ -3420,6 +3425,10 @@ model CommunityPost {
   helperId      String?
   helper        User?               @relation("CommunityPostHelper", fields: [helperId], references: [id], onDelete: SetNull)
   resolvedAt    DateTime?
+  /// 接力：这条帖子接的是哪条。接力的接力也挂到最早那条原帖下，串只有一层。
+  relayOfId     String?
+  relayOf       CommunityPost?      @relation("CommunityRelay", fields: [relayOfId], references: [id], onDelete: SetNull)
+  relays        CommunityPost[]     @relation("CommunityRelay")
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
   replies       CommunityReply[]
@@ -3431,7 +3440,21 @@ model CommunityPost {
   @@index([status, createdAt])
   @@index([board, status, createdAt])
   @@index([authorId, createdAt])
+  @@index([relayOfId, createdAt])
   @@map("community_posts")
+}
+
+/// 关注：关注一个人后，他发帖会出现在「关注」频道并提醒你。
+model CommunityFollow {
+  followerId String
+  follower   User     @relation("CommunityFollower", fields: [followerId], references: [id], onDelete: Cascade)
+  followeeId String
+  followee   User     @relation("CommunityFollowee", fields: [followeeId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([followerId, followeeId])
+  @@index([followeeId, createdAt])
+  @@map("community_follows")
 }
 
 model CommunityReply {

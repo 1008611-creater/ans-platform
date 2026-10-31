@@ -1,19 +1,21 @@
 import type { CommunityBoard } from "@prisma/client";
 import { listPublishedArtifacts } from "@/server/projects/publication";
 import { listCommunityPosts, type CommunityFeedSort, type CommunityPostSummary } from "@/server/community/posts";
+import { listFollowingIds } from "@/server/community/follows";
 
-/** 社区板块。项目库留在项目广场，这里只放人发的东西。 */
-export const COMMUNITY_CHANNELS = ["all", "team", "career", "research", "aigc", "campus"] as const;
+/** 社区板块。项目库留在项目广场，这里只放人发的东西。「关注」只给登录的人看。 */
+export const COMMUNITY_CHANNELS = ["following", "all", "team", "career", "research", "aigc", "campus"] as const;
 export type CommunityChannel = typeof COMMUNITY_CHANNELS[number];
+type BoardChannel = Exclude<CommunityChannel, "all" | "following">;
 
-const CHANNEL_BOARD: Record<Exclude<CommunityChannel, "all">, CommunityBoard> = {
+const CHANNEL_BOARD: Record<BoardChannel, CommunityBoard> = {
   team: "TEAM",
   career: "CAREER",
   research: "RESEARCH",
   aigc: "AIGC",
   campus: "CAMPUS",
 };
-export const BOARD_CHANNEL: Record<CommunityBoard, Exclude<CommunityChannel, "all">> = {
+export const BOARD_CHANNEL: Record<CommunityBoard, BoardChannel> = {
   TEAM: "team",
   CAREER: "career",
   RESEARCH: "research",
@@ -36,8 +38,9 @@ export type CommunityFeedItem =
     comments: number;
   };
 
-export function parseCommunityChannel(value: unknown): CommunityChannel {
-  return COMMUNITY_CHANNELS.find((channel) => channel === value) ?? "all";
+export function parseCommunityChannel(value: unknown, signedIn = true): CommunityChannel {
+  const channel = COMMUNITY_CHANNELS.find((item) => item === value) ?? "all";
+  return channel === "following" && !signedIn ? "all" : channel;
 }
 
 export function parseCommunitySort(value: unknown): CommunityFeedSort {
@@ -56,8 +59,16 @@ export function plainExcerpt(markdown: string, max = 90) {
   return text.length > max ? `${text.slice(0, max)}…` : text;
 }
 
-/** 社区信息流：帖子和已审核公开的作品按时间排在一起；作品归在「AIGC 与作品」。 */
-export async function listCommunityFeed(channel: CommunityChannel, sort: CommunityFeedSort = "latest") {
+/**
+ * 社区信息流：帖子和已审核公开的作品按时间排在一起；作品归在「AIGC 与作品」。
+ * 「关注」频道只放关注的人发的帖子，不混作品；还没关注任何人时 followingCount 为 0。
+ */
+export async function listCommunityFeed(channel: CommunityChannel, sort: CommunityFeedSort = "latest", viewerId: string | null = null) {
+  if (channel === "following") {
+    const ids = viewerId ? await listFollowingIds(viewerId) : [];
+    const posts = ids.length ? await listCommunityPosts({ sort, authorIds: ids }) : [];
+    return { feed: posts.map((post) => ({ type: "post" as const, id: post.id, createdAt: post.createdAt, post })) as CommunityFeedItem[], followingCount: ids.length };
+  }
   const board = channel === "all" ? undefined : CHANNEL_BOARD[channel];
   const withWorks = sort === "latest" && (channel === "all" || channel === "aigc");
   const [posts, artifacts] = await Promise.all([
@@ -80,5 +91,5 @@ export async function listCommunityFeed(channel: CommunityChannel, sort: Communi
       comments: artifact.counts.comments,
     })),
   ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  return { feed };
+  return { feed, followingCount: null };
 }

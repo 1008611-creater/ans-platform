@@ -4,7 +4,7 @@ import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ImagePlus, Minus, Plus, X } from "lucide-react";
+import { ImagePlus, Minus, Plus, Repeat2, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   COMMUNITY_BOARDS,
@@ -35,16 +35,20 @@ function dayInput(offsetDays: number) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai" }).format(date);
 }
 
-export function PostCompose({ teams, competitions, defaultBoard }: { teams: Array<{ id: string; name: string }>; competitions: Array<{ id: string; title: string }>; defaultBoard?: CommunityBoardId }) {
+/** 「接一下」时要接的原帖：板块跟着原帖走，只能发笔记或一句话。 */
+export type RelayTarget = { id: string; label: string; authorName: string; board: CommunityBoardId; count: number; cover: string | null };
+
+export function PostCompose({ teams, competitions, defaultBoard, relay, triggerClassName }: { teams: Array<{ id: string; name: string }>; competitions: Array<{ id: string; title: string }>; defaultBoard?: CommunityBoardId; relay?: RelayTarget; triggerClassName?: string }) {
   const t = useTranslations("product.communityPost.compose");
+  const r = useTranslations("product.communityPost.relay");
   const page = useTranslations("product.communityPage");
   const router = useRouter();
   const { send, pending } = useCommunityRequest();
   const id = useId();
   const [open, setOpen] = useState(false);
-  const [kind, setKind] = useState<CommunityPostKindId>("STALL");
+  const [kind, setKind] = useState<CommunityPostKindId>(relay ? "NOTE" : "STALL");
   const [stall, setStall] = useState<CommunityStallKindId>("SEEK");
-  const [board, setBoard] = useState<CommunityBoardId>(defaultBoard ?? "CAMPUS");
+  const [board, setBoard] = useState<CommunityBoardId>(relay?.board ?? defaultBoard ?? "CAMPUS");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [images, setImages] = useState<string[]>([]);
@@ -101,8 +105,9 @@ export function PostCompose({ teams, competitions, defaultBoard }: { teams: Arra
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!ready || pending) return;
-    const payload = kind === "TEXT" ? { kind, board, body }
-      : kind === "NOTE" ? { kind, board, title, body, images }
+    const relayOfId = relay?.id;
+    const payload = kind === "TEXT" ? { kind, board, body, relayOfId }
+      : kind === "NOTE" ? { kind, board, title, body, images, relayOfId }
         : {
           kind, stall, board, title, body,
           // 截止日当天结束前都算有效。
@@ -122,26 +127,39 @@ export function PostCompose({ teams, competitions, defaultBoard }: { teams: Arra
   const segment = (active: boolean) => `h-9 flex-1 rounded-md text-sm transition-colors ${active ? "bg-background font-semibold shadow-sm" : "text-muted-foreground hover:text-foreground"}`;
   const pill = (active: boolean) => `h-9 rounded-full border px-4 text-sm transition-colors ${active ? "border-foreground bg-foreground font-semibold text-background" : "bg-background hover:bg-muted"}`;
 
+  const kinds = relay ? (["NOTE", "TEXT"] as const) : (["NOTE", "TEXT", "STALL"] as const);
   return <Dialog open={open} onOpenChange={setOpen}>
-    <DialogTrigger asChild><Button size="sm"><Plus className="h-4 w-4" aria-hidden="true" />{t("open")}</Button></DialogTrigger>
-    <DialogContent className="max-h-[90vh] gap-0 overflow-y-auto p-0 sm:max-w-xl">
+    <DialogTrigger asChild>{relay
+      ? <Button className={triggerClassName}><Repeat2 className="h-4 w-4" aria-hidden="true" />{r("open")}</Button>
+      : <Button size="sm" className={triggerClassName}><Plus className="h-4 w-4" aria-hidden="true" />{t("open")}</Button>}</DialogTrigger>
+    {/* 弹窗里有表单，点遮罩不关，免得写了一半的内容丢掉；Esc 和取消按钮照常关闭。 */}
+    <DialogContent onInteractOutside={(event) => event.preventDefault()} className="max-h-[90vh] gap-0 overflow-y-auto p-0 sm:max-w-xl">
       <form onSubmit={submit} className="flex flex-col">
-        <div className="px-5 pb-1 pt-5"><DialogTitle className="text-lg font-bold">{t("title")}</DialogTitle></div>
+        <div className="px-5 pb-1 pt-5"><DialogTitle className="text-lg font-bold">{relay ? r("dialogTitle") : t("title")}</DialogTitle></div>
         <div className="flex flex-col gap-4 px-5 py-4">
-          <div role="group" aria-label={t("kindLabel")} className="flex gap-0.5 rounded-lg bg-muted p-1">
-            {(["NOTE", "TEXT", "STALL"] as const).map((value) => <button key={value} type="button" aria-pressed={kind === value} onClick={() => setKind(value)} className={segment(kind === value)}>{t(`kinds.${value}`)}</button>)}
+          {relay && <div className="flex items-center gap-2.5 rounded-xl bg-muted p-2.5">
+            {relay.cover
+              ? <img src={relay.cover} alt="" referrerPolicy="no-referrer" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+              : <span aria-hidden="true" className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-background"><Repeat2 className="h-5 w-5 text-muted-foreground" /></span>}
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="text-xs text-muted-foreground ans-num">{r("from", { name: relay.authorName, count: relay.count })}</span>
+              <span className="truncate text-sm font-semibold">{relay.label}</span>
+            </div>
+          </div>}
+          <div role="group" aria-label={relay ? r("kindLabel") : t("kindLabel")} className="flex gap-0.5 rounded-lg bg-muted p-1">
+            {kinds.map((value) => <button key={value} type="button" aria-pressed={kind === value} onClick={() => setKind(value)} className={segment(kind === value)}>{t(`kinds.${value}`)}</button>)}
           </div>
 
           {kind === "STALL" && <div role="group" aria-label={t("stallLabel")} className="flex flex-wrap gap-2">
             {COMMUNITY_STALL_KINDS.map((value) => <button key={value} type="button" aria-pressed={stall === value} onClick={() => pickStall(value)} className={pill(stall === value)}>{page(`stall.${value}`)}</button>)}
           </div>}
 
-          <div className="flex flex-col gap-1.5">
+          {!relay && <div className="flex flex-col gap-1.5">
             <label htmlFor={`${id}-board`} className={LABEL}>{t("board")}</label>
             <select id={`${id}-board`} value={board} onChange={(event) => setBoard(event.target.value as CommunityBoardId)} className={FIELD}>
               {COMMUNITY_BOARDS.map((value) => <option key={value} value={value}>{page(`channels.${BOARD_CHANNEL[value]}`)}</option>)}
             </select>
-          </div>
+          </div>}
 
           {kind !== "TEXT" && <div className="flex flex-col gap-1.5">
             <label htmlFor={`${id}-title`} className={LABEL}>{kind === "NOTE" ? t("noteTitle") : t("stallTitle")}</label>
@@ -210,10 +228,12 @@ export function PostCompose({ teams, competitions, defaultBoard }: { teams: Arra
             <label htmlFor={`${id}-deadline`} className={LABEL}>{t("deadline")}</label>
             <input id={`${id}-deadline`} type="date" value={deadline} min={dayInput(0)} max={dayInput(STALL_MAX_DAYS - 1)} onChange={(event) => setDeadline(event.target.value)} className={FIELD} />
           </div>}
+
+          {relay && <p className="text-xs text-muted-foreground text-pretty">{r("boardNote", { board: page(`channels.${BOARD_CHANNEL[relay.board]}`) })}</p>}
         </div>
         <DialogFooter className="border-t px-5 py-3.5">
           <Button type="button" variant="outline" onClick={() => setOpen(false)}>{t("cancel")}</Button>
-          <Button type="submit" disabled={!ready || pending || uploading}>{pending ? t("submitting") : t("submit")}</Button>
+          <Button type="submit" disabled={!ready || pending || uploading}>{pending ? t("submitting") : relay ? r("submit") : t("submit")}</Button>
         </DialogFooter>
       </form>
     </DialogContent>
