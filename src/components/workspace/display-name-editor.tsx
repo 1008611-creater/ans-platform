@@ -398,6 +398,12 @@ function PiCodexWorkbench({
   const homeRef = useRef(home);
   homeRef.current = home;
 
+  // 窄屏下全站悬浮兔兔龙会压住输入框；工作台顶栏已有 Agent 入口，打开工作台时让它让位
+  useEffect(() => {
+    document.body.classList.add("ans-workbench-open");
+    return () => document.body.classList.remove("ans-workbench-open");
+  }, []);
+
   useEffect(() => {
     setLivePoints(points);
   }, [points]);
