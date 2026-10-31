@@ -1,3 +1,5 @@
+> **2026-10-31 说明**：本提示词基于旧检出（`ans-release-master`、1.2 安装包、iOS 描述文件）写成，仅作历史记录。开工以 `docs/mobile-app/ANS-MOBILE-APP-PRD-v1.1.md`（第五节分期）和 `docs/mobile-app/ANS-MOBILE-APP-UI-DESIGN-v1.1.md` 为准；其中的深海蓝主卡、翡翠绿光晕、点遮罩关闭抽屉、Gemini 本机 node 路径等写法已作废。
+
 # 《ANS 随身端》ANS MOBILE APP
 ## 手机端真 App 化体验重构 · 第一阶段冲刺方案（从「套壳网页」到「原生级随身 App」）
 
@@ -23,12 +25,12 @@
 | 格子 / 步骤 | 用哪个 Skill | 取它的什么思路 | 明确不取什么 |
 |---|---|---|---|
 | 入口定位与红线 | `ans-ui-ux-baseline` | 取五条核心铁律（零虚构状态、L0–L3 解释性文字分层、图文不重复、零 AI 黑话、两轮无上下文盲审） | 不改后端积分与数据库 schema |
-| 视觉层级与卡片减法 | `oil-ui` | 取 `references/visual-language.md` 与 `references/layout-and-viewport.md` 的移动端首屏主角法则、单卡单主动作与窄屏防折行规范 | 不做三风格对比页 HTML（设计规范已在 `docs/mobile-app/ANS-MOBILE-APP-UI-DESIGN-v1.0.md` 定稿） |
+| 视觉层级与卡片减法 | `oil-ui` | 取 `references/visual-language.md` 与 `references/layout-and-viewport.md` 的移动端首屏主角法则、单卡单主动作与窄屏防折行规范 | 不做三风格对比页 HTML（设计规范已在 `docs/mobile-app/ANS-MOBILE-APP-UI-DESIGN-v1.1.md` 定稿） |
 | 响应式状态与组件组织 | `oil-frontend` | 取移动端/桌面端共享数据源但分离视图密度的组件组织方式，确保现有单测 DOM 角色与 `aria-*` 契约不破 | 不新建冗余状态管理库 |
 | 复核 | `ans-ui-ux-baseline` | 取 `390×844` 手机竖屏实机截图与 DOM 出屏/遮挡/重言检查思路 | Gate 2 放行权归用户本人 |
 | 明确不用 | `nb-science-*` / `ans-eternal-pet-3d-pipeline` | —— | 它们分别是小学科学实验与宠物 3D 打印管线，与本次 ANS 平台手机 App 界面重构无关 |
 
-**读取纪律**：开工前先读 `docs/mobile-app/ANS-MOBILE-APP-PRD-v1.0.md`、`docs/mobile-app/ANS-MOBILE-APP-UI-DESIGN-v1.0.md` 以及 `.agents/skills/ans-ui-ux-baseline/SKILL.md`，按需查阅 `.agents/skills/oil-ui/references/layout-and-viewport.md`，不要整包吞无关 Skill；读完先用一两句话复述本阶段的思路骨架，再动手。
+**读取纪律**：开工前先读 `docs/mobile-app/ANS-MOBILE-APP-PRD-v1.1.md`、`docs/mobile-app/ANS-MOBILE-APP-UI-DESIGN-v1.1.md` 以及 `.agents/skills/ans-ui-ux-baseline/SKILL.md`，按需查阅 `.agents/skills/oil-ui/references/layout-and-viewport.md`，不要整包吞无关 Skill；读完先用一两句话复述本阶段的思路骨架，再动手。
 **取舍原则**：只取思路与路由；Skill 里的机械门禁默认不跑，只有直接决定最终结果或本提示词第八节列出的验证才跑。冲突时：用户当轮指令 > 本提示词红线 > Skill 内容。
 
 ## 二、现在已经有什么（先读，别重做）
@@ -36,8 +38,8 @@
 
 已完成，直接复用：
 1. **PRD 与 UI 设计规范（必读蓝图）**：
-   - PRD：`docs/mobile-app/ANS-MOBILE-APP-PRD-v1.0.md`
-   - UI 设计规范：`docs/mobile-app/ANS-MOBILE-APP-UI-DESIGN-v1.0.md`
+   - PRD：`docs/mobile-app/ANS-MOBILE-APP-PRD-v1.1.md`
+   - UI 设计规范：`docs/mobile-app/ANS-MOBILE-APP-UI-DESIGN-v1.1.md`
 2. **手机安装包与自动下载链路（已上线，不动）**：
    - `/app` 安装页（`src/app/app/page.tsx`、`src/components/mobile/mobile-app-installer.tsx`）
    - 原生安卓包 `public/downloads/ans-mobile.apk`（WebView UA 带 `ANSMobileApp/1.2.0`）与 iOS 描述文件 `public/downloads/ans-ios.mobileconfig`
@@ -60,7 +62,7 @@
 
 **上一阶段暴露的问题**（来自用户真机实测反馈，这一阶段必须针对它彻底解决）：
 - 用户下载并打开手机端 App 后一针见血指出：**「现在的 App 就是跳转到网站，完全没按照 App 的形式做适配」**。
-- 具体病灶：手机端直接照搬了桌面网页的长滚页、多行折行筛选栏、网页版权 Footer、松散后台式工作台以及容易挡住窄屏内容的悬浮窗。本阶段必须按 `docs/mobile-app/ANS-MOBILE-APP-UI-DESIGN-v1.0.md` 做出真正的原生 App 视图层级与单手操作流。
+- 具体病灶：手机端直接照搬了桌面网页的长滚页、多行折行筛选栏、网页版权 Footer、松散后台式工作台以及容易挡住窄屏内容的悬浮窗。本阶段必须按 `docs/mobile-app/ANS-MOBILE-APP-UI-DESIGN-v1.1.md` 做出真正的原生 App 视图层级与单手操作流。
 
 ## 三、完整体验与招牌时刻
 同学在手机桌面点开 ANS 图标（或用 `390×844` 手机竖屏打开），应该能一口气体验：
@@ -158,7 +160,7 @@
   - 壳层与导航测试：`/Users/eeo/.gemini/antigravity/bin/node ./node_modules/vitest/vitest.mjs run src/__tests__/components/mobile-tab-bar.test.tsx src/__tests__/components/site-frame.test.tsx src/__tests__/components/header-logout.test.tsx src/__tests__/components/learning-navigation.test.tsx src/__tests__/lib/hubs-navigation.test.ts src/__tests__/components/mobile-app-installer.test.tsx src/__tests__/api/app-download-route.test.ts`
   - 农客松测试：`/Users/eeo/.gemini/antigravity/bin/node ./node_modules/vitest/vitest.mjs run src/__tests__/components/agrihackathon-landing.test.tsx src/__tests__/components/agri-competition-detail.test.tsx src/__tests__/components/agri-submissions.test.tsx`
   - 工作台与小恐龙测试：`/Users/eeo/.gemini/antigravity/bin/node ./node_modules/vitest/vitest.mjs run src/__tests__/components/dino-guide-accessibility.test.tsx src/__tests__/components/dino-task-guide.test.tsx src/__tests__/components/companion-dock-in-panel.test.tsx src/__tests__/components/compute-benefits.test.tsx src/__tests__/components/compute-history-page.test.tsx`
-- 找新问题：全部格子完成后，派无上下文 subagent 对照 `docs/mobile-app/ANS-MOBILE-APP-UI-DESIGN-v1.0.md` 与第四节红线做独立盲审，出清单修干净。
+- 找新问题：全部格子完成后，派无上下文 subagent 对照 `docs/mobile-app/ANS-MOBILE-APP-UI-DESIGN-v1.1.md` 与第四节红线做独立盲审，出清单修干净。
 - 关键画面截图自己看过才算验证过，不要把「测试通过」当成「好看」。
 - **Gate 2（实机终审）只能由我本人判定。** 你只能写「已交付试玩，等你终审」。
 
