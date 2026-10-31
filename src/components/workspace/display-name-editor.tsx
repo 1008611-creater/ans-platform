@@ -2011,7 +2011,8 @@ function PiCodexWorkbench({
           style={{ width: sideCollapsed ? 0 : sidebarWidth }}
           inert={sideCollapsed}
           aria-hidden={sideCollapsed || undefined}
-          className={`ans-wb-side relative shrink-0 bg-background ${sideCollapsed ? "overflow-hidden" : ""} ${gripDragging ? "" : "ans-spring-drag transition-[width]"}`}
+          // 服务端按宽屏渲染；手机首屏在水合前也不能露出桌面侧栏，所以 <lg 用 CSS 先藏起来
+          className={`ans-wb-side relative shrink-0 bg-background max-lg:hidden ${sideCollapsed ? "overflow-hidden" : ""} ${gripDragging ? "" : "ans-spring-drag transition-[width]"}`}
         >
           {/* 收起时侧栏内容保持原宽度被裁掉，不挤成一条 */}
           <div style={{ width: sidebarWidth }} className="h-full">{sidebar}</div>
