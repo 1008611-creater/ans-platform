@@ -6,6 +6,7 @@ import {
   HELP_REWARD_XP,
   STALL_MAX_DAYS,
   teamRoleSchema,
+  type CommunityRecipe,
   type CommunityTeamRole,
 } from "@/contracts/community-posts";
 import { db } from "@/lib/db";
@@ -86,6 +87,7 @@ export async function createCommunityPost(userId: string, raw: unknown) {
   const relayRoot = input.kind !== "STALL" && input.relayOfId ? await resolveRelayRoot(input.relayOfId) : null;
   const data: Prisma.CommunityPostUncheckedCreateInput = { authorId: userId, kind: input.kind, board: relayRoot?.board ?? input.board as CommunityBoard, body: input.body, images: [], relayOfId: relayRoot?.id ?? null };
   if (input.kind === "NOTE") Object.assign(data, { title: input.title, images: input.images });
+  if (input.kind === "NOTE" && input.recipe) Object.assign(data, { recipeTool: input.recipe.tool, recipeUrl: input.recipe.url ?? null, recipePrompt: input.recipe.prompt });
   if (input.kind === "STALL") {
     const now = Date.now();
     if (input.expiresAt.getTime() <= now || input.expiresAt.getTime() > now + STALL_MAX_DAYS * DAY_MS) throw new CommunityError(400, "INVALID_DEADLINE");
@@ -106,7 +108,7 @@ export async function createCommunityPost(userId: string, raw: unknown) {
 
   const post = await db.$transaction(async (tx) => {
     const created = await tx.communityPost.create({ data, select: { id: true } });
-    await tx.auditLog.create({ data: { actorId: userId, action: "COMMUNITY_POST_CREATED", resourceType: "community_post", resourceId: created.id, metadata: { kind: input.kind, board: data.board, relayOfId: data.relayOfId ?? null } } });
+    await tx.auditLog.create({ data: { actorId: userId, action: "COMMUNITY_POST_CREATED", resourceType: "community_post", resourceId: created.id, metadata: { kind: input.kind, board: data.board, relayOfId: data.relayOfId ?? null, recipe: Boolean(data.recipePrompt) } } });
     return created;
   });
   const label = (input.kind === "STALL" || input.kind === "NOTE" ? input.title : "") || input.body;
@@ -122,15 +124,22 @@ const feedInclude = {
   team: { select: { name: true, slug: true } },
   competition: { select: { id: true, title: true } },
   applications: { where: { status: "ACCEPTED" }, select: { role: true } },
-  relayOf: { select: { id: true, title: true, body: true, status: true } },
+  relayOf: { select: { id: true, title: true, body: true, status: true, recipeTool: true } },
   relays: { where: { status: { in: [...VISIBLE] } }, orderBy: { createdAt: "asc" }, take: 3, select: { author: { select: authorSelect } } },
   _count: { select: { likes: true, replies: true, helpOffers: true, relays: { where: { status: { in: [...VISIBLE] } } } } },
 } satisfies Prisma.CommunityPostInclude;
 
-/** 接力帖上引用的原帖。原帖被隐藏了就只说「原帖已隐藏」，不露内容。 */
-function relayQuote(relayOf: { id: string; title: string | null; body: string; status: string } | null) {
+/** 接力帖上引用的原帖。原帖被隐藏了就只说「原帖已隐藏」，不露内容；原帖带配方时这条就是「同款」。 */
+function relayQuote(relayOf: { id: string; title: string | null; body: string; status: string; recipeTool: string | null } | null) {
   if (!relayOf) return null;
-  return relayOf.status === "HIDDEN" ? { id: relayOf.id, label: null } : { id: relayOf.id, label: relayOf.title || relayOf.body };
+  const same = Boolean(relayOf.recipeTool);
+  return relayOf.status === "HIDDEN" ? { id: relayOf.id, label: null, same } : { id: relayOf.id, label: relayOf.title || relayOf.body, same };
+}
+
+/** 帖子上的配方，三个字段要么都按配方读，要么就是没有配方。 */
+export function recipeOf(post: { recipeTool: string | null; recipeUrl: string | null; recipePrompt: string | null }): CommunityRecipe | null {
+  if (!post.recipeTool || !post.recipePrompt) return null;
+  return { tool: post.recipeTool, prompt: post.recipePrompt, ...(post.recipeUrl ? { url: post.recipeUrl } : {}) };
 }
 
 export async function listCommunityPosts({ board, sort = "latest", take = 40, authorIds }: { board?: CommunityBoard; sort?: CommunityFeedSort; take?: number; authorIds?: string[] }) {
@@ -143,8 +152,9 @@ export async function listCommunityPosts({ board, sort = "latest", take = 40, au
       : { status: { in: [...VISIBLE] }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }, { status: "RESOLVED" }] }),
   };
   const rows = await db.communityPost.findMany({ where, include: feedInclude, orderBy: { createdAt: "desc" }, take: Math.min(Math.max(take, 1), 60) });
-  return rows.map(({ applications, roles, relayOf, relays, ...post }) => ({
+  return rows.map(({ applications, roles, relayOf, relays, recipeTool, recipeUrl, recipePrompt, ...post }) => ({
     ...post,
+    hasRecipe: Boolean(recipeOf({ recipeTool, recipeUrl, recipePrompt })),
     relayOf: relayQuote(relayOf),
     relayers: relays.map((relay) => relay.author),
     active: isPostActive(post, now),
@@ -164,7 +174,7 @@ export async function getCommunityPost(id: string, viewerId: string | null) {
       replies: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 200, select: { id: true, body: true, createdAt: true, author: { select: authorSelect } } },
       applications: { orderBy: { createdAt: "asc" }, select: { id: true, role: true, message: true, status: true, createdAt: true, applicantId: true, applicant: { select: authorSelect } } },
       helpOffers: { orderBy: { createdAt: "asc" }, select: { id: true, message: true, createdAt: true, userId: true, user: { select: authorSelect } } },
-      relayOf: { select: { id: true, title: true, body: true, status: true } },
+      relayOf: { select: { id: true, title: true, body: true, status: true, recipeTool: true } },
       relays: {
         where: { status: { in: [...VISIBLE] } },
         orderBy: { createdAt: "asc" },
@@ -178,9 +188,10 @@ export async function getCommunityPost(id: string, viewerId: string | null) {
   const isAuthor = viewerId === post.authorId;
   if (post.status === "HIDDEN" && !isAuthor) return null;
   const liked = viewerId ? Boolean(await db.communityPostLike.findUnique({ where: { userId_postId: { userId: viewerId, postId: id } }, select: { userId: true } })) : false;
-  const { applications, helpOffers, roles, relayOf, ...rest } = post;
+  const { applications, helpOffers, roles, relayOf, recipeTool, recipeUrl, recipePrompt, ...rest } = post;
   return {
     ...rest,
+    recipe: recipeOf({ recipeTool, recipeUrl, recipePrompt }),
     relayOf: relayQuote(relayOf),
     isAuthor,
     liked,

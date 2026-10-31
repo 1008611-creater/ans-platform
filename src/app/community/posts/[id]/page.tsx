@@ -8,6 +8,7 @@ import { BOARD_CHANNEL } from "@/server/community/feed";
 import { getCommunityPost } from "@/server/community/posts";
 import { getFollowRelation } from "@/server/community/follows";
 import { FollowButton } from "@/components/community/follow-button";
+import { RecipeCard } from "@/components/community/recipe-card";
 import { PostCompose, type RelayTarget } from "@/components/community/post-compose";
 import { BOARD_CHIP } from "@/components/community/community-feed";
 import { ApplicationList, ApplyForm, ClosePostButton, HelpForm, LikeButton, OfferList, ReplyForm, ReportPost } from "@/components/community/post-actions";
@@ -42,7 +43,7 @@ export default async function CommunityPostPage({ params }: { params: Params }) 
   const [t, page, r, locale, relation] = await Promise.all([
     getTranslations("product.communityPost.detail"),
     getTranslations("product.communityPage"),
-    getTranslations("product.communityPost.relay"),
+    getTranslations(post.recipe && !post.relayOf ? "product.communityPost.same" : "product.communityPost.relay"),
     getLocale().catch(() => "zh"),
     viewerId && !post.isAuthor ? getFollowRelation(viewerId, post.author.id) : null,
   ]);
@@ -57,7 +58,7 @@ export default async function CommunityPostPage({ params }: { params: Params }) 
   // 只有笔记和一句话能被接；接力帖自己不再挂串，接它等于接原帖，所以这里引回原帖。
   const relayable = post.kind !== "STALL" && !post.relayOf && post.status !== "HIDDEN";
   const relayTarget: RelayTarget | null = relayable && viewerId
-    ? { id: post.id, label: post.title || post.body, authorName: nameOf(post.author), board: post.board, count: post._count.relays, cover: post.images[0] ?? null }
+    ? { id: post.id, label: post.title || post.body, authorName: nameOf(post.author), board: post.board, count: post._count.relays, cover: post.images[0] ?? null, same: Boolean(post.recipe) }
     : null;
 
   return <div className="ans-product-container ans-page-content space-y-4">
@@ -72,7 +73,7 @@ export default async function CommunityPostPage({ params }: { params: Params }) 
             {post.active && post.expiresAt && <span className="ml-auto flex items-center gap-1 text-sm text-muted-foreground"><Clock className="h-4 w-4" aria-hidden="true" />{t(isTeam ? "deadlineTeam" : "deadlineNote", { date: date.format(post.expiresAt) })}</span>}
           </div>
           {post.relayOf && (post.relayOf.label
-            ? <Link href={`/community/posts/${post.relayOf.id}#relays`} className="inline-flex max-w-full items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1.5 text-sm text-foreground/80 hover:text-foreground"><Repeat2 className="h-4 w-4 shrink-0" aria-hidden="true" /><span className="truncate">{page("relayOf", { title: post.relayOf.label })}</span></Link>
+            ? <Link href={`/community/posts/${post.relayOf.id}#relays`} className="inline-flex max-w-full items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1.5 text-sm text-foreground/80 hover:text-foreground"><Repeat2 className="h-4 w-4 shrink-0" aria-hidden="true" /><span className="truncate">{page(post.relayOf.same ? "sameOf" : "relayOf", { title: post.relayOf.label })}</span></Link>
             : <p className="inline-flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1.5 text-sm text-muted-foreground"><Repeat2 className="h-4 w-4" aria-hidden="true" />{page("relayOfHidden")}</p>)}
           {post.title && <h1 className="text-2xl font-bold leading-snug tracking-tight text-pretty sm:text-[26px]">{post.title}</h1>}
           <div className="flex flex-wrap items-center gap-2.5 text-sm text-muted-foreground">
@@ -83,6 +84,7 @@ export default async function CommunityPostPage({ params }: { params: Params }) 
           </div>
           {post.body && <p className={`whitespace-pre-wrap break-words leading-relaxed ${post.kind === "TEXT" ? "text-xl font-semibold" : "text-[15px] text-foreground/90"}`}>{post.body}</p>}
           {post.images.length > 0 && <div className="grid grid-cols-2 gap-2">{post.images.map((url) => <img key={url} src={url} alt="" referrerPolicy="no-referrer" className="w-full rounded-xl border object-cover" />)}</div>}
+          {post.recipe && <RecipeCard recipe={post.recipe} />}
 
           {isTeam && post.vacancies.length > 0 && <section aria-labelledby="roles-heading" className="space-y-2.5">
             <h2 id="roles-heading" className="text-sm font-semibold">{t("roles")}</h2>

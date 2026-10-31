@@ -56,7 +56,7 @@ function displayName(user: { nickname: string | null; username: string }) {
 /** 接力帖顶部的引用：点了去原帖看整串接力。卡片整体是一个大链接，这个链接要浮在上面。 */
 function RelayQuote({ relayOf, t, onTint = false }: { relayOf: NonNullable<CommunityPostSummary["relayOf"]>; t: Labels; onTint?: boolean }) {
   const chip = `relative z-10 inline-flex max-w-full items-center gap-1 self-start rounded-lg px-2 py-1 text-xs text-foreground/80 ${onTint ? "bg-card" : "bg-muted"}`;
-  const label = relayOf.label ? t("relayOf", { title: relayOf.label.length > 24 ? `${relayOf.label.slice(0, 24)}…` : relayOf.label }) : t("relayOfHidden");
+  const label = relayOf.label ? t(relayOf.same ? "sameOf" : "relayOf", { title: relayOf.label.length > 24 ? `${relayOf.label.slice(0, 24)}…` : relayOf.label }) : t("relayOfHidden");
   const content = <><Repeat2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /><span className="truncate">{label}</span></>;
   return relayOf.label
     ? <Link href={`/community/posts/${relayOf.id}#relays`} prefetch={false} className={`${chip} hover:text-foreground`}>{content}</Link>
@@ -68,7 +68,7 @@ function RelayCount({ post, t }: { post: CommunityPostSummary; t: Labels }) {
   if (post._count.relays === 0) return null;
   return <p className="flex items-center gap-1.5 text-xs text-foreground/80">
     <span className="flex" aria-hidden="true">{post.relayers.map((person, index) => <span key={person.id} className={`rounded-full ring-2 ring-card ${index > 0 ? "-ml-1.5" : ""}`}><Avatar name={displayName(person)} src={person.avatar} /></span>)}</span>
-    <span className="ans-num">{t("relayCount", { count: post._count.relays })}</span>
+    <span className="ans-num">{t(post.hasRecipe ? "sameCount" : "relayCount", { count: post._count.relays })}</span>
   </p>;
 }
 
@@ -103,9 +103,12 @@ function StallCard({ post, t, date }: { post: CommunityPostSummary; t: Labels; d
 function NoteCard({ post, t }: { post: CommunityPostSummary; t: Labels }) {
   const cover = post.images[0];
   return <article className={CARD}>
-    {cover
-      ? <img src={cover} alt="" loading="lazy" referrerPolicy="no-referrer" className="aspect-[4/5] w-full object-cover" />
-      : <div className={`flex aspect-[4/3] items-end p-4 ${BOARD_TINT[post.board]}`}><p className="line-clamp-4 text-lg font-bold leading-snug">{post.title}</p></div>}
+    <div className="relative">
+      {cover
+        ? <img src={cover} alt="" loading="lazy" referrerPolicy="no-referrer" className="aspect-[4/5] w-full object-cover" />
+        : <div className={`flex aspect-[4/3] items-end p-4 ${BOARD_TINT[post.board]}`}><p className="line-clamp-4 text-lg font-bold leading-snug">{post.title}</p></div>}
+      {post.hasRecipe && <span className="absolute left-2.5 top-2.5 rounded-full bg-background/85 px-2 py-0.5 text-xs font-medium">{t("hasRecipe")}</span>}
+    </div>
     <div className="flex flex-col gap-2 p-3">
       {post.relayOf && <RelayQuote relayOf={post.relayOf} t={t} />}
       {cover && <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-pretty">{post.title}</h3>}

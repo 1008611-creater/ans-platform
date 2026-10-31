@@ -3429,6 +3429,10 @@ model CommunityPost {
   relayOfId     String?
   relayOf       CommunityPost?      @relation("CommunityRelay", fields: [relayOfId], references: [id], onDelete: SetNull)
   relays        CommunityPost[]     @relation("CommunityRelay")
+  /// 做同款的配方：只有笔记能带。别人照着做完，晒出来的帖子挂进上面这串接力。
+  recipeTool    String?             @db.VarChar(40)
+  recipeUrl     String?             @db.VarChar(500)
+  recipePrompt  String?             @db.Text
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
   replies       CommunityReply[]

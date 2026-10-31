@@ -3723,7 +3723,10 @@
     "suggestPosts": "{count} posts in the last two weeks",
     "relayOf": "Relay of “{title}”",
     "relayOfHidden": "The original post is hidden",
-    "relayCount": "{count} relays"
+    "relayCount": "{count} relays",
+    "sameOf": "Made from “{title}”",
+    "sameCount": "{count} made this",
+    "hasRecipe": "Recipe"
   },
   "modelPlaza": {
     "title": "Model plaza",
@@ -4131,7 +4134,14 @@
       "submitting": "Posting…",
       "counter": "{count}/{max}",
       "success": "Posted",
-      "loginToPost": "Sign in to post"
+      "loginToPost": "Sign in to post",
+      "recipe": "Add a recipe",
+      "recipeHint": "Share the tool and prompt so others can make their own with one tap",
+      "recipeTool": "Tool",
+      "recipeToolPlaceholder": "e.g. Midjourney, Kling, Claude",
+      "recipeUrl": "Tool link (optional)",
+      "recipePrompt": "Prompt",
+      "recipeRemove": "No recipe"
     },
     "detail": {
       "back": "Community",
@@ -4237,6 +4247,27 @@
       "empty": "No relays yet. Be the first.",
       "loginToRelay": "Sign in to relay",
       "rootLink": "See the original and all relays",
+      "index": "#{n}"
+    },
+    "recipe": {
+      "title": "Recipe",
+      "tool": "Made with {tool}",
+      "makeSame": "Make your own",
+      "copyOnly": "Copy prompt",
+      "copied": "Prompt copied. Come back and share yours",
+      "copyFailed": "Couldn't copy. Select the prompt and copy it manually"
+    },
+    "same": {
+      "title": "Made this {count}",
+      "hint": "Versions made from this recipe, oldest first",
+      "open": "Share yours",
+      "dialogTitle": "Share your version",
+      "from": "From {name}'s recipe, {count} shared so far",
+      "kindLabel": "Format",
+      "boardNote": "Posted in “{board}” like the original. It shows up under the original and reaches your followers.",
+      "submit": "Post",
+      "empty": "No one has shared theirs yet. Be the first.",
+      "loginToRelay": "Sign in to share yours",
       "index": "#{n}"
     }
   },

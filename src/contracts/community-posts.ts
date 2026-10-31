@@ -24,10 +24,20 @@ export const STALL_MAX_DAYS = 60;
 export const HELP_REWARD_XP = 20;
 /** 一次发帖最多提醒多少个粉丝，防止大号一发帖就写爆提醒表。 */
 export const FOLLOWER_NOTIFY_MAX = 500;
+export const RECIPE_TOOL_MAX = 40;
+export const RECIPE_PROMPT_MAX = 2000;
 
 const board = z.enum(COMMUNITY_BOARDS);
 const imageUrl = z.string().trim().max(500).url().refine((value) => value.startsWith("https://"), "IMAGE_URL");
 const optionalId = z.string().trim().min(1).max(40).optional();
+
+/** 做同款的配方：用的什么工具、在哪打开、提示词是什么。链接可以不填。 */
+export const recipeSchema = z.object({
+  tool: z.string().trim().min(1).max(RECIPE_TOOL_MAX),
+  url: z.string().trim().max(500).url().refine((value) => value.startsWith("https://"), "RECIPE_URL").optional(),
+  prompt: z.string().trim().min(2).max(RECIPE_PROMPT_MAX),
+});
+export type CommunityRecipe = z.infer<typeof recipeSchema>;
 
 export const teamRoleSchema = z.object({
   name: z.string().trim().min(1).max(20),
@@ -43,6 +53,7 @@ export const createCommunityPostSchema = z.discriminatedUnion("kind", [
     body: z.string().trim().min(2).max(POST_BODY_MAX),
     images: z.array(imageUrl).max(POST_IMAGE_MAX).default([]),
     relayOfId: optionalId,
+    recipe: recipeSchema.optional(),
   }),
   z.object({
     kind: z.literal("TEXT"),

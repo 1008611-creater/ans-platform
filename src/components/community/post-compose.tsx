@@ -4,7 +4,7 @@ import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ImagePlus, Minus, Plus, Repeat2, X } from "lucide-react";
+import { ChevronDown, ImagePlus, Minus, Plus, Repeat2, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   COMMUNITY_BOARDS,
@@ -12,6 +12,8 @@ import {
   POST_BODY_MAX,
   POST_IMAGE_MAX,
   POST_TITLE_MAX,
+  RECIPE_PROMPT_MAX,
+  RECIPE_TOOL_MAX,
   STALL_MAX_DAYS,
   TEAM_ROLE_MAX,
   TEAM_ROLE_SLOTS_MAX,
@@ -35,12 +37,14 @@ function dayInput(offsetDays: number) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai" }).format(date);
 }
 
-/** 「接一下」时要接的原帖：板块跟着原帖走，只能发笔记或一句话。 */
-export type RelayTarget = { id: string; label: string; authorName: string; board: CommunityBoardId; count: number; cover: string | null };
+/** 「接一下」时要接的原帖：板块跟着原帖走，只能发笔记或一句话。原帖带配方时 `same` 为真，按「晒同款」说。 */
+export type RelayTarget = { id: string; label: string; authorName: string; board: CommunityBoardId; count: number; cover: string | null; same?: boolean };
 
 export function PostCompose({ teams, competitions, defaultBoard, relay, triggerClassName }: { teams: Array<{ id: string; name: string }>; competitions: Array<{ id: string; title: string }>; defaultBoard?: CommunityBoardId; relay?: RelayTarget; triggerClassName?: string }) {
   const t = useTranslations("product.communityPost.compose");
-  const r = useTranslations("product.communityPost.relay");
+  const relayCopy = useTranslations("product.communityPost.relay");
+  const sameCopy = useTranslations("product.communityPost.same");
+  const r = relay?.same ? sameCopy : relayCopy;
   const page = useTranslations("product.communityPage");
   const router = useRouter();
   const { send, pending } = useCommunityRequest();
@@ -59,6 +63,10 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, triggerC
   const [roles, setRoles] = useState<CommunityTeamRole[]>([]);
   const [roleDraft, setRoleDraft] = useState("");
   const [deadline, setDeadline] = useState(dayInput(14));
+  const [recipeOpen, setRecipeOpen] = useState(false);
+  const [recipeTool, setRecipeTool] = useState("");
+  const [recipeUrl, setRecipeUrl] = useState("");
+  const [recipePrompt, setRecipePrompt] = useState("");
 
   useEffect(() => {
     if (!open || kind !== "NOTE") return;
@@ -98,8 +106,11 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, triggerC
 
   const isTeam = kind === "STALL" && stall === "TEAM";
   const bodyMax = kind === "TEXT" ? TEXT_POST_MAX : POST_BODY_MAX;
+  // 配方是接力之外的原帖才有的：晒同款的帖子挂在别人的配方下面，不再自带一份。
+  const withRecipe = kind === "NOTE" && !relay && recipeOpen;
+  const recipeReady = !withRecipe || (recipeTool.trim().length >= 1 && recipePrompt.trim().length >= 2 && (!recipeUrl.trim() || recipeUrl.trim().startsWith("https://")));
   const ready = kind === "TEXT" ? body.trim().length >= 2
-    : kind === "NOTE" ? title.trim().length >= 2 && body.trim().length >= 2
+    : kind === "NOTE" ? title.trim().length >= 2 && body.trim().length >= 2 && recipeReady
       : title.trim().length >= 4 && Boolean(deadline) && (!isTeam || (Boolean(teamId) && roles.length > 0));
 
   const submit = async (event: React.FormEvent) => {
@@ -107,7 +118,7 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, triggerC
     if (!ready || pending) return;
     const relayOfId = relay?.id;
     const payload = kind === "TEXT" ? { kind, board, body, relayOfId }
-      : kind === "NOTE" ? { kind, board, title, body, images, relayOfId }
+      : kind === "NOTE" ? { kind, board, title, body, images, relayOfId, recipe: withRecipe ? { tool: recipeTool, url: recipeUrl.trim() || undefined, prompt: recipePrompt } : undefined }
         : {
           kind, stall, board, title, body,
           // 截止日当天结束前都算有效。
@@ -121,6 +132,7 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, triggerC
     toast.success(t("success"));
     setOpen(false);
     setTitle(""); setBody(""); setImages([]); setRoles([]);
+    setRecipeOpen(false); setRecipeTool(""); setRecipeUrl(""); setRecipePrompt("");
     router.push(`/community/posts/${result.id}`);
   };
 
@@ -221,6 +233,34 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, triggerC
                 <ImagePlus className="h-5 w-5" aria-hidden="true" />
                 <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" disabled={uploading} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void upload(file); }} />
               </label>}
+            </div>
+          </div>}
+
+          {kind === "NOTE" && !relay && <div className="flex flex-col gap-3">
+            <button type="button" aria-expanded={recipeOpen} aria-controls={`${id}-recipe`} onClick={() => setRecipeOpen(!recipeOpen)} className="flex items-center justify-between gap-3 rounded-lg bg-muted px-3 py-2.5 text-left transition-colors hover:bg-muted/70">
+              <span className="flex flex-col gap-0.5">
+                <span className={LABEL}>{recipeOpen ? t("recipeRemove") : t("recipe")}</span>
+                {!recipeOpen && <span className="text-xs text-muted-foreground text-pretty">{t("recipeHint")}</span>}
+              </span>
+              <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none ${recipeOpen ? "rotate-180" : ""}`} aria-hidden="true" />
+            </button>
+            <div id={`${id}-recipe`} className="ans-collapse" data-open={recipeOpen} inert={!recipeOpen}>
+              <div className="flex flex-col gap-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor={`${id}-recipe-tool`} className={LABEL}>{t("recipeTool")}</label>
+                    <input onKeyDown={imeSubmitGuard} id={`${id}-recipe-tool`} value={recipeTool} maxLength={RECIPE_TOOL_MAX} placeholder={t("recipeToolPlaceholder")} onChange={(event) => setRecipeTool(event.target.value)} className={FIELD} />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor={`${id}-recipe-url`} className={LABEL}>{t("recipeUrl")}</label>
+                    <input onKeyDown={imeSubmitGuard} id={`${id}-recipe-url`} type="url" inputMode="url" value={recipeUrl} maxLength={500} placeholder="https://" onChange={(event) => setRecipeUrl(event.target.value)} className={FIELD} />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor={`${id}-recipe-prompt`} className={LABEL}>{t("recipePrompt")}</label>
+                  <textarea id={`${id}-recipe-prompt`} value={recipePrompt} maxLength={RECIPE_PROMPT_MAX} rows={4} onChange={(event) => setRecipePrompt(event.target.value)} className="w-full resize-none rounded-lg bg-card px-3 py-2.5 font-mono text-sm leading-relaxed outline-none shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-shadow focus-visible:shadow-[inset_0_0_0_0.5px_var(--hairline),var(--focus-ring)]" />
+                </div>
+              </div>
             </div>
           </div>}
 

@@ -3723,7 +3723,10 @@
     "suggestPosts": "最近两周发帖 {count} 条",
     "relayOf": "接力「{title}」",
     "relayOfHidden": "接力的原帖已隐藏",
-    "relayCount": "{count} 人接力"
+    "relayCount": "{count} 人接力",
+    "sameOf": "同款「{title}」",
+    "sameCount": "{count} 人做了同款",
+    "hasRecipe": "有配方"
   },
   "modelPlaza": {
     "title": "模型广场",
@@ -4131,7 +4134,14 @@
       "submitting": "发布中…",
       "counter": "{count}/{max}",
       "success": "已发布",
-      "loginToPost": "登录后发帖"
+      "loginToPost": "登录后发帖",
+      "recipe": "附上配方",
+      "recipeHint": "写下工具和提示词，别人点「做同款」就能照着做",
+      "recipeTool": "用的工具",
+      "recipeToolPlaceholder": "比如 Midjourney、可灵、Claude",
+      "recipeUrl": "工具链接（选填）",
+      "recipePrompt": "提示词",
+      "recipeRemove": "不附配方"
     },
     "detail": {
       "back": "社区",
@@ -4237,6 +4247,27 @@
       "empty": "还没有人接，做第一个吧。",
       "loginToRelay": "登录后接一下",
       "rootLink": "看原帖和整串接力",
+      "index": "#{n}"
+    },
+    "recipe": {
+      "title": "配方",
+      "tool": "用 {tool} 做的",
+      "makeSame": "做同款",
+      "copyOnly": "复制提示词",
+      "copied": "提示词已复制，做好了回来晒同款",
+      "copyFailed": "没复制上，选中提示词手动复制吧"
+    },
+    "same": {
+      "title": "同款 {count}",
+      "hint": "大家照这份配方做出来的，最早的在前",
+      "open": "晒同款",
+      "dialogTitle": "晒我的同款",
+      "from": "照着 {name} 的配方做，已有 {count} 人晒",
+      "kindLabel": "晒的形式",
+      "boardNote": "板块跟着原帖，发在「{board}」。你的帖子会出现在原帖的同款里，也会推给关注你的人。",
+      "submit": "发布同款",
+      "empty": "还没人晒同款，做好了来晒第一个。",
+      "loginToRelay": "登录后晒同款",
       "index": "#{n}"
     }
   },
