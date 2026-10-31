@@ -132,7 +132,7 @@ export const TRIPO_GLB_ASSETS: readonly TripoGlbAssetMeta[] = [
   {
     id: "mint-star-dino",
     icon: "🦖",
-    nameZh: "R 薄荷小恐龙手办 ($1.0 / 10 积分)",
+    nameZh: "R 薄荷兔兔龙手办 ($1.0 / 10 积分)",
     nameEn: "R Mint Star Dino Figurine ($1.0 / 10 Pts)",
     roleZh: "金麦穗皇冠 + 薄荷绿磨砂机身 + 琥珀金背棘",
     roleEn: "Golden wheat crown + matte mint body + amber dorsal spines",

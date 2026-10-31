@@ -1007,12 +1007,12 @@ export async function executePiAgentAction(
     return playClawArcadeViaPi(actor, input.confirmedPoints, input.userConfirmed);
   }
   if (/兑换|秒兑|买|购买|解锁|redeem|buy/.test(lower)) {
-    const cleaned = rawPrompt.replace(/^(帮我|请|小恐龙)?(兑换|秒兑|购买|买一个|买|解锁)[:：\s]*/i, "").trim();
+    const cleaned = rawPrompt.replace(/^(帮我|请|小恐龙|兔兔龙)?(兑换|秒兑|购买|买一个|买|解锁)[:：\s]*/i, "").trim();
     return redeemMarketItemViaPi(actor, cleaned, input.confirmedPoints, input.userConfirmed);
   }
   if (/新建|创建|立项|建个项目|写个项目|保存项目|scaffold|create project|new project/.test(lower)) {
     const cleanedTopic = rawPrompt
-      .replace(/^(帮我|请|麻烦|小恐龙|pi\s*agent)?(新建|创建|立项|建个项目|写个项目|生成一个项目)[:：\s]*/i, "")
+      .replace(/^(帮我|请|麻烦|小恐龙|兔兔龙|pi\s*agent)?(新建|创建|立项|建个项目|写个项目|生成一个项目)[:：\s]*/i, "")
       .trim();
     return scaffoldProjectDraftViaPi(actor, cleanedTopic || rawPrompt);
   }

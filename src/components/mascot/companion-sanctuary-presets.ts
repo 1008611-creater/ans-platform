@@ -231,7 +231,7 @@ export const WHIP_PRESETS = [
   },
   {
     kaomoji: "(´；ω；｀)",
-    zh: "哇——！尾巴尖都麻了，人家明明是最乖的农大卷王小恐龙嘛！🦖",
+    zh: "哇——！尾巴尖都麻了，人家明明是最乖的农大卷王兔兔龙嘛！🦖",
     en: "Waaah! Tip of my tail is numb—I'm already the hardest-working CAU dino! 🦖",
   },
   {

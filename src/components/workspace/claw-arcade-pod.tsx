@@ -1127,7 +1127,7 @@ export function ComputeQuestArcade({
 
           <div className="space-y-0.5 sm:pl-4">
             <div className="text-xs font-medium text-muted-foreground">
-              {isEn ? "Dino Star Beans" : "小恐龙换装星豆"}
+              {isEn ? "Dino Star Beans" : "兔兔龙换装星豆"}
             </div>
             <div className="text-lg font-black tabular-nums text-foreground">{starBeans}</div>
           </div>
