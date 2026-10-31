@@ -14,11 +14,12 @@ interface SiteFrameProps {
   skipLabel: string;
 }
 
-/** iOS home-screen apps cannot be told apart by user agent, so mark them on the client. */
+/** iOS home-screen apps cannot be told apart by user agent, so mark them on the client; also backfills the Android mark if the server missed it. */
 function useStandaloneMarker() {
   useEffect(() => {
     const root = document.documentElement;
     if (root.dataset.appShell) return;
+    if (/ANSMobileApp\//.test(navigator.userAgent)) { root.dataset.appShell = "android"; return; }
     const standalone = window.matchMedia?.("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
     if (standalone) root.dataset.appShell = /ANSMobileApp\//.test(navigator.userAgent) ? "android" : "ios";
   }, []);
