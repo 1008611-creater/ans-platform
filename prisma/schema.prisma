@@ -166,6 +166,10 @@ model User {
   communityHelpOffers CommunityHelpOffer[]
   communityTeamApplications CommunityTeamApplication[]
   communityPostReports CommunityPostReport[]
+  communityBottles CommunityBottle[] @relation("CommunityBottleAuthor")
+  communityBottlePicks CommunityBottlePick[]
+  communityBottleReplies CommunityBottleReply[]
+  communityBottleReports CommunityBottleReport[]
   artifactReports ArtifactReport[] @relation("ArtifactReportAuthor")
   marketListings MarketListing[] @relation("MarketSeller")
   marketCheckouts MarketExternalCheckout[]
@@ -528,6 +532,10 @@ model Notification {
   actorId   String?
   promptId  String?
   commentId String?
+  /// 社区通知指向的帖子或漂流瓶；excerpt 是帖子标题或回复的前几十个字。
+  communityPostId String?
+  bottleId        String?
+  excerpt         String?          @db.VarChar(80)
   user      User             @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
   actor     User?            @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
 
@@ -556,6 +564,13 @@ model PromptConnection {
 enum NotificationType {
   COMMENT
   REPLY
+  COMMUNITY_REPLY
+  COMMUNITY_HELP_OFFER
+  COMMUNITY_APPLICATION
+  COMMUNITY_APPLICATION_ACCEPTED
+  COMMUNITY_APPLICATION_DECLINED
+  COMMUNITY_HELPED
+  BOTTLE_REPLY
 }
 
 enum UserRole {
@@ -3491,4 +3506,69 @@ model CommunityPostReport {
   @@unique([postId, reporterId])
   @@index([status, createdAt])
   @@map("community_post_reports")
+}
+
+enum CommunityBottleStatus {
+  OPEN
+  HIDDEN
+}
+
+/// 漂流瓶：匿名的一段话，被随机捞到的人可以回一句，回复只有扔瓶子的人看得到。
+model CommunityBottle {
+  id        String                  @id @default(cuid())
+  authorId  String
+  author    User                    @relation("CommunityBottleAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  body      String                  @db.VarChar(280)
+  status    CommunityBottleStatus   @default(OPEN)
+  createdAt DateTime                @default(now())
+  picks     CommunityBottlePick[]
+  replies   CommunityBottleReply[]
+  reports   CommunityBottleReport[]
+
+  @@index([status, createdAt])
+  @@index([authorId, createdAt])
+  @@map("community_bottles")
+}
+
+model CommunityBottlePick {
+  id        String          @id @default(cuid())
+  bottleId  String
+  bottle    CommunityBottle @relation(fields: [bottleId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime        @default(now())
+
+  @@unique([bottleId, userId])
+  @@index([userId, createdAt])
+  @@map("community_bottle_picks")
+}
+
+/// 每个捞到瓶子的人只能回一句。
+model CommunityBottleReply {
+  id        String          @id @default(cuid())
+  bottleId  String
+  bottle    CommunityBottle @relation(fields: [bottleId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body      String          @db.VarChar(280)
+  createdAt DateTime        @default(now())
+
+  @@unique([bottleId, authorId])
+  @@index([bottleId, createdAt])
+  @@map("community_bottle_replies")
+}
+
+model CommunityBottleReport {
+  id         String               @id @default(cuid())
+  bottleId   String
+  bottle     CommunityBottle      @relation(fields: [bottleId], references: [id], onDelete: Cascade)
+  reporterId String
+  reporter   User                 @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  reason     String               @db.VarChar(20)
+  status     ArtifactReportStatus @default(PENDING)
+  createdAt  DateTime             @default(now())
+
+  @@unique([bottleId, reporterId])
+  @@index([status, createdAt])
+  @@map("community_bottle_reports")
 }

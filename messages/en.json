@@ -842,7 +842,16 @@
     "noNotifications": "No notifications",
     "markAllRead": "Mark all read",
     "commentedOnPrompt": "commented on your prompt",
-    "repliedToComment": "replied to your comment"
+    "repliedToComment": "replied to your comment",
+    "community": {
+      "COMMUNITY_REPLY": "replied to your post",
+      "COMMUNITY_HELP_OFFER": "responded to your stall",
+      "COMMUNITY_APPLICATION": "asked to join your team",
+      "COMMUNITY_APPLICATION_ACCEPTED": "accepted your team application",
+      "COMMUNITY_APPLICATION_DECLINED": "passed on your team application this time",
+      "COMMUNITY_HELPED": "confirmed you helped out",
+      "BOTTLE_REPLY": "Someone replied to your drift bottle"
+    }
   },
   "errors": {
     "notFound": "Page not found",

@@ -11,6 +11,7 @@ vi.mock("@/lib/db", () => ({
       count: vi.fn(),
     },
     notification: {
+      count: vi.fn(),
       findMany: vi.fn(),
       updateMany: vi.fn(),
     },
@@ -27,6 +28,7 @@ vi.mock("@/lib/auth", () => ({
 describe("GET /api/user/notifications", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(db.notification.count).mockResolvedValue(0);
   });
 
   it("should return default response if not authenticated", async () => {
@@ -57,6 +59,7 @@ describe("GET /api/user/notifications", () => {
   it("should return notifications for authenticated user", async () => {
     vi.mocked(auth).mockResolvedValue({ user: { id: "user1" } } as never);
     vi.mocked(db.changeRequest.count).mockResolvedValue(3);
+    vi.mocked(db.notification.count).mockResolvedValue(1);
     vi.mocked(db.notification.findMany).mockResolvedValue([
       {
         id: "notif1",
@@ -157,8 +160,23 @@ describe("GET /api/user/notifications", () => {
       vi.mocked(db.notification.findMany).mockResolvedValueOnce([]);
       await GET();
       expect(db.changeRequest.count).toHaveBeenLastCalledWith({ where: { status: "PENDING", prompt: { authorId: userId } } });
-      expect(db.notification.findMany).toHaveBeenLastCalledWith(expect.objectContaining({ where: { userId, read: false, type: { in: ["COMMENT", "REPLY"] } } }));
+      expect(db.notification.findMany).toHaveBeenLastCalledWith(expect.objectContaining({ where: { userId, read: false } }));
     }
+  });
+
+  it("links community notifications to the post or the bottle inbox", async () => {
+    vi.mocked(auth).mockResolvedValueOnce({ user: { id: "user1" } } as never);
+    vi.mocked(db.changeRequest.count).mockResolvedValueOnce(0);
+    vi.mocked(db.notification.count).mockResolvedValueOnce(14);
+    vi.mocked(db.notification.findMany).mockResolvedValueOnce([
+      { id: "a", type: "COMMUNITY_APPLICATION", promptId: null, communityPostId: "post1", bottleId: null, excerpt: "前端", actor: null, createdAt: new Date() },
+      { id: "b", type: "COMMUNITY_REPLY", promptId: null, communityPostId: "post1", bottleId: null, excerpt: "我也想去", actor: null, createdAt: new Date() },
+      { id: "c", type: "BOTTLE_REPLY", promptId: null, communityPostId: null, bottleId: "bottle1", excerpt: "加油", actor: null, createdAt: new Date() },
+    ] as never);
+    const data = await (await GET()).json();
+    expect(data.unreadComments).toBe(14);
+    expect(data.commentNotifications.map((n: { href: string }) => n.href)).toEqual(["/community/posts/post1#act", "/community/posts/post1", "/community/bottles#mine"]);
+    expect(data.commentNotifications[1].excerpt).toBe("我也想去");
   });
 
   it("preserves the default response when either parallel query fails", async () => {

@@ -8,9 +8,11 @@ const mocks = vi.hoisted(() => ({
     teamMember: { findFirst: vi.fn(), findUnique: vi.fn(), count: vi.fn(), create: vi.fn(), update: vi.fn() },
     communityPost: { count: vi.fn(), create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
     communityPostLike: { findUnique: vi.fn() },
+    communityReply: { count: vi.fn(), create: vi.fn() },
     communityHelpOffer: { create: vi.fn(), findUnique: vi.fn() },
     communityTeamApplication: { findFirst: vi.fn(), findMany: vi.fn(), count: vi.fn(), create: vi.fn(), updateMany: vi.fn() },
     communityPostReport: { create: vi.fn(), count: vi.fn() },
+    notification: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
     auditLog: { create: vi.fn() },
     $transaction: vi.fn(),
     $queryRaw: vi.fn(),
@@ -95,6 +97,7 @@ describe("我能帮与帮到了", () => {
     mocks.db.communityPost.updateMany.mockResolvedValue({ count: 1 });
     await expect(runCommunityPostAction("author", "post1", { action: "resolve", helperId: "helper" })).resolves.toEqual({ status: "RESOLVED", rewarded: true });
     expect(mocks.award).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ userId: "helper", sourceType: "community_help", sourceId: "post1", xp: 20 }));
+    expect(mocks.db.notification.create).toHaveBeenCalledWith({ data: expect.objectContaining({ userId: "helper", actorId: "author", type: "COMMUNITY_HELPED", communityPostId: "post1" }) });
   });
 
   it("does not pay XP when an offer post is handed out, and only the author resolves", async () => {
@@ -135,6 +138,7 @@ describe("组队申请", () => {
     expect(mocks.db.teamMember.update).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "m-old" }, data: expect.objectContaining({ status: "ACTIVE", role: "MEMBER" }) }));
     expect(mocks.db.communityPost.update).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "post1" }, data: expect.objectContaining({ status: "RESOLVED" }) }));
     expect(mocks.db.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ action: "TEAM_MEMBER_JOINED" }) }));
+    expect(mocks.db.notification.create).toHaveBeenCalledWith({ data: expect.objectContaining({ userId: "u1", type: "COMMUNITY_APPLICATION_ACCEPTED" }) });
   });
 
   it("refuses to accept into a role someone else just took", async () => {
@@ -144,6 +148,34 @@ describe("组队申请", () => {
     mocks.db.communityTeamApplication.findMany.mockResolvedValue([{ role: "前端" }]);
     await expectCode(runCommunityPostAction("author", "post1", { action: "decide", applicationId: "a1", decision: "ACCEPT" }), "ROLE_FULL");
     expect(mocks.db.teamMember.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("站内提醒", () => {
+  it("tells the author about a reply, folding unread replies on the same post into one", async () => {
+    mocks.db.communityPost.findUnique.mockResolvedValue(openPost({ kind: "TEXT", stall: null, title: null, body: "图书馆三楼插座坏了" }));
+    mocks.db.communityReply.count.mockResolvedValue(0);
+    mocks.db.communityReply.create.mockResolvedValue({ id: "r1" });
+    mocks.db.notification.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce({ id: "n1" });
+    await runCommunityPostAction("u1", "post1", { action: "reply", body: "二楼的是好的" });
+    expect(mocks.db.notification.create).toHaveBeenCalledWith({ data: expect.objectContaining({ userId: "author", actorId: "u1", type: "COMMUNITY_REPLY", communityPostId: "post1", excerpt: "二楼的是好的" }) });
+    await runCommunityPostAction("u2", "post1", { action: "reply", body: "修好了" });
+    expect(mocks.db.notification.update).toHaveBeenCalledWith({ where: { id: "n1" }, data: expect.objectContaining({ actorId: "u2", excerpt: "修好了" }) });
+    expect(mocks.db.notification.create).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not notify the author about their own reply and never fails the action when notifying breaks", async () => {
+    mocks.db.communityPost.findUnique.mockResolvedValue(openPost());
+    mocks.db.communityReply.count.mockResolvedValue(0);
+    mocks.db.communityReply.create.mockResolvedValue({ id: "r1" });
+    await runCommunityPostAction("author", "post1", { action: "reply", body: "补充一下" });
+    expect(mocks.db.notification.findFirst).not.toHaveBeenCalled();
+
+    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    mocks.db.notification.findFirst.mockRejectedValue(new Error("db down"));
+    await expect(runCommunityPostAction("u1", "post1", { action: "reply", body: "我也遇到了" })).resolves.toEqual({ replyId: "r1" });
+    expect(error).toHaveBeenCalledWith("COMMUNITY_NOTIFY_FAILED", "COMMUNITY_REPLY");
+    error.mockRestore();
   });
 });
 

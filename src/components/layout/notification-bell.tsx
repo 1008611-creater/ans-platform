@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { WorkspaceLink as Link } from "@/components/providers/workspace-navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
-import { Bell, MessageSquare } from "lucide-react";
+import { Bell, MessageSquare, Waves } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -17,9 +17,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "@/lib/date";
 
+type NotificationKind =
+  | "COMMENT" | "REPLY"
+  | "COMMUNITY_REPLY" | "COMMUNITY_HELP_OFFER" | "COMMUNITY_APPLICATION"
+  | "COMMUNITY_APPLICATION_ACCEPTED" | "COMMUNITY_APPLICATION_DECLINED" | "COMMUNITY_HELPED"
+  | "BOTTLE_REPLY";
+
 interface CommentNotification {
   id: string;
-  type: "COMMENT" | "REPLY";
+  type: NotificationKind;
   createdAt: string;
   actor: {
     id: string;
@@ -29,12 +35,20 @@ interface CommentNotification {
   } | null;
   promptId: string | null;
   promptTitle: string | null;
+  excerpt?: string | null;
+  href?: string;
 }
 
 interface Notifications {
   pendingChangeRequests: number;
   unreadComments: number;
   commentNotifications: CommentNotification[];
+}
+
+function notificationText(type: NotificationKind, t: (key: string) => string) {
+  if (type === "COMMENT") return t("commentedOnPrompt");
+  if (type === "REPLY") return t("repliedToComment");
+  return t(`community.${type}`);
 }
 
 export function NotificationBell() {
@@ -136,27 +150,30 @@ export function NotificationBell() {
             {notifications.commentNotifications.map((notification) => (
               <DropdownMenuItem key={notification.id} asChild>
                 <Link 
-                  href="/community"
+                  href={notification.href ?? "/community"}
                   onClick={() => handleMarkAsRead([notification.id])}
                   className="flex items-start gap-3 py-2"
                 >
-                  <Avatar className="h-8 w-8 shrink-0">
-                    <AvatarImage src={notification.actor?.avatar || undefined} />
-                    <AvatarFallback className="text-xs">
-                      {notification.actor?.name?.charAt(0) || notification.actor?.username?.charAt(0) || "?"}
-                    </AvatarFallback>
-                  </Avatar>
+                  {notification.actor ? (
+                    <Avatar className="h-8 w-8 shrink-0">
+                      <AvatarImage src={notification.actor.avatar || undefined} />
+                      <AvatarFallback className="text-xs">
+                        {notification.actor.name?.charAt(0) || notification.actor.username?.charAt(0) || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300">
+                      <Waves className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm leading-tight">
-                      <span className="font-medium">@{notification.actor?.username}</span>
-                      {" "}
-                      {notification.type === "COMMENT" 
-                        ? t("commentedOnPrompt")
-                        : t("repliedToComment")}
+                      {notification.actor && <><span className="font-medium">@{notification.actor.username}</span>{" "}</>}
+                      {notificationText(notification.type, t)}
                     </p>
-                    {notification.promptTitle && (
+                    {(notification.promptTitle || notification.excerpt) && (
                       <p className="text-xs text-muted-foreground truncate mt-0.5">
-                        {notification.promptTitle}
+                        {notification.promptTitle || notification.excerpt}
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground mt-0.5">

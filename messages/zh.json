@@ -842,7 +842,16 @@
     "noNotifications": "暂无通知",
     "markAllRead": "全部标为已读",
     "commentedOnPrompt": "评论了你的提示词",
-    "repliedToComment": "回复了你的评论"
+    "repliedToComment": "回复了你的评论",
+    "community": {
+      "COMMUNITY_REPLY": "回复了你的帖子",
+      "COMMUNITY_HELP_OFFER": "回应了你的摊位",
+      "COMMUNITY_APPLICATION": "申请加入你的队伍",
+      "COMMUNITY_APPLICATION_ACCEPTED": "通过了你的入队申请",
+      "COMMUNITY_APPLICATION_DECLINED": "这次没有通过你的入队申请",
+      "COMMUNITY_HELPED": "确认你帮上了忙",
+      "BOTTLE_REPLY": "有人回了你的漂流瓶"
+    }
   },
   "errors": {
     "notFound": "页面未找到",
