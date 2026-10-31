@@ -7,7 +7,8 @@
  * 跑两轮：
  *   - 桌面视口（1280×900）：完整核心路径，含登录与登录后的页面。
  *   - 移动视口（390×844）：确认主导航按屏宽收敛后，核心入口仍然可达——
- *     底部六入口与抽屉六入口一致，旧公共深链退役，页面没有横向溢出。
+ *     底部六入口齐全，手机上没有汉堡菜单和网页页脚，二级页隐藏 Tab 栏并有返回键，
+ *     安卓 App UA 有环境标记，390 与 360 宽都没有横向溢出。
  *
  * 三种退出形态见 `scripts/lib/preview-server.mjs`。
  *
@@ -32,6 +33,7 @@ const reporter = createReporter("smoke", MODE, "SMOKE_MODE");
 
 const DESKTOP = { width: 1280, height: 900 };
 const MOBILE = { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
+const NARROW = { width: 360, height: 800, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
 
 /** 允许 1px 的亚像素误差，超过才算真实横向溢出。 */
 const OVERFLOW_TOLERANCE = 1;
@@ -216,24 +218,44 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
   checks.push({ label: "移动端 主导航按屏宽收敛", pathname: "/", status: 200, matched: collapsed === 0, newProblems: 0 });
   if (collapsed !== 0) pageProblems.push(`移动端顶栏仍直接展示 ${collapsed} 个宽屏入口，未收敛`);
 
-  const opened = await page.evaluate(() => {
-    const trigger = [...document.querySelectorAll("header button")]
-      .find(button => button.getAttribute("data-testid") === "mobile-menu-trigger");
-    if (!trigger) return false;
-    trigger.click();
-    return true;
-  });
-  let drawerHrefs = [];
-  if (opened) {
-    await page.waitForSelector("[role=dialog]", { timeout: 10_000 }).catch(() => null);
-    drawerHrefs = await page.evaluate(() =>
-      [...document.querySelectorAll("[role=dialog] a")].map(a => new URL(a.href).pathname));
+  // 手机宽度下 Tab 栏覆盖全部一级入口，汉堡菜单与网页页脚都收起（PRD v1.1 第 4.1 节）。
+  const chrome = await page.evaluate(() => ({
+    trigger: !!document.querySelector('[data-testid="mobile-menu-trigger"]')?.offsetParent,
+    footer: !!document.querySelector("footer.ans-site-footer")?.offsetParent,
+  }));
+  const chromeOk = !chrome.trigger && !chrome.footer;
+  checks.push({ label: "移动端 无汉堡菜单与网页页脚", pathname: "/", status: 200, matched: chromeOk, newProblems: 0 });
+  if (!chromeOk) pageProblems.push(`移动端仍显示${chrome.trigger ? "汉堡菜单" : ""}${chrome.footer ? "网页页脚" : ""}`);
+
+  // 二级页把底部让给内容：不显示 Tab 栏，左上角有返回键。
+  await page.goto(`${baseUrl}/privacy`, { waitUntil: "domcontentloaded", timeout: 30_000 });
+  await page.waitForNetworkIdle({ idleTime: 500, timeout: 10_000 }).catch(() => null);
+  const pushed = await page.evaluate(() => ({
+    tabBar: !!document.querySelector("nav.fixed.bottom-0"),
+    back: !!document.querySelector('[data-testid="mobile-back"]')?.offsetParent,
+  }));
+  const pushedOk = !pushed.tabBar && pushed.back;
+  checks.push({ label: "移动端 二级页隐藏 Tab 栏并有返回键", pathname: "/privacy", status: 200, matched: pushedOk, newProblems: 0 });
+  if (!pushedOk) pageProblems.push(`移动端二级页异常（Tab 栏=${pushed.tabBar}，返回键=${pushed.back}）`);
+
+  // 安卓 App 壳靠 UA 识别，服务端渲染时就要打上标记，避免首屏闪出页脚。
+  const userAgent = await page.browser().userAgent();
+  await page.setUserAgent(`${userAgent} ANSMobileApp/1.3.0`);
+  await page.goto(`${baseUrl}/`, { waitUntil: "domcontentloaded", timeout: 30_000 });
+  const shell = await page.evaluate(() => document.documentElement.dataset.appShell ?? "");
+  await page.setUserAgent(userAgent);
+  checks.push({ label: "移动端 安卓 App 环境标记", pathname: "/", status: 200, matched: shell === "android", newProblems: 0 });
+  if (shell !== "android") pageProblems.push(`安卓 App UA 下 data-app-shell=${shell || "缺失"}`);
+
+  // 安卓主流窄屏 360×800 再量一遍横向溢出。
+  await page.setViewport(NARROW);
+  for (const pathname of ["/", "/competitions", "/login"]) {
+    await visit(pathname, `窄屏 ${pathname}`);
+    const overflow = await measureOverflow(page);
+    const ok = overflow.overflow <= OVERFLOW_TOLERANCE;
+    checks.push({ label: `窄屏 360 ${pathname} 无横向溢出`, pathname, status: 200, matched: ok, newProblems: 0 });
+    if (!ok) pageProblems.push(`360 宽 ${pathname} 横向溢出 ${overflow.overflow}px`);
   }
-  // 抽屉可以有附加入口（如 /app），但核心入口必须全部可达。
-  const reachable = PRIMARY_PATHS.every(path => drawerHrefs.includes(path));
-  checks.push({ label: "移动端 抽屉菜单可达核心入口", pathname: "/", status: 200, matched: opened && reachable, newProblems: 0 });
-  if (!opened) pageProblems.push("移动端未找到抽屉菜单触发按钮");
-  else if (!reachable) pageProblems.push(`移动端抽屉菜单缺少核心入口（缺少：${PRIMARY_PATHS.filter(path => !drawerHrefs.includes(path)).join(",")}；实际：${drawerHrefs.join(",") || "无"}）`);
 
   problems.push(...pageProblems);
 }

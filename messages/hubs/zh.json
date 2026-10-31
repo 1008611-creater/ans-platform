@@ -201,5 +201,8 @@
   "noOfficialWorkflows": "还没有官方工作流。",
   "guideLabel": "Hub 是什么？",
   "workflowGuideLabel": "工作流怎么用？",
-  "projectGuideLabel": "这些项目怎么用？"
+  "projectGuideLabel": "这些项目怎么用？",
+  "mobileCredits": "积分",
+  "aboutHelp": "关于与帮助",
+  "mobileApp": "手机端 App"
 }

@@ -9,6 +9,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import {
+  ArrowLeft,
   Menu,
   Plus,
   User,
@@ -49,6 +50,8 @@ import { setLocale } from "@/lib/i18n/client";
 import { useBranding } from "@/components/providers/branding-provider";
 import { analyticsAuth, analyticsSettings } from "@/lib/analytics";
 import { PRIMARY_NAVIGATION, isPrimaryNavigationActive } from "@/domain/navigation/primary";
+import { isTabRootPath, sectionRootFor } from "@/domain/navigation/app-shell";
+import { cn } from "@/lib/utils";
 
 const languages = [
   { code: "zh", name: "中文" },
@@ -122,6 +125,14 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
     return () => window.clearTimeout(continuation);
   }, [logoutState, sessionStatus, router, t, handleLogout, embedded]);
   const productLinks = PRIMARY_NAVIGATION.map(item => ({ ...item, label: hubText(`nav.${item.id}`) }));
+  // Phones: tab pages name their section; pushed screens get a back button instead of the menu.
+  const tabRoot = isTabRootPath(pathname);
+  const section = PRIMARY_NAVIGATION.find(item => isPrimaryNavigationActive(item.id, pathname));
+  const mobileTitle = pathname !== "/" && section ? hubText(`nav.${section.id}`) : branding.name;
+  const goBack = () => {
+    if (window.history.length > 1) router.back();
+    else router.push(sectionRootFor(pathname));
+  };
 
   const handleCopyLogoSvg = async () => {
     try {
@@ -140,7 +151,7 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
       <div className="container flex h-12 items-center gap-0.5 sm:gap-2 xl:gap-4">
         {/* Mobile menu */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetTrigger asChild className="xl:hidden">
+          <SheetTrigger asChild className="max-md:hidden xl:hidden">
             <Button variant="ghost" size="icon" className="-ml-2 h-11 w-11 shrink-0" data-testid="mobile-menu-trigger">
               <Menu className="h-4 w-4" aria-hidden="true" />
               <span className="sr-only">{t("product.menu")}</span>
@@ -182,7 +193,7 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
                   href="/app"
                   aria-current={pathname === "/app" ? "page" : undefined}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex min-h-11 items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.08] px-3 py-2.5 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/15 dark:text-emerald-300"
+                  className="ans-app-install-link flex min-h-11 items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.08] px-3 py-2.5 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/15 dark:text-emerald-300"
                 >
                   <Smartphone className="h-4 w-4 shrink-0" aria-hidden="true" />
                   <span>{locale === "en" ? "Install ANS Mobile App" : "安装 ANS 手机版 App"}</span>
@@ -191,6 +202,13 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
             </div>
           </SheetContent>
         </Sheet>
+
+        {!tabRoot && (
+          <Button variant="ghost" size="icon" onClick={goBack} className="-ml-2 h-11 w-11 shrink-0 xl:hidden" data-testid="mobile-back">
+            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+            <span className="sr-only">{t("common.back")}</span>
+          </Button>
+        )}
 
         {/* Logo — 始终提供右键菜单（复制 SVG / 品牌资源），不受 useCloneBranding 影响 */}
         <ContextMenu>
@@ -215,7 +233,9 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
                   />
                 </>
               )}
-              <span className="font-semibold leading-none mt-[2px]">{branding.name}</span>
+              {mobileTitle === branding.name
+                ? <span className="font-semibold leading-none mt-[2px]">{branding.name}</span>
+                : <><span className="font-semibold leading-none mt-[2px] max-md:hidden">{branding.name}</span><span className="font-semibold leading-none mt-[2px] md:hidden">{mobileTitle}</span></>}
             </Link>
           </ContextMenuTrigger>
           <ContextMenuContent>
@@ -236,15 +256,24 @@ export function Header({ embedded = false, authProvider = "credentials", allowRe
 
         {/* Right side actions */}
         <div className="flex shrink-0 items-center gap-1">
-          <BilingualToggle />
+          <span className={cn("contents", user && "max-md:[&>*]:hidden")}><BilingualToggle /></span>
           {/* Primary creation action follows the learning project flow. */}
           {user && (
-            <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+            <Button asChild variant="ghost" size="icon" className="h-8 w-8 max-md:hidden">
               <Link href="/projects#new-project">
                 <Plus className="h-4 w-4" />
                 <span className="sr-only">{t("learning.newProject")}</span>
               </Link>
             </Button>
+          )}
+
+          {user && (
+            <Link href="/workspace/credits" className="flex h-11 shrink-0 items-center md:hidden">
+              <span className="flex h-7 items-center gap-1 rounded-full bg-muted px-2.5 text-xs font-medium">
+                <Coins className="h-3.5 w-3.5" aria-hidden="true" />
+                {hubText("mobileCredits")}
+              </span>
+            </Link>
           )}
 
           {/* Notifications */}

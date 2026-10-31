@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { getMessages, getLocale, getTimeZone, getTranslations } from "next-intl/server";
 import { Providers } from "@/components/providers";
 import { Header } from "@/components/layout/header";
@@ -12,6 +13,7 @@ import { readRunModelMultipliers } from "@/server/integrations/model-billing-pol
 import { pausedRunModels } from "@/lib/run-models";
 import { isRtlLocale } from "@/lib/i18n/config";
 import { hexToOklch, pickPrimaryForeground } from "@/lib/theme-colors";
+import { detectAppShell } from "@/domain/navigation/app-shell";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -115,6 +117,8 @@ export default async function RootLayout({
   const product = await getTranslations("product");
   const config = await getConfig();
   const isRtl = isRtlLocale(locale);
+  // Marked on the server so the Android shell never flashes the web footer or install prompts.
+  const appShell = detectAppShell((await headers()).get("user-agent"));
 
   // Calculate theme values server-side
   const themeClasses = `theme-${config.theme.variant} density-${config.theme.density}`;
@@ -130,7 +134,7 @@ export default async function RootLayout({
   const fontClasses = isRtl ? "font-arabic" : "font-sans";
 
   return (
-    <html lang={locale} dir={isRtl ? "rtl" : "ltr"} suppressHydrationWarning className={themeClasses} style={themeStyles}>
+    <html lang={locale} dir={isRtl ? "rtl" : "ltr"} suppressHydrationWarning className={themeClasses} style={themeStyles} data-app-shell={appShell ?? undefined}>
       <head>
         <WebsiteStructuredData />
       </head>
