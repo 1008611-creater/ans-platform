@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useId, useState, useSyncExternalStore } from "react";
+import { ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   dispatchGrokBotCommand,
@@ -42,6 +43,8 @@ const THREE_D_POSES: readonly {
 
 export function MascotStageDeck() {
   const t = useTranslations("product.mascot");
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const actionsId = useId();
   const form = useSyncExternalStore(subscribeMascotStore, getFormSnapshot, () => "3d" as const);
   const pixelState = useSyncExternalStore(subscribeMascotStore, getPixelStateSnapshot, () => "idle" as const);
   const grokShape = useSyncExternalStore(subscribeMascotStore, getGrokShapeSnapshot, () => "tutulong" as const);
@@ -111,9 +114,18 @@ export function MascotStageDeck() {
   return (
     <div className="ans-mascot-stage-deck" data-testid="mascot-stage-deck" data-form={form}>
       <div className="ans-mascot-stage-deck-head">
-        <span className="ans-mascot-stage-deck-title">
+        {/* 互动按钮默认收起，面板首屏不铺满 emoji；点标题展开 */}
+        <button
+          type="button"
+          className="ans-mascot-stage-deck-title"
+          aria-expanded={actionsOpen}
+          aria-controls={actionsId}
+          data-testid="mascot-deck-toggle"
+          onClick={() => setActionsOpen(v => !v)}
+        >
           {t(form === "2d" ? "deck.title2d" : "deck.title3d")}
-        </span>
+          <ChevronDown className={`ans-spring-pop size-3.5 transition-transform ${actionsOpen ? "rotate-180" : ""}`} aria-hidden="true" />
+        </button>
         <div className="ans-mascot-stage-deck-actions">
           {form === "2d" ? (
             <div className="ans-mascot-form-segmented ans-mascot-substyle-segmented" role="group" aria-label="2D 渲染引擎切换">
@@ -156,6 +168,8 @@ export function MascotStageDeck() {
         </div>
       </div>
 
+      <div id={actionsId} className="ans-collapse" data-open={actionsOpen}>
+      <div inert={!actionsOpen}>
       {form === "2d" ? (
         <>
           <div className="ans-mascot-stage-chips" data-testid="mascot-pixel-chips">
@@ -263,6 +277,8 @@ export function MascotStageDeck() {
           </button>
         </div>
       )}
+      </div>
+      </div>
     </div>
   );
 }

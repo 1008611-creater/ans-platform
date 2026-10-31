@@ -221,8 +221,8 @@
     "to2d": "Switch to Pixel style",
     "to3d": "Switch to True 3D",
     "deck": {
-      "title2d": "2D Stage · Grok Spring Eyes + 64-Frame Pixel",
-      "title3d": "True 3D Stage · WebGL Live",
+      "title2d": "2D actions",
+      "title3d": "3D actions",
       "formPixel": "Grok 2D",
       "form3d": "True 3D",
       "styleGrok": "✨ Grok Spring",
