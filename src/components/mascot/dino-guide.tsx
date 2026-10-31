@@ -3,6 +3,7 @@
 import { useVoiceOffer } from "./use-voice-offer";
 
 import { lazy, Suspense, useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -21,6 +22,7 @@ import { CompanionModelSelect } from "./companion-model-select";
 import { DEFAULT_COMPANION_MODEL, getAvailableRunModel, type RunModelKey } from "@/lib/run-models";
 import { usePausedRunModels } from "@/components/providers/run-model-pricing";
 import { useCompanionSize } from "./use-companion-size";
+import { useCompanionSheet } from "./use-companion-sheet";
 import { getFormSnapshot, subscribeMascotStore, writeForm } from "@/lib/mascot/client-store";
 import { CompanionQuestPin, CompanionSanctuaryBar } from "./companion-sanctuary-bar";
 import { MascotStageDeck } from "./mascot-stage-deck";
@@ -64,6 +66,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   const scrollState = useRef<Record<Mode, { top: number; follow: boolean; lastId: number | undefined }>>({ agent: { top: 0, follow: true, lastId: undefined }, guide: { top: 0, follow: true, lastId: undefined } });
   const titleId = useId(), taskId = useId(), composer = useRef<HTMLTextAreaElement>(null);
   const ime = useImeEnterGuard();
+  const sheet = useCompanionSheet(open, () => setOpen(false));
   /** 用户最近一次主动滚动的时间；只有用户滚动才会让列表停止跟随，程序滚动不算。 */
   const userScrollAt = useRef(0);
   /** 会话恢复时已有的消息不播放逐字动画，只有之后新到的回复才播。 */
@@ -297,16 +300,17 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   const voiceHint = !actor ? ui("voiceSignIn") : prefs.voice && !voiceOffer ? ui("voiceUnavailable") : !prefs.voice ? ui("voiceOff") : voiceStatus === "error" ? ui("voiceUnavailable") : loading ? ui("preparingVoice") : speaking ? ui("speaking") : ui("voiceFree");
   const avatarPhase = agent.busy ? "working" : agent.phase === "error" ? "attention" : agent.phase === "confirm" ? "confirm" : agent.phase === "complete" ? "review" : task?.phase ?? "idle";
   return <>
+    {sheet.active && createPortal(<div className="ans-companion-scrim" aria-hidden="true" />, document.body)}
     <CompanionQuestPin dialogOpen={open} onTriggerSpeech={text => setSpeech({ id: ++sequence.current, text })} />
     <div className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
     <Popover open={open} onOpenChange={nextOpen => {
       // 只拦"打开"：关闭（Escape / 点外部）必须放行。
-      if (nextOpen && typeof WebGLRenderingContext !== "undefined" && mascotForm !== "2d") {
+      if (nextOpen && !sheet.enabled && typeof WebGLRenderingContext !== "undefined" && mascotForm !== "2d") {
         return;
       }
       changeOpen(nextOpen);
     }}>
-      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : stageClickOwnsTrigger && mascotForm !== "2d" ? "openStage" : "open")} className="ans-dino-trigger" onPointerEnter={() => {
+      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : stageClickOwnsTrigger && !sheet.enabled && mascotForm !== "2d" ? "openStage" : "open")} className="ans-dino-trigger" onPointerEnter={() => {
         if (typeof WebGLRenderingContext !== "undefined" && !open && mascotForm !== "2d") {
           window.dispatchEvent(new CustomEvent("ans:dino-stage-hover", { detail: { hover: true } }));
         }
@@ -315,14 +319,18 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
           window.dispatchEvent(new CustomEvent("ans:dino-stage-hover", { detail: { hover: false } }));
         }
       }} onClick={event => {
-        if (typeof WebGLRenderingContext !== "undefined" && !open && mascotForm !== "2d") {
+        // 手机上圆章直接拉出底部抽屉，不进近景舞台。
+        if (!sheet.enabled && typeof WebGLRenderingContext !== "undefined" && !open && mascotForm !== "2d") {
           event.preventDefault();
           event.stopPropagation();
           window.dispatchEvent(new CustomEvent("ans:dino-stage-click"));
         }
       }}><DinoAvatar actor={actor} voicePolicy={voiceOffer} phase={avatarPhase} open={open} speech={speech} onVoiceStatus={setVoiceStatus} /><span className="ans-dino-pip" aria-hidden="true" /></button></PopoverTrigger>
       <PopoverAnchor virtualRef={panelSize.anchor} />
-      <PopoverContent style={panelSize.style} id="ans-companion-panel" role="dialog" aria-labelledby={titleId} side="top" align="end" sideOffset={0} collisionPadding={12} className="ans-companion-panel" onOpenAutoFocus={event => {
+      <PopoverContent style={panelSize.style} id="ans-companion-panel" role="dialog" aria-labelledby={titleId} side="top" align="end" sideOffset={0} collisionPadding={12} className="ans-companion-panel" data-sheet={sheet.enabled || undefined} data-snap={sheet.enabled ? sheet.snap : undefined} onInteractOutside={event => {
+        // 抽屉里有输入框：点遮罩或底层页面都不收起，只能用关闭按钮、下滑或返回键。
+        if (sheet.enabled) event.preventDefault();
+      }} onOpenAutoFocus={event => {
         event.preventDefault();
         const input = window.innerWidth >= 900 && agent.phase !== "confirm" ? composer.current : null;
         (input ?? document.getElementById("ans-companion-dismiss"))?.focus({ preventScroll: true });
@@ -333,6 +341,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
         if (!target || target.matches(":disabled") || target.closest("[inert]")) return;
         event.preventDefault(); target.scrollIntoView({ block: "center", behavior: "auto" }); target.focus({ preventScroll: true });
       }}>
+        <button type="button" className="ans-companion-grabber" aria-label={ui("sheetGrabber")} title={ui("sheetGrabberHint")} {...sheet.grabber} />
         <button type="button" className="ans-companion-resize width" aria-label={ui("resizeChatWidth")} title={ui("resizeChatHint")} {...panelSize.handle("width")} />
         <button type="button" className="ans-companion-resize height" aria-label={ui("resizeChatHeight")} title={ui("resizeChatHint")} {...panelSize.handle("height")} />
         <button type="button" className="ans-companion-resize both" aria-label={ui("resizeChat")} title={ui("resizeChatHint")} {...panelSize.handle("both")}><MoveUpLeft aria-hidden="true" /></button>

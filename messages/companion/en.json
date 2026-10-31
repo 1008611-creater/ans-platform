@@ -189,6 +189,8 @@
   "resizeChatHeight": "Resize chat height",
   "resizeChat": "Resize chat",
   "resizeChatHint": "Drag to resize; arrow keys adjust, double-click resets",
+  "sheetGrabber": "Drag to resize the sheet",
+  "sheetGrabberHint": "Drag up to expand, down to close; arrow keys work too",
   "agentAutoApprove": "Remember this approval: run straight from the quote next time",
   "agentAutoRunTitle": "Running with your saved approval",
   "agentAutoRunNotice": "This turn is capped at about {points} credits and settles on actual usage.",
