@@ -1186,3 +1186,12 @@ html[data-app-shell],
 html[data-app-shell] body {
   overscroll-behavior-y: none;
 }
+
+/* 农客松主会场：手机上一次只显示一个分段（AgriMobileSegments），宽屏照常全部展示。 */
+@media (max-width: 767.98px) {
+  .ans-agri-segments[data-agri-active="pipeline"] [data-agri-segment]:not([data-agri-segment="pipeline"]),
+  .ans-agri-segments[data-agri-active="tracks"] [data-agri-segment]:not([data-agri-segment="tracks"]),
+  .ans-agri-segments[data-agri-active="guide"] [data-agri-segment]:not([data-agri-segment="guide"]) {
+    display: none;
+  }
+}

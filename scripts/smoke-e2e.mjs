@@ -174,6 +174,7 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
     ["/hubs", "移动端 Hub 目录"],
     ["/community", "移动端 社区"],
     ["/competitions", "移动端 赛事活动"],
+    ["/competitions/agrihackathon", "移动端 农客松主会场"],
     ["/market", "移动端 市场"],
     ["/workflows", "移动端 旧工作流跳转"],
     ["/login", "移动端 登录页"],
@@ -249,7 +250,7 @@ async function runMobile(page, { baseUrl, seed }, checks, problems) {
 
   // 安卓主流窄屏 360×800 再量一遍横向溢出。
   await page.setViewport(NARROW);
-  for (const pathname of ["/", "/competitions", "/login"]) {
+  for (const pathname of ["/", "/competitions", "/competitions/agrihackathon", "/login"]) {
     await visit(pathname, `窄屏 ${pathname}`);
     const overflow = await measureOverflow(page);
     const ok = overflow.overflow <= OVERFLOW_TOLERANCE;

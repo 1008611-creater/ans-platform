@@ -1413,6 +1413,12 @@
         "cta": "View Finalists & rankings",
         "href": "/competitions/agrihackathon/showcase"
       }
+    },
+    "segments": {
+      "label": "Hackathon sections",
+      "pipeline": "Steps",
+      "tracks": "Tracks",
+      "guide": "Guide"
     }
   },
   "templates": {
