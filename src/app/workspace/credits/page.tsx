@@ -14,6 +14,8 @@ import { readCreditGiftOffer } from "@/server/quota/gift-offer";
 import { getCreditProducts } from "@/lib/credits-catalog";
 import { readPersonalApiHistory } from "@/server/quota/api-history";
 import { getComputeBenefits } from "@/server/compute-benefits/service";
+import { MobileAccountCard } from "@/components/workspace/mobile-account-card";
+import { MobileAboutLinks } from "@/components/layout/mobile-about-links";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata() {
@@ -122,7 +124,9 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
               </div>
             </section>
           )}
-          <header className="flex flex-wrap items-center justify-between gap-4">
+          {session?.user && history && <MobileAccountCard account={session.user} availablePoints={roundedAvailable} />}
+          {/* Signed-in phones get the account card above instead of this desktop toolbar. */}
+          <header className={`flex flex-wrap items-center justify-between gap-4 ${session?.user && history ? "max-md:hidden" : ""}`}>
             <div>
               <Link href="/workspace" className="text-xs font-medium text-muted-foreground hover:text-foreground">
                 ← {t("back")}
@@ -245,6 +249,7 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
               </nav>
             </>
           )}
+          <MobileAboutLinks />
         </div>
       </div>
     </AccountContentBoundary>
