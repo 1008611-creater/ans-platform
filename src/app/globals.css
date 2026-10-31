@@ -1120,6 +1120,22 @@
 /* 数字防抖：等宽数字 */
 .ans-num { font-variant-numeric: tabular-nums; }
 
+/* Agent 工作台：固定深色，靠 1–3% 明度分层，分隔线用 inset 阴影画，不占布局；放在 components 层，text-* 工具类可覆盖默认色 */
+@layer components {
+  .ans-wb { font-weight: 360; --wb-rule: rgb(237 237 235 / 6%); }
+  .ans-wb-rule-b { box-shadow: inset 0 -1px 0 var(--wb-rule); }
+  .ans-wb-col { box-shadow: inset 0 -1px 0 var(--wb-rule); }
+  @media (min-width: 1024px) { .ans-wb-col { box-shadow: inset -1px 0 0 var(--wb-rule); } }
+  .ans-wb-chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; padding: 4px 10px; font-size: 12px; line-height: 16px; color: #b4b4ae; white-space: nowrap; transition: background-color 150ms, color 150ms; }
+  .ans-wb-chip:hover { background: #20201e; color: #ededeb; }
+  .ans-wb-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 10px; padding: 7px 8px; font-size: 12px; color: #c9c9c4; background: #1a1a19; transition: background-color 150ms, color 150ms; }
+  .ans-wb-btn:hover { background: #20201e; color: #ededeb; }
+  .ans-wb-composer { transition: box-shadow 150ms; }
+  .ans-wb-composer:focus-within { box-shadow: 0 0 0 1px rgb(237 237 235 / 38%), 0 0 0 4px rgb(237 237 235 / 8%); }
+  .ans-wb :focus-visible { outline: none; box-shadow: 0 0 0 1px rgb(237 237 235 / 38%), 0 0 0 4px rgb(237 237 235 / 8%); }
+  .ans-wb-composer :focus-visible { box-shadow: none; }
+}
+
 /* 丝滑折叠：外层 grid 0fr→1fr，内层裁切，不用 JS 量高度 */
 .ans-collapse { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 280ms var(--ease-out-cubic), opacity 200ms var(--ease-out-cubic); opacity: 0; }
 .ans-collapse > * { min-height: 0; overflow: hidden; }

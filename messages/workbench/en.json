@@ -27,41 +27,43 @@
     "editNickname": "Edit nickname",
     "saving": "Saving…",
     "collapse": "Hide",
-    "ask": "💬 Ask",
-    "viewDiff": "View diff →",
-    "guidedSamples": "📖 Guided samples",
-    "copy": "📋 Copy",
-    "claimCompute": "🎁 Claim compute",
-    "ledger": "🔑 Ledger",
-    "saveAsProject": "🚀 Save as project",
-    "newBlank": "+ New blank",
+    "ask": "Ask",
+    "viewDiff": "View diff",
+    "guidedSamples": "Guided samples",
+    "copy": "Copy",
+    "claimCompute": "Claim compute",
+    "ledger": "Ledger",
+    "saveAsProject": "Save as project",
+    "newBlank": "New blank",
     "clear": "Clear",
     "new": "+ New",
-    "checkin": "📅 Check-in +5",
-    "projects": "📂 Projects",
-    "market": "🛒 Market",
+    "checkin": "Check-in +5",
+    "projects": "Projects",
+    "market": "Market",
     "fillIntoInput": "Fill into the input ↓",
-    "expandTrace": "Expand ▾",
+    "expandTrace": "Collapse",
     "copyAsDraft": "Copy as draft",
-    "expandDetails": "✨ Expand details",
-    "runningNow": "⚡ Running...",
-    "desktop": "🖥️ Desktop",
-    "mobile": "📱 Mobile",
+    "expandDetails": "Expand details",
+    "runningNow": "Running",
+    "desktop": "Desktop",
+    "mobile": "Mobile",
     "restore": "↩️ Restore previous",
-    "refresh": "🔄 Refresh",
-    "download": "💾 Download",
-    "newWindow": "🖥️ New window ↗",
-    "currentTaskSteps": "Current task steps:",
+    "refresh": "Refresh",
+    "download": "Download",
+    "newWindow": "New window ↗",
+    "currentTaskSteps": "Current task steps",
     "points": "credits",
-    "myTasks": "📂 My tasks",
-    "samplePrompt": "💡 Sample prompt",
-    "taskPrompt": "🧑 Your prompt",
+    "myTasks": "My tasks",
+    "samplePrompt": "Sample prompt",
+    "taskPrompt": "Task prompt",
     "iterateOnCurrent": "Iterate on the current file",
     "added": "added",
     "removed": "removed",
     "docPreview": "Generated document preview",
     "splitHandle": "Drag to resize chat and preview",
-    "showPreview": "Show preview"
+    "showPreview": "Show preview",
+    "withDiff": "With diff",
+    "writeCode": "Write code"
   },
   "aria": {
     "nicknameInput": "New nickname",
@@ -71,9 +73,9 @@
     "deleteRecord": "Delete {p1}"
   },
   "tab": {
-    "code": "💻 Code",
-    "preview": "👁️ Preview",
-    "terminal": "📟 Terminal",
+    "code": "Source",
+    "preview": "Preview",
+    "terminal": "Terminal",
     "diff": "Changes"
   },
   "default": {
@@ -91,7 +93,7 @@
     "offlineSandbox": "[1/3] agent.read_workspace → switched to the offline local sandbox",
     "heading": "Agent run trace",
     "unit": "steps",
-    "ready": "[Ready] Workbench open · {p1} (available points: {p2})",
+    "ready": "[Ready] Workbench open, {p1} (available points: {p2})",
     "runningModel": "[3/4] agent.run_model_playground → reasoning and building...",
     "planChanges": "[2/4] agent.plan_changes → parsing instruction “{p1}”",
     "answerQuery": "[3/4] agent.answer_query → local architecture advice (no file changed)",
@@ -101,29 +103,30 @@
     "draftReady": "[3/3] agent.verify_output → local editable draft ready ({p1}s)",
     "writeArtifact": "[3/4] agent.write_artifact → {p1} (+{p2} -{p3} lines)",
     "verifyOutputBuild": "[4/4] agent.verify_output → build complete ({p1}s)",
-    "statusNotice": "[{p1}] {p2} · +{p3} -{p4}",
+    "statusNotice": "[{p1}] {p2}  +{p3} -{p4}",
     "forkSample": "[agent.manual_edit] Forked the guided sample into your own draft (+{p1} -{p2} lines)",
     "readWorkspace": "[1/4] agent.read_workspace → {p1}",
     "initWorkspaceContext": "Initialising the workspace context",
     "createSandbox": "Creating a local sandbox",
     "initTaskContext": "Initialising a new task context",
-    "statusWarn": "⚠️ Status notice",
-    "statusDone": "✓ Done",
+    "statusWarn": "Notice",
+    "statusDone": "Done",
     "readCurrentArtifact": "Reading current artifact {p1} ({p2} chars)",
-    "readBaseline": "Reading the baseline of {p1}"
+    "readBaseline": "Reading the baseline of {p1}",
+    "loadFile": "Load {p1}"
   },
   "link": {
-    "createProject": "📂 Create the real project in your library",
-    "openProjects": "📂 Open the project library",
-    "signInForCompute": "🔐 Sign in to use cloud model compute",
+    "createProject": "Create the real project in your library",
+    "openProjects": "Open the project library",
+    "signInForCompute": "Sign in to use cloud model compute",
     "open": "Open details"
   },
   "quickPrompt": {
-    "claw": "🕹️ Play the 3D claw machine",
-    "redeem": "🎁 Redeem a market listing",
-    "themeLabel": "🎨 Light theme",
-    "chartLabel": "🌐 Chart page",
-    "briefLabel": "🌾 Project brief"
+    "claw": "Play the 3D claw machine",
+    "redeem": "Redeem a market listing",
+    "themeLabel": "Light theme",
+    "chartLabel": "Chart page",
+    "briefLabel": "Project brief"
   },
   "tag": {
     "archQA": "Architecture Q&A"
@@ -135,7 +138,7 @@
     "guestMode": "You are in guest preview mode: an interactive draft and change log were generated on the right. Sign in to use cloud model compute.",
     "done": "Done.",
     "appliedChange": "Applied an incremental change on top of {p1} (+{p2} -{p3} lines). Open the Changes tab to review the diff.",
-    "localAnswer": "💡 Local answer for “{p1}”:\\n1. The current file is {p2} — inspect its structure under “💻 Source” or “± Diff” on the right.\\n2. Switch to “⚡ Write code” mode and send an instruction to apply the edits and review the diff."
+    "localAnswer": "Local answer for “{p1}”:\\n1. The current file is {p2} — inspect its structure under “Source” or “± Diff” on the right.\\n2. Switch to “Write code” mode and send an instruction to apply the edits and review the diff."
   },
   "title": {
     "openAgentChat": "Open the Agent chat panel",
@@ -152,18 +155,18 @@
     "reloadPreview": "Reload the preview canvas"
   },
   "mode": {
-    "agentChat": "🤖 Agent chat",
-    "workbench": "🛠️ Work mode",
-    "codeShort": "⚡ Code mode"
+    "agentChat": "Agent chat",
+    "workbench": "Work mode",
+    "codeShort": "Code mode"
   },
   "model": {
-    "flash": "⚡ DeepSeek-V4.1-Flash · Fast",
-    "sol": "🧠 GPT-6.1-Sol · Deep reasoning",
-    "astra": "🌟 GPT-6-Astra · Front-end code",
+    "flash": "DeepSeek-V4.1-Flash (fast)",
+    "sol": "GPT-6.1-Sol (deep reasoning)",
+    "astra": "GPT-6-Astra (front-end code)",
     "unavailable": "Unavailable"
   },
   "guide": {
-    "title": "📖 Work mode in 3 steps"
+    "title": "Work mode in 3 steps"
   },
   "onboarding": {
     "title": "Set up the ANS workbench in 3 steps",
@@ -187,13 +190,15 @@
     "prompt": "Waiting for a brief…"
   },
   "status": {
-    "guidedSample": "📖 Guided sample",
-    "running": "⚡ Running",
-    "askMode": "💬 Ask mode",
-    "applied": "✓ Changes applied"
+    "guidedSample": "Guided sample",
+    "running": "Running",
+    "askMode": "Q&A mode",
+    "applied": "Changes applied"
   },
   "summary": {
-    "sample": "📖 Sample output notes"
+    "sample": "What this sample produces",
+    "answer": "Agent answer",
+    "changes": "Change summary"
   },
   "placeholder": {
     "newTask": "Describe the web page, Python script or project brief you want (Enter to run)...",

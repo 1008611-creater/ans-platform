@@ -1,9 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Pencil } from "lucide-react";
+import {
+  ArrowDown, ArrowRight, ArrowUp, ArrowUpRight, BookOpen, Bot, CalendarCheck, Check, ChevronDown, Code2, Coins, Copy, CopyPlus,
+  Cpu, Download, ExternalLink, Eye, FileCode2, FileText, FolderOpen, FolderPlus, Gift, GitBranch, GitCompareArrows, Lightbulb,
+  ListChecks, Loader2, MessageSquare, Monitor, PanelsTopLeft, Pencil, Plus, ReceiptText, RotateCw, Smartphone, SquareTerminal,
+  Store, Trash2, Undo2, UserRound, Wand2, X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
@@ -29,6 +35,7 @@ import { usePausedRunModels, useRunModelMultipliers } from "@/components/provide
 import { imeBlocks } from "@/lib/ui/ime-enter-guard";
 import { ResizableSplit } from "@/lib/ui/resizable-split";
 import { MiddleEllipsis } from "@/lib/ui/middle-ellipsis";
+import { useCopyFeedback } from "@/lib/ui/copy-feedback";
 
 export function DisplayNameEditor(props: CodexWorkbenchProps) {
   if (props.codexWorkbench) {
@@ -222,7 +229,7 @@ function computeUnifiedDiff(
 }
 
 function buildLocalStarterHtml(userPrompt: string): string {
-  const safeTitle = userPrompt.replace(/[<>]/g, "").slice(0, 48) || "已完成今日签到 (+5 积分)";
+  const safeTitle = userPrompt.replace(/[<>]/g, "").slice(0, 48) || "我的第一个网页应用";
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -305,6 +312,7 @@ function PiCodexWorkbench({
     w("trace.ready", { p1: current, p2: points }),
   ]);
   const [livePoints, setLivePoints] = useState<number>(points);
+  const copyFeedback = useCopyFeedback();
 
   useEffect(() => {
     setLivePoints(points);
@@ -543,7 +551,7 @@ function PiCodexWorkbench({
           ? w("quickPrompt.redeem")
           : isUpdatingExistingUserTask
             ? activeTask.title
-            : q.slice(0, 28) || "已完成今日签到 (+5 积分)";
+            : q.slice(0, 28) || w("task.newBlankDraft");
 
     const fallbackCode = shouldIterateCurrent
       ? runMode === "ask"
@@ -557,7 +565,7 @@ function PiCodexWorkbench({
         : contextBaseline;
     const initialDiff = computeUnifiedDiff(diffBaselineForFallback, fallbackCode);
     const runningTrace = [
-      `[1/4] agent.read_workspace → ${shouldIterateCurrent ? w("trace.readWorkspace", { p1: shouldIterateCurrent ? w("trace.readCurrentArtifact", { p1: activeTask.artifactFile, p2: contextBaseline.length }) : w("trace.initWorkspaceContext") }) : "初始化工作区上下文"}`,
+      `[1/4] agent.read_workspace → ${shouldIterateCurrent ? w("trace.readCurrentArtifact", { p1: activeTask.artifactFile, p2: contextBaseline.length }) : w("trace.initWorkspaceContext")}`,
       `[2/4] agent.route_intent → mode=${runMode.toUpperCase()} · model=${model}`,
       w("trace.runningModel"),
     ];
@@ -611,7 +619,7 @@ function PiCodexWorkbench({
       if (res.status === 401 || !res.ok) {
         const localDiff = computeUnifiedDiff(diffBaselineForFallback, fallbackCode);
         const guestTrace = [
-          `[1/4] agent.read_workspace → ${shouldIterateCurrent ? w("trace.readWorkspace", { p1: shouldIterateCurrent ? w("trace.readBaseline", { p1: activeTask.artifactFile }) : w("trace.createSandbox") }) : "创建本地沙盒环境"}`,
+          `[1/4] agent.read_workspace → ${shouldIterateCurrent ? w("trace.readBaseline", { p1: activeTask.artifactFile }) : w("trace.createSandbox")}`,
           w("trace.planChanges", { p1: q.slice(0, 36) }),
           runMode === "ask"
             ? w("trace.answerQuery")
@@ -695,7 +703,7 @@ function PiCodexWorkbench({
       const serverTrace = Array.isArray(data?.trace) && data.trace.length > 0
         ? data.trace
         : [
-            `[1/4] agent.read_workspace → ${shouldIterateCurrent ? w("trace.readWorkspace", { p1: shouldIterateCurrent ? w("trace.loadFile", { p1: resolvedFile }) : w("trace.initTaskContext") }) : "初始化新任务上下文"}`,
+            `[1/4] agent.read_workspace → ${shouldIterateCurrent ? w("trace.loadFile", { p1: resolvedFile }) : w("trace.initTaskContext")}`,
             `[2/4] agent.route_intent → tool=${data?.toolUsed || "run_model_playground"} (${model})`,
             w("trace.writeArtifact", { p1: resolvedFile, p2: computedDiff.additions, p3: computedDiff.deletions }),
             w("trace.verifyOutputBuild", { p1: elapsedSec }),
@@ -778,7 +786,7 @@ function PiCodexWorkbench({
       const forkedTask: CodexTask = {
         ...activeTask,
         id: "user-fork-" + Date.now(),
-        title: w("task.revisedTitle", { p1: activeTask.title.replace(/^[^\s]+\s*/, "") }),
+        title: w("task.revisedTitle", { p1: activeTask.title }),
         tag: "我的草稿",
         previousCode: activeTask.artifactCode,
         artifactCode: newCode,
@@ -809,7 +817,7 @@ function PiCodexWorkbench({
     const forkedTask: CodexTask = {
       ...activeTask,
       id: "user-fork-" + Date.now(),
-      title: w("task.draftTitle", { p1: activeTask.title.replace(/^[^\s]+\s*/, "") }),
+      title: w("task.draftTitle", { p1: activeTask.title }),
       tag: "我的草稿",
       previousCode: activeTask.previousCode ?? activeTask.artifactCode,
       trace: [...(activeTask.trace ?? []), w("label.copy")],
@@ -866,192 +874,203 @@ function PiCodexWorkbench({
   }
 
   const codeLineCount = Math.max(1, activeTask.artifactCode.split("\n").length);
+  const statusTone = running
+    ? "bg-emerald-400"
+    : isViewingGuideSample
+      ? "bg-amber-300"
+      : activeTask.mode === "ask"
+        ? "bg-sky-400"
+        : "bg-emerald-400";
 
   return (
     <div
       data-testid="pi-codex-workbench"
       aria-label={w("aria.workbench")}
-      className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-950 text-slate-100 shadow-2xl"
+      className="ans-wb overflow-hidden rounded-[20px] bg-[#0b0b0a] text-[#ededeb] shadow-[0_24px_64px_-24px_rgb(11_11_10/45%)]"
     >
-      {/* Top Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-800 bg-slate-900/90 px-4 py-2.5 sm:px-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex items-center rounded-xl border border-slate-700/80 bg-slate-950 p-0.5 text-xs">
+      {/* 顶栏：模式切换、模型、身份与积分 */}
+      <div className="ans-wb-rule-b flex flex-wrap items-center justify-between gap-2 bg-[#151515] px-3 py-2 sm:px-4">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <div className="inline-flex items-center rounded-[10px] bg-[#0b0b0a] p-0.5 text-xs">
             <button
               type="button"
               onClick={switchToFloatingChat}
               title={w("title.openAgentChat")}
-              className="rounded-lg px-2.5 py-1 font-semibold text-slate-400 transition hover:bg-slate-800 hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[#9a9a95] transition-colors hover:text-[#ededeb]"
             >
-              🤖 Agent {w("mode.agentChat")}
+              <Bot className="size-3.5" aria-hidden="true" />
+              Agent {w("mode.agentChat")}
             </button>
-            <span className="rounded-lg bg-emerald-500 px-3 py-1 font-black text-slate-950 shadow-sm">
-              🛠️ {w("mode.workbench")}
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#20201e] px-2.5 py-1 font-[460] text-[#ededeb]">
+              <PanelsTopLeft className="size-3.5" aria-hidden="true" />
+              {w("mode.workbench")}
             </span>
           </div>
-          <span
-            title={w("title.branch")}
-            className="hidden items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 px-2.5 py-1 font-mono text-xs text-slate-400 sm:inline-flex"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          <span title={w("title.branch")} className="ans-wb-chip hidden font-mono sm:inline-flex">
+            <GitBranch className="size-3.5" aria-hidden="true" />
             {activeTask.branch || "ans-workspace/main"}
           </span>
-          <select
-            aria-label={w("aria.modelSelect")}
-            value={model}
-            onChange={e => setModel(e.target.value as typeof model)}
-            className="rounded-xl border border-slate-700/80 bg-slate-900 px-2.5 py-1 text-xs font-bold text-emerald-300 outline-none focus:border-emerald-500"
-          >
-            {WORKBENCH_MODEL_OPTIONS.map(option => {
-              const rate = multipliers[option.key];
-              const available = !paused.includes(option.key);
-              return <option key={option.key} value={option.key} disabled={!available}>{w(option.labelKey)}{!available ? ` (${w("model.unavailable")})` : rate === undefined ? "" : ` (${rate}x)`}</option>;
-            })}
-          </select>
+          <label className="ans-wb-chip relative cursor-pointer pr-6">
+            <Cpu className="size-3.5" aria-hidden="true" />
+            <select
+              aria-label={w("aria.modelSelect")}
+              value={model}
+              onChange={e => setModel(e.target.value as typeof model)}
+              className="cursor-pointer appearance-none bg-transparent text-[#ededeb] outline-none"
+            >
+              {WORKBENCH_MODEL_OPTIONS.map(option => {
+                const rate = multipliers[option.key];
+                const available = !paused.includes(option.key);
+                return <option key={option.key} value={option.key} disabled={!available}>{w(option.labelKey)}{!available ? ` (${w("model.unavailable")})` : rate === undefined ? "" : ` ${rate}x`}</option>;
+              })}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2 size-3.5" aria-hidden="true" />
+          </label>
           <button
             type="button"
             onClick={() => setShowOnboardingGuide(v => !v)}
             title={w("title.threeStepGuide")}
-            className="rounded-xl border border-amber-500/35 bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-300 transition hover:bg-amber-500/20"
+            aria-expanded={showOnboardingGuide}
+            className="ans-wb-chip"
           >
-            📖 {showOnboardingGuide ? w("label.collapse") : "引导"}
+            <BookOpen className="size-3.5" aria-hidden="true" />
+            {showOnboardingGuide ? w("label.collapse") : w("onboarding.guideButton")}
           </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 text-xs">
-          <span className="rounded-xl border border-slate-800 bg-slate-900 px-2.5 py-1 text-slate-300">
-            👤 {current} <strong className="text-amber-300">{levelName}</strong>
+        <div className="flex flex-wrap items-center gap-1 text-xs">
+          <span className="ans-wb-chip pointer-events-auto">
+            <UserRound className="size-3.5" aria-hidden="true" />
+            <span className="text-[#ededeb]">{current}</span>
+            <span className="text-amber-200/90">{levelName}</span>
             {actorId && <LegacyDisplayNameEditor actorId={actorId} current={current} />}
           </span>
-          <span className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 font-bold text-emerald-300">
-            🪙 {livePoints} 积分
+          <span className="ans-wb-chip">
+            <Coins className="size-3.5" aria-hidden="true" />
+            <span className="ans-num text-[#ededeb]">{livePoints}</span> {w("label.points")}
           </span>
-          <a href="/workspace/benefits" className="rounded-xl bg-emerald-500 px-2.5 py-1 font-black text-slate-950 transition hover:bg-emerald-400">
-            🎁 {w("label.claimCompute")}
-          </a>
-          <a href="/workspace/credits" className="rounded-xl border border-slate-700 bg-slate-900 px-2.5 py-1 font-semibold text-slate-200 transition hover:bg-slate-800">
-            🔑 {w("label.ledger")}
-          </a>
+          <Link href="/workspace/benefits" className="ans-wb-chip text-emerald-300 hover:text-emerald-200">
+            <Gift className="size-3.5" aria-hidden="true" />
+            {w("label.claimCompute")}
+          </Link>
+          <Link href="/workspace/credits" className="ans-wb-chip">
+            <ReceiptText className="size-3.5" aria-hidden="true" />
+            {w("label.ledger")}
+          </Link>
         </div>
       </div>
 
-      {/* Collapsible Onboarding Guide Banner */}
-      {showOnboardingGuide && (
-        <div
-          data-testid="workbench-onboarding-guide"
-          className="border-b border-slate-800 bg-slate-900/60 px-4 py-2.5 sm:px-5"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 font-bold text-amber-300">
-                📖 Codex {w("guide.title")}
-              </span>
-              <span className="text-slate-300">
-                <strong>① 提需求 / 选模式</strong>（底部「💬 {w("label.ask")}」或「⚡ 写代码」）→
-                <strong className="ml-1">② 查链路与 Diff</strong>（中间看执行步骤，右侧看「± 变更」与「{w("tab.preview")}」）→
-                <strong className="ml-1">③ {w("label.saveAsProject")}</strong>。
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleStartBlankTask}
-                className="rounded-lg bg-emerald-500 px-2.5 py-1 text-xs font-black text-slate-950 hover:bg-emerald-400"
-              >
-                + {w("label.newBlank")}
+      {/* 可收起的三步上手说明 */}
+      <div className="ans-collapse" data-open={showOnboardingGuide}>
+        <div inert={!showOnboardingGuide}>
+          <div
+            data-testid={showOnboardingGuide ? "workbench-onboarding-guide" : undefined}
+            className="ans-wb-rule-b flex flex-wrap items-center justify-between gap-3 bg-[#151515] px-3 py-2.5 text-xs sm:px-4"
+          >
+            <ol className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[#c9c9c4]">
+              {[
+                [w("onboarding.step1Title"), w("onboarding.step1Body")],
+                [w("onboarding.step2Title"), w("onboarding.step2Body")],
+                [w("onboarding.step3Title"), w("onboarding.step3Body")],
+              ].map(([title, body], idx) => (
+                <li key={title} className="inline-flex items-center gap-2" title={body}>
+                  <span className="ans-num inline-flex size-5 items-center justify-center rounded-full bg-[#20201e] text-[#ededeb]">{idx + 1}</span>
+                  <span className="text-[#ededeb]">{title}</span>
+                </li>
+              ))}
+            </ol>
+            <div className="flex items-center gap-1">
+              <button type="button" onClick={handleStartBlankTask} className="ans-wb-chip text-[#ededeb]">
+                <Plus className="size-3.5" aria-hidden="true" />
+                {w("label.newBlank")}
               </button>
               <button
                 type="button"
                 onClick={() => setShowOnboardingGuide(false)}
-                className="text-xs text-slate-400 hover:text-white"
+                aria-label={w("label.collapse")}
+                className="ans-wb-chip px-1.5"
               >
-                ✕
+                <X className="size-3.5" aria-hidden="true" />
               </button>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* 3-Column Codex Grid: Task Queue (240px) | Agent Execution Thread & Composer (360px) | Artifact & Diff Inspector (1fr) */}
-      <div className="grid min-h-[640px] grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)]">
-        {/* Left Column: Codex Task Sidebar with Git Diff Stats */}
-        <aside className="flex flex-col justify-between border-b border-slate-800 bg-slate-900/40 p-3 lg:border-r lg:border-b-0">
-          <div className="space-y-3.5">
-            {/* Section 1: Real User Tasks */}
+      {/* 三栏：任务列表 | Agent 对话与输入框 | 产物预览 */}
+      <div className="grid min-h-[640px] grid-cols-1 lg:grid-cols-[248px_minmax(0,1fr)]">
+        {/* 左栏：我的任务、引导范例、快捷操作 */}
+        <aside className="ans-wb-col flex flex-col justify-between gap-4 bg-[#151515] p-2.5">
+          <div className="space-y-4">
             <div>
-              <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-xs font-extrabold text-emerald-400">
-                  📂 我的任务 ({userTasks.length})
+              <div className="mb-1 flex items-center justify-between px-1.5">
+                <span className="text-xs text-[#9a9a95]">
+                  {w("label.myTasks")} <span className="ans-num">{userTasks.length}</span>
                 </span>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center">
                   {userTasks.length > 0 && (
                     <button
                       type="button"
                       onClick={handleClearUserTasks}
                       title={w("title.clearTasks")}
-                      className="rounded-lg border border-slate-700/80 bg-slate-900 px-1.5 py-0.5 text-xs text-slate-400 hover:border-rose-500/40 hover:text-rose-300"
+                      className="ans-wb-chip px-2 py-0.5 hover:text-rose-300"
                     >
                       {w("label.clear")}
                     </button>
                   )}
-                  <button
-                    type="button"
-                    onClick={handleStartBlankTask}
-                    className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-300 hover:bg-emerald-500/25"
-                  >
-                    + {w("label.new")}
+                  <button type="button" onClick={handleStartBlankTask} className="ans-wb-chip px-2 py-0.5 text-[#ededeb]">
+                    <Plus className="size-3.5" aria-hidden="true" />
+                    {w("label.new")}
                   </button>
                 </div>
               </div>
               {userTasks.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/50 px-2.5 py-2 text-center text-xs text-slate-300">
+                <p className="rounded-[10px] bg-[#1a1a19] px-3 py-2.5 text-xs leading-5 text-[#9a9a95] [text-wrap:pretty]">
                   {w("empty.tasks")}
-                </div>
+                </p>
               ) : (
-                <div className="max-h-[220px] space-y-1 overflow-y-auto pr-0.5">
+                <div className="max-h-[220px] space-y-0.5 overflow-y-auto">
                   {userTasks.map(t => {
                     const addCount = t.diffAdditions ?? t.artifactCode.split("\n").length;
                     const delCount = t.diffDeletions ?? 0;
+                    const StatusIcon = t.status === "running" ? Loader2 : t.mode === "ask" ? MessageSquare : Check;
                     return (
                       <div
                         key={t.id}
                         onClick={() => setActiveId(t.id)}
                         role="button"
                         tabIndex={0}
+                        aria-current={t.id === activeTask.id ? "true" : undefined}
                         onKeyDown={e => {
                           if (e.key === "Enter" || e.key === " ") {
                             e.preventDefault();
                             setActiveId(t.id);
                           }
                         }}
-                        className={`group flex w-full cursor-pointer flex-col gap-1 rounded-xl border px-2.5 py-2 text-left transition ${
-                          t.id === activeTask.id
-                            ? "border-emerald-500/60 bg-emerald-500/15 text-white shadow-sm"
-                            : "border-slate-800/80 bg-slate-900/60 text-slate-300 hover:border-slate-700 hover:bg-slate-900"
+                        className={`group flex w-full cursor-pointer flex-col gap-0.5 rounded-[10px] px-2.5 py-2 text-left transition-colors ${
+                          t.id === activeTask.id ? "bg-[#20201e] text-[#ededeb]" : "text-[#c9c9c4] hover:bg-[#1a1a19]"
                         }`}
                       >
                         <div className="flex items-center justify-between gap-1">
-                          <span className="line-clamp-1 text-xs font-bold">{t.title}</span>
-                          <span className="flex shrink-0 items-center gap-1">
-                            <span className="text-xs text-emerald-300">
-                              {t.status === "running" ? "⚡" : t.mode === "ask" ? "💬" : "✓"}
-                            </span>
+                          <span className="line-clamp-1 text-[13px]">{t.title}</span>
+                          <span className="flex shrink-0 items-center gap-0.5">
+                            <StatusIcon className={`size-3.5 text-emerald-300 ${t.status === "running" ? "animate-spin motion-reduce:animate-none" : ""}`} aria-hidden="true" />
                             <button
                               type="button"
                               onClick={e => handleDeleteUserTask(t.id, e)}
                               title={w("title.deleteRecord")}
                               aria-label={w("aria.deleteRecord", { p1: t.title })}
-                              className="hidden rounded px-1 text-xs text-slate-400 hover:bg-rose-500/20 hover:text-rose-300 group-hover:inline-block"
+                              className="hidden rounded p-0.5 text-[#9a9a95] hover:bg-rose-500/15 hover:text-rose-300 group-hover:inline-flex group-focus-within:inline-flex"
                             >
-                              ×
+                              <Trash2 className="size-3.5" aria-hidden="true" />
                             </button>
                           </span>
                         </div>
-                        <div className="flex items-center justify-between font-mono text-xs text-slate-400">
+                        <div className="flex items-center justify-between gap-2 font-mono text-xs text-[#9a9a95]">
                           <MiddleEllipsis name={t.artifactFile} />
-                          <span className="shrink-0 space-x-1">
-                            <span className="text-emerald-400">+{addCount}</span>
-                            {delCount > 0 && <span className="text-rose-400">-{delCount}</span>}
+                          <span className="ans-num shrink-0 space-x-1">
+                            <span className="text-emerald-300/90">+{addCount}</span>
+                            {delCount > 0 && <span className="text-rose-300/90">-{delCount}</span>}
                           </span>
                         </div>
                       </div>
@@ -1061,74 +1080,71 @@ function PiCodexWorkbench({
               )}
             </div>
 
-            {/* Section 2: Onboarding Sample Walkthroughs */}
-            <div className="border-t border-slate-800/80 pt-3">
-              <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-xs font-extrabold text-amber-300/90">
-                  {w("status.guidedSample")}
-                </span>
-                <span className="font-mono text-xs text-slate-300">含 Diff 对比</span>
+            <div>
+              <div className="mb-1 flex items-center justify-between px-1.5">
+                <span className="text-xs text-[#9a9a95]">{w("label.guidedSamples")}</span>
+                <span className="text-xs text-[#9a9a95]">{w("label.withDiff")}</span>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {guideTasks.map(t => (
                   <button
                     key={t.id}
                     type="button"
                     onClick={() => setActiveId(t.id)}
                     title={t.summary}
-                    className={`group w-full rounded-xl border px-2.5 py-2 text-left transition ${
-                      t.id === activeTask.id
-                        ? "border-amber-500/60 bg-amber-500/15 text-white shadow-sm"
-                        : "border-slate-800/70 bg-slate-900/40 text-slate-300 hover:border-slate-700 hover:text-slate-100"
+                    aria-current={t.id === activeTask.id ? "true" : undefined}
+                    className={`w-full rounded-[10px] px-2.5 py-2 text-left transition-colors ${
+                      t.id === activeTask.id ? "bg-[#20201e] text-[#ededeb]" : "text-[#c9c9c4] hover:bg-[#1a1a19]"
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-1.5">
-                      <span className="line-clamp-1 text-xs font-semibold">{t.title}</span>
-                      <span className="shrink-0 font-mono text-xs text-emerald-400">
-                        +{t.diffAdditions ?? 64}
-                        {t.diffDeletions ? <span className="ml-0.5 text-rose-400">-{t.diffDeletions}</span> : null}
-                      </span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="line-clamp-1 text-[13px]">{t.title}</span>
+                      <span className="shrink-0 whitespace-nowrap text-xs text-[#9a9a95]">{t.tag.replace("范例", "")}</span>
                     </div>
-                    <div className="mt-0.5 flex items-center justify-between font-mono text-xs text-slate-300">
+                    <div className="mt-0.5 flex items-center justify-between gap-2 font-mono text-xs text-[#9a9a95]">
                       <MiddleEllipsis name={t.artifactFile} />
-                      <span>{t.tag.replace("范例", "")}</span>
+                      <span className="ans-num shrink-0 space-x-1">
+                        <span className="text-emerald-300/90">+{t.diffAdditions ?? 64}</span>
+                        {t.diffDeletions ? <span className="text-rose-300/90">-{t.diffDeletions}</span> : null}
+                      </span>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Section 3: Quick Actions */}
-            <div className="border-t border-slate-800/80 pt-3">
-              <div className="grid grid-cols-2 gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => void executeCodexTask(activeTask.title, "scaffold")}
-                  title={w("title.saveToProjects")}
-                  className="rounded-xl border border-indigo-500/35 bg-indigo-500/15 px-2 py-1.5 text-center text-xs font-bold text-indigo-200 transition hover:bg-indigo-500/25"
-                >
-                  🚀 {w("label.saveAsProject")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void executeCodexTask("", "checkin")}
-                  title={w("title.checkin")}
-                  className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2 py-1.5 text-center text-xs font-bold text-emerald-300 transition hover:bg-emerald-500/20"
-                >
-                  📅 {w("label.checkin")}
-                </button>
-              </div>
+            <div className="grid grid-cols-2 gap-1">
+              <button
+                type="button"
+                onClick={() => void executeCodexTask(activeTask.title, "scaffold")}
+                title={w("title.saveToProjects")}
+                className="ans-wb-btn"
+              >
+                <FolderPlus className="size-3.5" aria-hidden="true" />
+                {w("label.saveAsProject")}
+              </button>
+              <button
+                type="button"
+                onClick={() => void executeCodexTask("", "checkin")}
+                title={w("title.checkin")}
+                className="ans-wb-btn"
+              >
+                <CalendarCheck className="size-3.5" aria-hidden="true" />
+                {w("label.checkin")}
+              </button>
             </div>
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-1.5 border-t border-slate-800/80 pt-2.5 text-center text-xs">
-            <a href="/projects" className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-slate-300 hover:border-emerald-500/40 hover:text-white">
-              📂 {w("label.projects")}
-            </a>
-            <a href="/market" className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-slate-300 hover:border-emerald-500/40 hover:text-white">
-              🛒 {w("label.market")}
-            </a>
-          </div>
+          <nav className="flex items-center gap-1 text-xs">
+            <Link href="/projects" className="ans-wb-chip">
+              <FolderOpen className="size-3.5" aria-hidden="true" />
+              {w("label.projects")}
+            </Link>
+            <Link href="/market" className="ans-wb-chip">
+              <Store className="size-3.5" aria-hidden="true" />
+              {w("label.market")}
+            </Link>
+          </nav>
         </aside>
 
         {/* 中栏对话 | 右栏产物预览：可拖动分栏，拖动时给预览盖遮罩；Esc 复原，双击 50/50，左栏超过 82% 收起预览 */}
@@ -1138,28 +1154,20 @@ function PiCodexWorkbench({
           initialRatio={0.4}
           // 中栏：Agent 执行线程与输入框
           left={
-        <section className="flex flex-1 flex-col justify-between border-b border-slate-800 bg-slate-950 p-3.5 sm:p-4 lg:border-r lg:border-b-0">
-          <div className="max-h-[420px] space-y-2.5 overflow-y-auto pr-0.5">
-            {/* Compact Task Header */}
-            <div className="flex items-start justify-between gap-2 border-b border-slate-800/80 pb-2.5">
+        <section className="ans-wb-col flex flex-1 flex-col justify-between bg-[#0b0b0a] p-3 sm:p-4">
+          <div className="max-h-[440px] space-y-3 overflow-y-auto pr-0.5">
+            <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
-                  <span>{activeTask.tag}</span>
-                  <MiddleEllipsis name={activeTask.artifactFile} className="font-mono text-slate-400" />
+                <div className="flex min-w-0 items-center gap-2 text-xs text-[#9a9a95]">
+                  <span className="shrink-0 whitespace-nowrap">{activeTask.tag}</span>
+                  <MiddleEllipsis name={activeTask.artifactFile} className="font-mono" />
                 </div>
-                <h2 className="mt-0.5 truncate text-sm font-extrabold text-white" title={activeTask.title}>
+                <h2 className="mt-1 truncate text-sm font-[560] text-[#ededeb]" title={activeTask.title}>
                   {activeTask.title}
                 </h2>
               </div>
-              <span className={`shrink-0 rounded-full border px-2 py-0.5 text-xs font-bold ${
-                running
-                  ? "border-emerald-500/50 bg-emerald-500/20 text-emerald-300"
-                  : isViewingGuideSample
-                    ? "border-amber-500/40 bg-amber-500/15 text-amber-300"
-                    : activeTask.mode === "ask"
-                      ? "border-sky-500/40 bg-sky-500/15 text-sky-300"
-                      : "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
-              }`}>
+              <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-[#c9c9c4]">
+                <span className={`size-1.5 rounded-full ${statusTone} ${running ? "animate-pulse motion-reduce:animate-none" : ""}`} aria-hidden="true" />
                 {running
                   ? w("status.running")
                   : isViewingGuideSample
@@ -1170,106 +1178,109 @@ function PiCodexWorkbench({
               </span>
             </div>
 
-            {/* Step 1: User Task Prompt Bubble */}
-            <div className="rounded-xl border border-slate-800/90 bg-slate-900/60 p-2.5">
-              <div className="flex items-center justify-between text-xs font-bold text-slate-400">
-                <span>{isViewingGuideSample ? "💡 范例指令" : "🧑 任务指令"}</span>
+            {/* 第 1 步：用户指令 */}
+            <div className="rounded-[12px] bg-[#151515] p-3">
+              <div className="flex items-center justify-between text-xs text-[#9a9a95]">
+                <span className="inline-flex items-center gap-1.5">
+                  {isViewingGuideSample ? <Lightbulb className="size-3.5" aria-hidden="true" /> : <UserRound className="size-3.5" aria-hidden="true" />}
+                  {isViewingGuideSample ? w("label.samplePrompt") : w("label.taskPrompt")}
+                </span>
                 {isViewingGuideSample && (
                   <button
                     type="button"
                     onClick={() => setPromptInput(activeTask.prompt)}
-                    className="text-emerald-400 hover:underline"
+                    className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[#c9c9c4] transition-colors hover:bg-[#20201e] hover:text-[#ededeb]"
                   >
-                    {w("label.fillIntoInput")} ↓
+                    {w("label.fillIntoInput")}
+                    <ArrowDown className="size-3.5" aria-hidden="true" />
                   </button>
                 )}
               </div>
-              <p className="mt-1 text-xs leading-5 text-slate-100">
-                {activeTask.prompt || <span className="text-slate-300">等待输入需求...</span>}
+              <p className="mt-1.5 text-[13px] leading-6 text-[#ededeb] [text-wrap:pretty]">
+                {activeTask.prompt || <span className="text-[#9a9a95]">{w("empty.prompt")}</span>}
               </p>
             </div>
 
-            {/* Step 2: OpenAI Codex Collapsible Execution Trace */}
+            {/* 第 2 步：Agent 执行链路 */}
             {activeTask.trace && activeTask.trace.length > 0 && (
-              <div
-                data-testid="codex-execution-trace"
-                className="rounded-xl border border-slate-800/90 bg-slate-900/40 px-3 py-2"
-              >
+              <div data-testid="codex-execution-trace" className="rounded-[12px] bg-[#151515] px-3 py-2.5">
                 <button
                   type="button"
                   onClick={() => setTraceExpanded(v => !v)}
-                  className="flex w-full items-center justify-between text-left text-xs font-bold text-slate-300 hover:text-white"
+                  aria-expanded={traceExpanded}
+                  className="flex w-full items-center justify-between text-left text-xs text-[#c9c9c4] hover:text-[#ededeb]"
                 >
-                  <span className="flex items-center gap-1.5">
-                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                    <span>
-                      ⚡ Agent 执行链路 {activeTask.trace.length} 步
-                      {activeTask.durationSec ? ` (${activeTask.durationSec}s)` : ""}
-                    </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <ListChecks className="size-3.5" aria-hidden="true" />
+                    {w("trace.heading")} <span className="ans-num">{activeTask.trace.length}</span> {w("trace.unit")}
+                    {activeTask.durationSec ? <span className="ans-num text-[#9a9a95]">{activeTask.durationSec}s</span> : null}
                   </span>
-                  <span className="font-mono text-xs text-slate-400">
-                    {traceExpanded ? w("label.expandTrace") : "展开 ▾"}
-                  </span>
+                  <ChevronDown className={`size-3.5 transition-transform ${traceExpanded ? "rotate-180" : ""}`} aria-hidden="true" />
                 </button>
-                {traceExpanded && (
-                  <ol className="mt-2 space-y-1 border-t border-slate-800/80 pt-2 font-mono text-xs leading-5 text-slate-400">
-                    {activeTask.trace.map((step, idx) => (
-                      <li key={idx} className="flex items-start gap-1.5">
-                        <span className="mt-0.5 text-emerald-400">›</span>
-                        <span className="break-all">{step}</span>
-                      </li>
-                    ))}
-                  </ol>
-                )}
+                <div className="ans-collapse" data-open={traceExpanded}>
+                  <div inert={!traceExpanded}>
+                    <ol className="mt-2 space-y-1 font-mono text-xs leading-5 text-[#9a9a95]">
+                      {activeTask.trace.map((step, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="mt-[7px] size-1 shrink-0 rounded-full bg-emerald-300/80" aria-hidden="true" />
+                          <span className="break-all">{step}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Step 3: Agent Result & Diff File Summary Card */}
-            <div className="rounded-xl border border-emerald-500/25 bg-emerald-950/15 p-3">
+            {/* 第 3 步：结果与文件变更 */}
+            <div className="rounded-[12px] bg-[#151515] p-3">
               <div className="mb-1.5 flex items-center justify-between gap-2">
-                <span className="text-xs font-extrabold text-emerald-300">
-                  {isViewingGuideSample ? w("summary.sample") : activeTask.mode === "ask" ? "💬 Agent 解答" : "✓ 变更摘要"}
+                <span className="text-xs text-[#9a9a95]">
+                  {isViewingGuideSample ? w("summary.sample") : activeTask.mode === "ask" ? w("summary.answer") : w("summary.changes")}
                 </span>
                 {isViewingGuideSample && (
                   <button
                     type="button"
                     onClick={forkActiveSampleToDraft}
-                    className="shrink-0 rounded-lg bg-amber-400 px-2 py-0.5 text-xs font-black text-slate-950 hover:bg-amber-300"
+                    className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs text-[#c9c9c4] transition-colors hover:bg-[#20201e] hover:text-[#ededeb]"
                   >
+                    <CopyPlus className="size-3.5" aria-hidden="true" />
                     {w("label.copyAsDraft")}
                   </button>
                 )}
               </div>
-              <div className="max-h-[130px] overflow-y-auto whitespace-pre-wrap text-xs leading-5 text-slate-200">
+              <div className="max-h-[130px] overflow-y-auto whitespace-pre-wrap text-[13px] leading-6 text-[#ededeb] [text-wrap:pretty]">
                 {activeTask.summary}
               </div>
 
-              {/* Codex File Diff Pill — click to jump to Diff tab */}
-              <div className="mt-2.5 flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/90 px-2.5 py-1.5 font-mono text-xs">
-                <span className="flex min-w-0 items-center gap-1 text-slate-200"><span aria-hidden="true">📄</span><MiddleEllipsis name={activeTask.artifactFile} /></span>
-                <div className="flex shrink-0 items-center gap-2">
-                  <span className="text-emerald-400">+{activeDiff.additions}</span>
-                  {activeDiff.deletions > 0 && <span className="text-rose-400">-{activeDiff.deletions}</span>}
-                  <button
-                    type="button"
-                    onClick={() => setCanvasTab("diff")}
-                    className="rounded bg-slate-800 px-1.5 py-0.5 font-sans text-xs font-bold text-emerald-300 hover:bg-slate-700"
-                  >
-                    {w("label.viewDiff")} →
-                  </button>
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={() => setCanvasTab("diff")}
+                title={w("label.viewDiff")}
+                className="mt-2.5 flex w-full items-center justify-between gap-2 rounded-[8px] bg-[#1a1a19] px-2.5 py-1.5 font-mono text-xs transition-colors hover:bg-[#20201e]"
+              >
+                <span className="flex min-w-0 items-center gap-1.5 text-[#c9c9c4]">
+                  <FileCode2 className="size-3.5 shrink-0" aria-hidden="true" />
+                  <MiddleEllipsis name={activeTask.artifactFile} />
+                </span>
+                <span className="ans-num flex shrink-0 items-center gap-2">
+                  <span className="text-emerald-300/90">+{activeDiff.additions}</span>
+                  {activeDiff.deletions > 0 && <span className="text-rose-300/90">-{activeDiff.deletions}</span>}
+                  <ArrowRight className="size-3.5 text-[#9a9a95]" aria-hidden="true" />
+                </span>
+              </button>
 
               {activeTask.links && activeTask.links.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
+                <div className="mt-2 flex flex-wrap gap-1">
                   {activeTask.links.map((lk, i) => (
                     <a
                       key={i}
                       href={lk.href}
                       title={lk.detail}
-                      className="rounded-lg border border-indigo-400/50 bg-indigo-500/20 px-2.5 py-1 text-xs font-bold text-indigo-200 hover:bg-indigo-500/30"
+                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-[#ededeb] transition-colors hover:bg-[#20201e]"
                     >
-                      {lk.labelZh || lk.title || lk.labelEn || "已完成今日签到 (+5 积分)"} ↗
+                      {lk.labelZh || lk.title || lk.labelEn || w("link.open")}
+                      <ArrowUpRight className="size-3.5" aria-hidden="true" />
                     </a>
                   ))}
                 </div>
@@ -1277,29 +1288,25 @@ function PiCodexWorkbench({
             </div>
           </div>
 
-          {/* Bottom OpenAI Codex Composer (Ask vs. Code Dual Mode + Context Iteration Toggle) */}
+          {/* 底部输入框：提问 / 写代码 双模式，可选基于当前文件迭代 */}
           <form
             onSubmit={e => {
               e.preventDefault();
               void executeCodexTask(undefined, "playground", undefined, composerMode);
             }}
-            className="mt-3 rounded-2xl border border-slate-700/90 bg-slate-900 p-2.5 shadow-inner"
+            className="ans-wb-composer mt-3 rounded-[16px] bg-[#151515] p-2"
           >
-            <div className="mb-1.5 flex items-center justify-between text-xs">
-              <label className="inline-flex cursor-pointer items-center gap-1.5 text-slate-300 select-none">
+            <div className="flex items-center justify-between gap-2 px-1.5 pt-0.5 text-xs">
+              <label className="inline-flex min-w-0 cursor-pointer items-center gap-1.5 text-[#9a9a95] select-none">
                 <input
                   type="checkbox"
                   checked={iterateOnCurrent}
                   onChange={e => setIterateOnCurrent(e.target.checked)}
-                  className="h-3.5 w-3.5 rounded border-slate-700 accent-emerald-500"
+                  className="size-3.5 shrink-0 rounded accent-emerald-400"
                 />
-                <span>
-                  基于当前文件迭代修改 <code className="text-xs text-emerald-300">({activeTask.artifactFile})</code>
-                </span>
+                <span className="shrink-0">{w("label.iterateOnCurrent")}</span>
+                <MiddleEllipsis name={activeTask.artifactFile} className="font-mono text-[#c9c9c4]" />
               </label>
-              <span className="font-mono text-xs text-slate-400">
-                {composerMode === "code" ? w("mode.codeShort") : w("label.ask")}
-              </span>
             </div>
 
             <textarea
@@ -1307,12 +1314,8 @@ function PiCodexWorkbench({
               rows={3}
               value={promptInput}
               onChange={e => setPromptInput(e.target.value)}
-              placeholder={
-                iterateOnCurrent
-                  ? `描述要对 ${activeTask.artifactFile} 做的修改（如：切换为浅色主题、增加导出 CSV 按钮），或直接{w("label.ask")}...`
-                  : w("placeholder.newTask")
-              }
-              className="w-full resize-none bg-transparent text-xs leading-5 text-white placeholder:text-slate-400 focus:outline-none"
+              placeholder={iterateOnCurrent ? w("placeholder.iterate", { file: activeTask.artifactFile }) : w("placeholder.newTask")}
+              className="mt-1 w-full resize-none bg-transparent px-1.5 text-[13px] leading-6 text-[#ededeb] placeholder:text-[#8a8a85] focus:outline-none"
               onKeyDown={e => {
                 if (e.key === "Enter" && !e.shiftKey && !imeBlocks(e)) {
                   e.preventDefault();
@@ -1321,29 +1324,28 @@ function PiCodexWorkbench({
               }}
             />
             {(() => {
-              const seedText = (promptInput || activeTask.prompt || "已完成今日签到 (+5 积分)").trim();
+              const seedText = (promptInput || activeTask.prompt || "").trim();
               const cluster = detectIntentAndMatchTerms(seedText);
               return (
-                <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1 rounded-xl border border-slate-800 bg-slate-950/80 px-2 py-1" data-testid="codex-intent-bridge">
-                  <div className="flex flex-wrap items-center gap-1">
-                    {cluster.terms.map(term => (
-                      <button
-                        key={term.slug}
-                        type="button"
-                        title={term.hint.zh}
-                        onClick={() => {
-                          setPromptInput(prev => {
-                            const base = (prev || activeTask.prompt).trim();
-                            if (!base) return term.appendText.zh;
-                            return base.includes(term.appendText.zh) ? base : `${base}\n- ${term.appendText.zh}`;
-                          });
-                        }}
-                        className="rounded-md border border-slate-700/80 bg-slate-900 px-1.5 py-0.5 text-xs text-slate-300 transition hover:border-emerald-400/60 hover:text-emerald-300"
-                      >
-                        + {term.label.zh}
-                      </button>
-                    ))}
-                  </div>
+                <div className="flex flex-wrap items-center gap-1 px-0.5 py-1" data-testid="codex-intent-bridge">
+                  {cluster.terms.map(term => (
+                    <button
+                      key={term.slug}
+                      type="button"
+                      title={term.hint.zh}
+                      onClick={() => {
+                        setPromptInput(prev => {
+                          const base = (prev || activeTask.prompt).trim();
+                          if (!base) return term.appendText.zh;
+                          return base.includes(term.appendText.zh) ? base : `${base}\n- ${term.appendText.zh}`;
+                        });
+                      }}
+                      className="inline-flex items-center gap-1 rounded-md bg-[#1a1a19] px-2 py-0.5 text-xs text-[#c9c9c4] transition-colors hover:bg-[#20201e] hover:text-[#ededeb]"
+                    >
+                      <Plus className="size-3" aria-hidden="true" />
+                      {term.label.zh}
+                    </button>
+                  ))}
                   <button
                     type="button"
                     title={w("title.expandIdea")}
@@ -1358,16 +1360,17 @@ function PiCodexWorkbench({
                       setPromptInput(upgraded);
                       toast.success(w("toast.detailsExpanded"));
                     }}
-                    className="rounded-md border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-300 transition hover:bg-emerald-500/25"
+                    className="inline-flex items-center gap-1 rounded-md bg-[#1a1a19] px-2 py-0.5 text-xs text-emerald-200 transition-colors hover:bg-[#20201e]"
                   >
-                    ✨ {w("label.expandDetails")}
+                    <Wand2 className="size-3" aria-hidden="true" />
+                    {w("label.expandDetails")}
                   </button>
                 </div>
               );
             })()}
 
-            <div className="mt-2 flex flex-wrap items-center justify-between gap-1.5 border-t border-slate-800 pt-2">
-              <div className="flex flex-wrap gap-1">
+            <div className="mt-1 flex flex-wrap items-center justify-between gap-1.5 px-0.5">
+              <div className="flex flex-wrap gap-0.5">
                 {[
                   [w("quickPrompt.themeLabel"), "把当前页面配色改为清新浅色主题，并增加一个顶部状态横幅"],
                   [w("quickPrompt.chartLabel"), "请用单文件 HTML5 + CSS + JS 写一个简洁好用的实验数据记录与折线图网页"],
@@ -1377,19 +1380,19 @@ function PiCodexWorkbench({
                     key={label}
                     type="button"
                     onClick={() => setPromptInput(sample)}
-                    className="rounded-lg border border-slate-700/80 bg-slate-800/90 px-2 py-0.5 text-xs text-slate-300 hover:border-emerald-500/50 hover:text-white"
+                    className="rounded-md px-2 py-1 text-xs text-[#9a9a95] transition-colors hover:bg-[#20201e] hover:text-[#ededeb]"
                   >
                     {label}
                   </button>
                 ))}
               </div>
 
-              {/* OpenAI Codex Dual-Mode Action Bar: Ask vs. Code */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 <button
                   type="button"
                   data-testid="codex-mode-ask"
                   disabled={running}
+                  aria-pressed={composerMode === "ask"}
                   onClick={() => {
                     setComposerMode("ask");
                     if (promptInput.trim()) {
@@ -1397,13 +1400,12 @@ function PiCodexWorkbench({
                     }
                   }}
                   title={w("title.askMode")}
-                  className={`rounded-xl border px-2.5 py-1.5 text-xs font-bold transition disabled:opacity-50 ${
-                    composerMode === "ask"
-                      ? "border-sky-400/70 bg-sky-500/20 text-sky-200"
-                      : "border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-600 hover:text-white"
+                  className={`inline-flex h-8 items-center gap-1.5 rounded-[10px] px-3 text-xs transition-colors disabled:opacity-50 ${
+                    composerMode === "ask" ? "bg-[#20201e] text-sky-200" : "text-[#c9c9c4] hover:bg-[#20201e] hover:text-[#ededeb]"
                   }`}
                 >
-                  💬 {w("label.ask")}
+                  <MessageSquare className="size-3.5" aria-hidden="true" />
+                  {w("label.ask")}
                 </button>
                 <button
                   type="submit"
@@ -1411,9 +1413,10 @@ function PiCodexWorkbench({
                   disabled={running}
                   onClick={() => setComposerMode("code")}
                   title={w("title.codeMode")}
-                  className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 px-3.5 py-1.5 text-xs font-black text-slate-950 shadow-md transition hover:brightness-110 disabled:opacity-50"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-[10px] bg-emerald-400 px-3.5 text-xs font-[560] text-[#0b0b0a] transition-colors hover:bg-emerald-300 disabled:opacity-60"
                 >
-                  {running ? w("label.runningNow") : "⚡ 写代码"}
+                  {running ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <ArrowUp className="size-3.5" aria-hidden="true" />}
+                  {running ? w("label.runningNow") : w("label.writeCode")}
                 </button>
               </div>
             </div>
@@ -1422,167 +1425,163 @@ function PiCodexWorkbench({
           }
           // 右栏：产物与 Diff 预览
           right={
-        <section className="flex flex-1 flex-col bg-slate-900/80">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 bg-slate-950/80 px-4 py-2">
-            <div className="flex flex-wrap items-center gap-1">
+        <section className="flex flex-1 flex-col bg-[#151515]">
+          <div className="ans-wb-rule-b flex flex-wrap items-center justify-between gap-2 px-3 py-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-0.5" role="tablist">
               {[
-                { id: "preview", label: w("tab.preview") },
-                { id: "diff", label: `± 变更 (+${activeDiff.additions} -${activeDiff.deletions})` },
-                { id: "code", label: w("tab.code") },
-                { id: "terminal", label: w("tab.terminal") },
-              ].map(t => (
+                { id: "preview", label: w("tab.preview"), Icon: Eye },
+                { id: "diff", label: w("tab.diff"), Icon: GitCompareArrows, count: true },
+                { id: "code", label: w("tab.code"), Icon: Code2 },
+                { id: "terminal", label: w("tab.terminal"), Icon: SquareTerminal },
+              ].map(({ id, label, Icon, count }) => (
                 <button
-                  key={t.id}
+                  key={id}
                   type="button"
-                  data-testid={`codex-tab-${t.id}`}
-                  onClick={() => setCanvasTab(t.id as typeof canvasTab)}
-                  className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
-                    canvasTab === t.id ? "bg-emerald-500 text-slate-950" : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                  role="tab"
+                  aria-selected={canvasTab === id}
+                  data-testid={`codex-tab-${id}`}
+                  onClick={() => setCanvasTab(id as typeof canvasTab)}
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs transition-colors ${
+                    canvasTab === id ? "bg-[#20201e] text-[#ededeb]" : "text-[#9a9a95] hover:bg-[#1a1a19] hover:text-[#ededeb]"
                   }`}
                 >
-                  {t.label}
+                  <Icon className="size-3.5" aria-hidden="true" />
+                  {label}
+                  {count && (
+                    <span className="ans-num font-mono">
+                      <span className="text-emerald-300/90">+{activeDiff.additions}</span>{" "}
+                      <span className="text-rose-300/90">-{activeDiff.deletions}</span>
+                    </span>
+                  )}
                 </button>
               ))}
-              <code className="ml-1.5 hidden max-w-[220px] rounded-md border border-slate-800 bg-slate-900 px-2 py-0.5 text-xs text-emerald-300 sm:inline-flex">
+              <span className="ml-1 hidden max-w-[220px] px-1 font-mono text-xs text-[#9a9a95] xl:inline-flex">
                 <MiddleEllipsis name={activeTask.artifactFile} />
-              </code>
+              </span>
             </div>
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-0.5">
               {canvasTab === "preview" && activeTask.artifactType === "html" && (
-                <div className="inline-flex items-center rounded-lg border border-slate-700 bg-slate-900 p-0.5 text-xs">
+                <div className="mr-1 inline-flex items-center rounded-[10px] bg-[#0b0b0a] p-0.5 text-xs">
                   <button
                     type="button"
                     data-testid="codex-viewport-desktop"
+                    aria-pressed={viewportMode === "desktop"}
                     onClick={() => setViewportMode("desktop")}
-                    className={`rounded px-2 py-0.5 font-semibold ${
-                      viewportMode === "desktop" ? "bg-slate-700 text-white" : "text-slate-400 hover:text-white"
+                    title={w("label.desktop")}
+                    className={`inline-flex items-center gap-1 rounded-lg px-2 py-0.5 ${
+                      viewportMode === "desktop" ? "bg-[#20201e] text-[#ededeb]" : "text-[#9a9a95] hover:text-[#ededeb]"
                     }`}
                   >
-                    🖥️ {w("label.desktop")}
+                    <Monitor className="size-3.5" aria-hidden="true" />
+                    {w("label.desktop")}
                   </button>
                   <button
                     type="button"
                     data-testid="codex-viewport-mobile"
+                    aria-pressed={viewportMode === "mobile"}
                     onClick={() => setViewportMode("mobile")}
-                    className={`rounded px-2 py-0.5 font-semibold ${
-                      viewportMode === "mobile" ? "bg-slate-700 text-white" : "text-slate-400 hover:text-white"
+                    title={w("label.mobile")}
+                    className={`inline-flex items-center gap-1 rounded-lg px-2 py-0.5 ${
+                      viewportMode === "mobile" ? "bg-[#20201e] text-[#ededeb]" : "text-[#9a9a95] hover:text-[#ededeb]"
                     }`}
                   >
-                    📱 {w("label.mobile")}
+                    <Smartphone className="size-3.5" aria-hidden="true" />
+                    {w("label.mobile")}
                   </button>
                 </div>
               )}
               {canvasTab === "diff" && activeTask.previousCode && (
-                <button
-                  type="button"
-                  onClick={revertToPreviousCode}
-                  title={w("title.restoreVersion")}
-                  className="rounded-lg border border-amber-500/40 bg-amber-500/15 px-2 py-1 text-xs font-bold text-amber-300 hover:bg-amber-500/25"
-                >
-                  ↩️ {w("label.restore")}
+                <button type="button" onClick={revertToPreviousCode} title={w("title.restoreVersion")} className="ans-wb-chip">
+                  <Undo2 className="size-3.5" aria-hidden="true" />
+                  {w("label.restore")}
                 </button>
               )}
-              <button
-                type="button"
-                onClick={() => setPreviewKey(k => k + 1)}
-                title={w("title.reloadPreview")}
-                className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-800"
-              >
-                🔄 {w("label.refresh")}
+              <button type="button" onClick={() => setPreviewKey(k => k + 1)} title={w("title.reloadPreview")} aria-label={w("label.refresh")} className="ans-wb-chip px-2">
+                <RotateCw className="size-3.5" aria-hidden="true" />
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  navigator.clipboard?.writeText(activeTask.artifactCode);
-                  toast.success(w("toast.copied"));
-                }}
-                className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-800"
+                onClick={() => void copyFeedback.copy(activeTask.artifactCode)}
+                title={w("label.copy")}
+                aria-label={w("label.copy")}
+                className="ans-wb-chip px-2"
               >
-                📋 {w("label.copy")}
+                {copyFeedback.copied ? (
+                  <Check className={`size-3.5 text-emerald-300 ${copyFeedback.state === "leaving" ? "ans-feedback-leaving" : "ans-pop"}`} aria-hidden="true" />
+                ) : (
+                  <Copy className="size-3.5" aria-hidden="true" />
+                )}
               </button>
-              <button
-                type="button"
-                onClick={downloadActiveHtml}
-                className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-xs font-bold text-emerald-300 hover:bg-emerald-500/25"
-              >
-                💾 {w("label.download")}
+              <button type="button" onClick={downloadActiveHtml} title={w("label.download")} aria-label={w("label.download")} className="ans-wb-chip px-2">
+                <Download className="size-3.5" aria-hidden="true" />
               </button>
               {activeTask.artifactType === "html" && (
-                <button
-                  type="button"
-                  onClick={openFullscreenPreview}
-                  className="rounded-lg border border-indigo-400/40 bg-indigo-500/20 px-2.5 py-1 text-xs font-bold text-indigo-200 hover:bg-indigo-500/30"
-                >
-                  🖥️ {w("label.newWindow")} ↗
+                <button type="button" onClick={openFullscreenPreview} className="ans-wb-chip">
+                  <ExternalLink className="size-3.5" aria-hidden="true" />
+                  {w("label.newWindow")}
                 </button>
               )}
             </div>
           </div>
 
-          <div className="flex flex-1 flex-col p-3">
+          <div className="flex flex-1 flex-col p-2.5">
             {canvasTab === "preview" && (
               activeTask.artifactType === "html" ? (
-                <div className="flex flex-1 items-stretch justify-center rounded-2xl border border-slate-800 bg-slate-950/90 p-1">
+                <div className="flex flex-1 items-stretch justify-center rounded-[14px] bg-[#0b0b0a] p-1">
                   <iframe
                     key={`${activeTask.id}-${previewKey}`}
                     title="Live Artifact Preview"
                     srcDoc={activeTask.artifactCode}
                     sandbox="allow-scripts"
-                    className={`min-h-[540px] flex-1 rounded-xl border border-slate-800 bg-slate-950 shadow-inner transition-all ${
+                    className={`min-h-[540px] flex-1 rounded-[10px] bg-[#0b0b0a] transition-[max-width] duration-300 ${
                       viewportMode === "mobile" ? "mx-auto max-w-[390px]" : "w-full"
                     }`}
                   />
                 </div>
               ) : activeTask.artifactType === "markdown" ? (
-                <article className="min-h-[540px] flex-1 overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-5 text-sm leading-7 text-slate-100">
-                  <div className="mb-3 flex items-center justify-between border-b border-slate-800 pb-2.5">
-                    <span className="text-xs font-extrabold text-emerald-400">📄 生成文档预览 {activeTask.title}</span>
-                    <span className="text-xs text-slate-400">{activeTask.model}</span>
+                <article className="min-h-[540px] flex-1 overflow-auto rounded-[14px] bg-[#0b0b0a] p-5 text-sm leading-7 text-[#ededeb]">
+                  <div className="ans-wb-rule-b mb-3 flex items-center justify-between gap-3 pb-2.5 text-xs text-[#9a9a95]">
+                    <span className="inline-flex min-w-0 items-center gap-1.5">
+                      <FileText className="size-3.5 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{w("label.docPreview")} {activeTask.title}</span>
+                    </span>
+                    <span className="shrink-0 font-mono">{activeTask.model}</span>
                   </div>
-                  <div className="whitespace-pre-wrap">{activeTask.artifactCode}</div>
+                  <div className="whitespace-pre-wrap [text-wrap:pretty]">{activeTask.artifactCode}</div>
                 </article>
               ) : (
-                <pre className="min-h-[540px] flex-1 overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs leading-6 text-emerald-200">
+                <pre className="min-h-[540px] flex-1 overflow-auto rounded-[14px] bg-[#0b0b0a] p-4 font-mono text-xs leading-6 text-[#d7d7d2]">
                   {activeTask.artifactCode}
                 </pre>
               )
             )}
 
             {canvasTab === "diff" && (
-              <div
-                data-testid="codex-diff-viewer"
-                className="min-h-[540px] flex-1 overflow-auto rounded-2xl border border-slate-800 bg-slate-950 font-mono text-xs"
-              >
-                <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-800 bg-slate-900/95 px-4 py-2 text-xs">
-                  <span className="text-slate-300">
-                    diff --git a/{activeTask.artifactFile} b/{activeTask.artifactFile}
+              <div data-testid="codex-diff-viewer" className="min-h-[540px] flex-1 overflow-auto rounded-[14px] bg-[#0b0b0a] font-mono text-xs">
+                <div className="ans-wb-rule-b sticky top-0 z-10 flex items-center justify-between gap-3 bg-[#0b0b0a]/95 px-4 py-2 backdrop-blur">
+                  <span className="min-w-0 truncate text-[#9a9a95]">
+                    a/{activeTask.artifactFile} → b/{activeTask.artifactFile}
                   </span>
-                  <span className="space-x-2 font-bold">
-                    <span className="text-emerald-400">+{activeDiff.additions} 新增</span>
-                    <span className="text-rose-400">-{activeDiff.deletions} 删除</span>
+                  <span className="ans-num shrink-0 space-x-3">
+                    <span className="text-emerald-300/90">+{activeDiff.additions} {w("label.added")}</span>
+                    <span className="text-rose-300/90">-{activeDiff.deletions} {w("label.removed")}</span>
                   </span>
                 </div>
-                <div className="divide-y divide-slate-900/60 py-1">
+                <div className="py-1">
                   {activeDiff.lines.map((line, idx) => (
                     <div
                       key={idx}
-                      className={`grid grid-cols-[40px_40px_20px_1fr] items-start px-2 py-0.5 leading-5 ${
+                      className={`ans-num grid grid-cols-[40px_40px_20px_1fr] items-start px-2 py-0.5 leading-5 ${
                         line.type === "add"
-                          ? "bg-emerald-500/10 text-emerald-200"
+                          ? "bg-emerald-400/[0.08] text-emerald-100"
                           : line.type === "del"
-                            ? "bg-rose-500/15 text-rose-300"
-                            : "text-slate-400"
+                            ? "bg-rose-400/[0.10] text-rose-200"
+                            : "text-[#9a9a95]"
                       }`}
                     >
-                      <span className="select-none pr-2 text-right text-xs text-slate-400">
-                        {line.oldLine ?? ""}
-                      </span>
-                      <span className="select-none pr-2 text-right text-xs text-slate-400">
-                        {line.newLine ?? ""}
-                      </span>
-                      <span className="select-none font-bold">
-                        {line.type === "add" ? "+" : line.type === "del" ? "-" : " "}
-                      </span>
+                      <span className="select-none pr-2 text-right text-[#6f6f6a]">{line.oldLine ?? ""}</span>
+                      <span className="select-none pr-2 text-right text-[#6f6f6a]">{line.newLine ?? ""}</span>
+                      <span className="select-none">{line.type === "add" ? "+" : line.type === "del" ? "-" : " "}</span>
                       <span className="whitespace-pre-wrap break-all">{line.text || " "}</span>
                     </div>
                   ))}
@@ -1591,10 +1590,10 @@ function PiCodexWorkbench({
             )}
 
             {canvasTab === "code" && (
-              <div className="flex min-h-[540px] flex-1 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950">
+              <div className="flex min-h-[540px] flex-1 overflow-hidden rounded-[14px] bg-[#0b0b0a]">
                 <div
                   aria-hidden="true"
-                  className="select-none border-r border-slate-800/80 bg-slate-900/60 px-2.5 py-4 text-right font-mono text-xs leading-6 text-slate-400"
+                  className="ans-num select-none bg-[#0f0f0e] px-2.5 py-4 text-right font-mono text-xs leading-6 text-[#6f6f6a]"
                 >
                   {Array.from({ length: codeLineCount }, (_, idx) => (
                     <div key={idx}>{idx + 1}</div>
@@ -1604,24 +1603,23 @@ function PiCodexWorkbench({
                   value={activeTask.artifactCode}
                   onChange={e => updateActiveCode(e.target.value)}
                   aria-label={w("aria.sourceEditor")}
-                  className="min-h-[540px] w-full flex-1 resize-none bg-slate-950 p-4 font-mono text-xs leading-6 text-emerald-300 focus:outline-none"
+                  spellCheck={false}
+                  className="min-h-[540px] w-full flex-1 resize-none bg-transparent p-4 font-mono text-xs leading-6 text-[#d7d7d2] focus:outline-none"
                 />
               </div>
             )}
 
             {canvasTab === "terminal" && (
-              <div className="min-h-[540px] flex-1 overflow-auto rounded-2xl border border-slate-800 bg-ink p-4 font-mono text-xs leading-6 text-emerald-400">
-                <div className="mb-2 flex items-center justify-between border-b border-slate-800 pb-2 text-slate-400">
-                  <span>Agent 已完成今日签到 (+5 积分) {activeTask.branch || "ans-workspace/main"}</span>
-                  <span>{activeTask.model}</span>
+              <div className="min-h-[540px] flex-1 overflow-auto rounded-[14px] bg-[#0b0b0a] p-4 font-mono text-xs leading-6 text-[#c9c9c4]">
+                <div className="ans-wb-rule-b mb-3 flex items-center justify-between gap-3 pb-2 text-[#9a9a95]">
+                  <span className="truncate">~/{activeTask.branch || "ans-workspace/main"}</span>
+                  <span className="shrink-0">{activeTask.model}</span>
                 </div>
                 {activeTask.trace && activeTask.trace.length > 0 && (
-                  <div className="mb-3 rounded-xl border border-slate-800/90 bg-slate-950/90 p-2.5 text-slate-300">
-                    <div className="mb-1 text-xs font-bold text-emerald-300">{w("label.currentTaskSteps")}</div>
+                  <div className="mb-3 rounded-[10px] bg-[#151515] p-3">
+                    <div className="mb-1 text-[#9a9a95]">{w("label.currentTaskSteps")}</div>
                     {activeTask.trace.map((step, idx) => (
-                      <div key={idx} className="text-xs leading-5">
-                        {step}
-                      </div>
+                      <div key={idx} className="leading-5 text-[#d7d7d2]">{step}</div>
                     ))}
                   </div>
                 )}
