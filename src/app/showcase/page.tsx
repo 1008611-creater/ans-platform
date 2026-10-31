@@ -40,12 +40,12 @@ const CURATED_SHOWCASE = [
   },
   {
     id: "curated-dragon-arcade",
-    title: "Compute Quest 3D 算力盲盒抓娃娃机与小恐龙养成展台",
+    title: "Compute Quest 3D 算力盲盒抓娃娃机与兔兔龙养成展台",
     version: "v3.0",
     author: "参考范例 · 互动 3D 方向",
     competition: "平台 3D 交互参考样板",
     cover: "/catalog/ans-pro-v1/dragon-arcade.webp",
-    summary: "Three.js 物理刚体碰撞抓娃娃机与小恐龙养成装扮体系，将参赛与创作 XP 转化为可交互的算力盲盒奖励。",
+    summary: "Three.js 物理刚体碰撞抓娃娃机与兔兔龙养成装扮体系，将参赛与创作 XP 转化为可交互的算力盲盒奖励。",
     href: "/workspace/benefits",
   },
   {

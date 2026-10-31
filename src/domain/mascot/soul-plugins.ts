@@ -430,7 +430,7 @@ export const BUILTIN_MEME_STICKERS: readonly MemeStickerItem[] = [
   {
     id: "meme-dino-hug",
     packId: "dino-core",
-    title: "小恐龙抱抱毯",
+    title: "兔兔龙抱抱毯",
     kaomoji: "(っ´ω`)ﾉ(╥ω╥)",
     badge: "🫂 没关系我在呢",
     emotion: "sad",
@@ -478,7 +478,7 @@ export const CURATED_BILI_POOL: readonly Omit<BiliSubagentReport, "id" | "at">[]
     whyWorthIt:
       "正好对应我们刚升级完的「像素 2D + 真 3D」双形态舞台，视频里提到的眼神双高光和呼吸缩放曲线非常实用。",
     commentVibe:
-      "评论区都在求源码和配色方案，好多人在问薄荷绿小恐龙材质的 Fresnel 参数怎么调。",
+      "评论区都在求源码和配色方案，好多人在问薄荷绿兔兔龙材质的 Fresnel 参数怎么调。",
     dinoShareText:
       "嘿嘿，子代理在 B 站翻到一个超对味的图形学视频（BV19x4y1K7mP），专门聊像素帧和真 3D 边缘光怎么丝滑切换！我已经把字幕重点摘好啦，要一起看看吗？",
   },
@@ -660,7 +660,7 @@ export function createDefaultSoulPluginsState(): SoulPluginsState {
         {
           id: "member-1",
           name: "主理人",
-          note: "ANS 创作者与总指挥，喜欢干净利落的交付和有灵魂的小恐龙。",
+          note: "ANS 创作者与总指挥，喜欢干净利落的交付和有灵魂的兔兔龙。",
           updatedAt: stamp,
         },
       ],

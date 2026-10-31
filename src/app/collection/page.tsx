@@ -30,11 +30,11 @@ export default async function CollectionPage() {
         desc: isEn ? "Claim up to 750 team compute points and build verifiable agricultural AI solutions." : "组队申领最高 750 算力积分，围绕智慧水肥、病虫害早筛与畜牧巡检提交 SHA-256 存证作品。",
       },
       {
-        title: isEn ? "3D Claw Machine & Dino Stage" : "3D 太空抓娃娃机与小恐龙养成展台",
+        title: isEn ? "3D Claw Machine & Dino Stage" : "3D 太空抓娃娃机与兔兔龙养成展台",
         tag: isEn ? "Free Compute Points" : "免费算力积分",
         cover: "/catalog/gitglow-v1/ans-3d-showcase.svg",
         href: "/workspace/benefits",
-        desc: isEn ? "Complete the 30s survey for 50 points and use the 3D claw machine to claim 10–1,000 points." : "完成 30 秒问卷领 50 积分，操纵 3D 机械臂每次必得 10~1000 积分并解锁小恐龙装扮。",
+        desc: isEn ? "Complete the 30s survey for 50 points and use the 3D claw machine to claim 10–1,000 points." : "完成 30 秒问卷领 50 积分，操纵 3D 机械臂每次必得 10~1000 积分并解锁兔兔龙装扮。",
       },
       {
         title: isEn ? "CAUAI Infinite Canvas · Multimodal AIGC Studio" : "CAUAI 无限画布 · 多模态视觉与视频工作台",

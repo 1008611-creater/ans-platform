@@ -55,7 +55,7 @@ export const SWISS_COMPUTE_STEPS: SwissStepItem[] = [
     seekSeconds: 13.34,
     bullets: [
       "30 秒问卷领 50 积分，街机互动累计 100~150 积分",
-      "模型演练场与 3D 小恐龙免配 Key 直接在线试玩",
+      "模型演练场与 3D 兔兔龙免配 Key 直接在线试玩",
     ],
     ctaLabel: "免费领积分 →",
     ctaHref: "/workspace/benefits",
