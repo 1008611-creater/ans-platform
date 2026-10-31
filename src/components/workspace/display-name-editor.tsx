@@ -8,7 +8,7 @@ import {
   ArrowDown, ArrowRight, ArrowUp, ArrowUpRight, BookOpen, Bot, CalendarCheck, Check, ChevronDown, Code2, Coins, Copy, CopyPlus,
   Download, ExternalLink, Eye, FileCode2, FileText, FolderOpen, FolderPlus, Gift, GitBranch, GitCompareArrows, Lightbulb,
   ListChecks, Loader2, MessageSquare, Monitor, PanelLeft, PanelRightClose, PanelRightOpen, Pencil, Plus, ReceiptText, RotateCw,
-  Smartphone, SquareTerminal, Store, Trash2, Undo2, Wand2, X,
+  Smartphone, Square, SquareTerminal, Store, Trash2, Undo2, Wand2, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -279,6 +279,19 @@ function applySmartLocalCodeEdit(existingCode: string, instruction: string): str
   return `${existingCode.trimEnd()}\n\n# [Agent 增量修改] ${safeNote}\n`;
 }
 
+// 侧栏宽度：默认 276px，可拖到 240–420px，双击复位；宽度只存在本机
+const SIDEBAR_DEFAULT = 276;
+const SIDEBAR_MIN = 240;
+const SIDEBAR_MAX = 420;
+const SIDEBAR_STORAGE_KEY = "ans:workspace:sidebar-width:v1";
+const clampSidebar = (value: number) => Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, Math.round(value)));
+
+interface QueuedPrompt {
+  id: string;
+  text: string;
+  mode: "code" | "ask";
+}
+
 const WORKBENCH_MODEL_OPTIONS = [
   { key: "deepseek-v4.1-flash", labelKey: "model.flash" },
   { key: "gpt-6.1-sol", labelKey: "model.sol" },
@@ -320,12 +333,75 @@ function PiCodexWorkbench({
   ]);
   const [livePoints, setLivePoints] = useState<number>(points);
   const copyFeedback = useCopyFeedback();
+  const replyCopy = useCopyFeedback();
   const threadRef = useRef<HTMLDivElement>(null);
   const { showJump, jumpToLatest } = useFollowBottom(threadRef);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(SIDEBAR_DEFAULT);
+  const gripRef = useRef<{ startX: number; startWidth: number } | null>(null);
+  const [gripDragging, setGripDragging] = useState<boolean>(false);
+  // 执行中继续发的消息排在输入框上方，当前这轮结束后按顺序发出；用户点停止后先不自动发
+  const [queue, setQueue] = useState<QueuedPrompt[]>([]);
+  const holdQueueRef = useRef<boolean>(false);
+  const abortRef = useRef<AbortController | null>(null);
+  // 执行计时取真实开始时间；完成时不在看的任务记成未读
+  const [runStartedAt, setRunStartedAt] = useState<number | null>(null);
+  const [now, setNow] = useState<number>(() => Date.now());
+  const [unseen, setUnseen] = useState<string[]>([]);
+  const activeIdRef = useRef(activeId);
+  activeIdRef.current = activeId;
+  const homeRef = useRef(home);
+  homeRef.current = home;
 
   useEffect(() => {
     setLivePoints(points);
   }, [points]);
+
+  useEffect(() => {
+    try {
+      const stored = Number(window.localStorage.getItem(SIDEBAR_STORAGE_KEY));
+      if (stored) setSidebarWidth(clampSidebar(stored));
+    } catch {
+      // ignore storage errors
+    }
+  }, []);
+
+  useEffect(() => {
+    if (runStartedAt === null) return;
+    setNow(Date.now());
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [runStartedAt]);
+
+  useEffect(() => {
+    if (running || queue.length === 0 || holdQueueRef.current) return;
+    const [next, ...rest] = queue;
+    setQueue(rest);
+    void executeRef.current(next.text, "playground", undefined, next.mode);
+  }, [running, queue]);
+
+  function formatDuration(sec: number) {
+    const s = Math.max(1, Math.round(sec));
+    return s < 60 ? w("time.seconds", { s }) : w("time.minutes", { m: Math.floor(s / 60), s: s % 60 });
+  }
+
+  function saveSidebarWidth(value: number) {
+    try {
+      window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(value));
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  function noteDone(taskId: string) {
+    if (homeRef.current || activeIdRef.current !== taskId) {
+      setUnseen(prev => (prev.includes(taskId) ? prev : [...prev, taskId]));
+    }
+  }
+
+  function stopRun() {
+    holdQueueRef.current = true;
+    abortRef.current?.abort();
+  }
 
   function readStoredUserTasks(): CodexTask[] {
     if (typeof window === "undefined") return [];
@@ -392,6 +468,7 @@ function PiCodexWorkbench({
   function focusTask(id: string) {
     setActiveId(id);
     setHome(false);
+    setUnseen(prev => prev.filter(item => item !== id));
     setNavOpen(false);
     // 窄屏上面板是整屏浮层，进入任务时先看对话，点文件变更条再打开
     if (!wide) setPanelOpen(false);
@@ -562,6 +639,9 @@ function PiCodexWorkbench({
 
     setRunning(true);
     const startedAt = Date.now();
+    setRunStartedAt(startedAt);
+    const controller = new AbortController();
+    abortRef.current = controller;
     const baseTasks = baseTasksOverride ?? (userTasks.length > 0 ? userTasks : readStoredUserTasks());
     const shouldIterateCurrent =
       intent === "playground" && !home && iterateOnCurrent && Boolean(activeTask?.artifactCode);
@@ -640,6 +720,7 @@ function PiCodexWorkbench({
           mode: runMode,
           contextCode: shouldIterateCurrent ? contextBaseline.slice(0, 12000) : undefined,
         }),
+        signal: controller.signal,
       });
       const elapsedSec = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
       if (res.status === 401 || !res.ok) {
@@ -762,6 +843,23 @@ function PiCodexWorkbench({
       ]);
     } catch {
       const elapsedSec = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
+      if (controller.signal.aborted) {
+        // 用户主动停止：保留发起前的文件，不生成本地草稿
+        saveUserTasks(
+          nextWithRunning.map(item =>
+            item.id === taskId
+              ? {
+                  ...item,
+                  status: "stopped" as const,
+                  durationSec: elapsedSec,
+                  trace: runningTrace.slice(0, 2),
+                  summary: w("reply.stopped"),
+                }
+              : item,
+          ),
+        );
+        return;
+      }
       const localDiff = computeUnifiedDiff(diffBaselineForFallback, fallbackCode);
       const updated = nextWithRunning.map(item =>
         item.id === taskId
@@ -786,7 +884,10 @@ function PiCodexWorkbench({
       );
       saveUserTasks(updated);
     } finally {
+      abortRef.current = null;
+      setRunStartedAt(null);
       setRunning(false);
+      noteDone(taskId);
     }
   }
 
@@ -913,7 +1014,38 @@ function PiCodexWorkbench({
 
   function submitComposer(mode: "code" | "ask" = composerMode) {
     setToolsOpen(false);
+    holdQueueRef.current = false;
+    const text = promptInput.trim();
+    if (running) {
+      if (!text) return;
+      setQueue(prev => [...prev, { id: `queued-${Date.now()}`, text, mode }]);
+      setPromptInput("");
+      return;
+    }
     void executeCodexTask(undefined, "playground", undefined, mode);
+  }
+
+  function startSidebarDrag(event: React.PointerEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    gripRef.current = { startX: event.clientX, startWidth: sidebarWidth };
+    setGripDragging(true);
+  }
+
+  function moveSidebarDrag(event: React.PointerEvent<HTMLDivElement>) {
+    const grip = gripRef.current;
+    if (!grip) return;
+    setSidebarWidth(clampSidebar(grip.startWidth + event.clientX - grip.startX));
+  }
+
+  function endSidebarDrag(restore = false) {
+    const grip = gripRef.current;
+    if (!grip) return;
+    gripRef.current = null;
+    setGripDragging(false);
+    const value = restore ? grip.startWidth : sidebarWidth;
+    setSidebarWidth(value);
+    saveSidebarWidth(value);
   }
 
   // 左栏：新建、我的任务、引导范例；底部是去处链接和账户
@@ -975,6 +1107,9 @@ function PiCodexWorkbench({
                       <FileCode2 className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                     )}
                     <span className="min-w-0 flex-1 truncate" title={t.title}>{t.title}</span>
+                    {unseen.includes(t.id) && (
+                      <span className="size-1.5 shrink-0 rounded-full bg-sky-500 group-hover:hidden group-focus-within:hidden" aria-hidden="true" />
+                    )}
                     <button
                       type="button"
                       onClick={e => handleDeleteUserTask(t.id, e)}
@@ -1064,7 +1199,7 @@ function PiCodexWorkbench({
   // 底部输入框：一个大框；「+」里收纳补齐细节、意图词、快捷指令和新建空白
   const seedText = (promptInput || (home ? "" : activeTask.prompt) || "").trim();
   const cluster = detectIntentAndMatchTerms(seedText);
-  const composer = (
+  const composerCard = (
     <form
       onSubmit={e => {
         e.preventDefault();
@@ -1072,28 +1207,18 @@ function PiCodexWorkbench({
       }}
       className="ans-wb-composer rounded-[20px] p-2"
     >
-      {!home && activeTask.artifactCode && (
-        <button
-          type="button"
-          aria-pressed={iterateOnCurrent}
-          onClick={() => setIterateOnCurrent(v => !v)}
-          title={w("label.iterateOnCurrent")}
-          className={`mb-1 inline-flex max-w-full items-center gap-1.5 rounded-[12px] px-2 py-1 text-xs transition-colors ${
-            iterateOnCurrent ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted"
-          }`}
-        >
-          {iterateOnCurrent ? <Check className="size-3.5 shrink-0" aria-hidden="true" /> : <FileCode2 className="size-3.5 shrink-0" aria-hidden="true" />}
-          <span className="shrink-0">{w("label.iterateOnCurrent")}</span>
-          <MiddleEllipsis name={activeTask.artifactFile} className="font-mono" />
-        </button>
-      )}
-
       <textarea
         id="codex-composer-input"
         rows={home ? 3 : 2}
         value={promptInput}
         onChange={e => setPromptInput(e.target.value)}
-        placeholder={!home && iterateOnCurrent ? w("placeholder.iterate", { file: activeTask.artifactFile }) : w("placeholder.newTask")}
+        placeholder={
+          running
+            ? w("placeholder.queue")
+            : !home && iterateOnCurrent
+              ? w("placeholder.iterate", { file: activeTask.artifactFile })
+              : w("placeholder.newTask")
+        }
         className="block max-h-[200px] min-h-[52px] w-full resize-none bg-transparent px-2 py-1.5 text-sm leading-6 text-foreground placeholder:text-muted-foreground focus:outline-none [field-sizing:content]"
         onKeyDown={e => {
           if (e.key === "Enter" && !e.shiftKey && !imeBlocks(e)) {
@@ -1229,24 +1354,66 @@ function PiCodexWorkbench({
             </select>
             <ChevronDown className="pointer-events-none absolute right-1.5 size-3.5" aria-hidden="true" />
           </label>
+          {running && (
+            <button
+              type="button"
+              data-testid="codex-stop"
+              onClick={stopRun}
+              aria-label={w("label.stopRun")}
+              title={w("label.stopRun")}
+              className="inline-flex size-8 items-center justify-center rounded-full bg-muted text-foreground transition-colors hover:bg-surface-raised"
+            >
+              <Square className="size-3 fill-current" aria-hidden="true" />
+            </button>
+          )}
           <button
             type="submit"
             data-testid="codex-send"
-            disabled={running || !promptInput.trim()}
-            aria-label={running ? w("label.runningNow") : w("label.send")}
+            disabled={!promptInput.trim()}
+            aria-label={running ? w("label.queued") : w("label.send")}
             title={composerMode === "ask" ? w("title.askMode") : w("title.codeMode")}
             className="inline-flex size-8 items-center justify-center rounded-full bg-foreground text-background transition-opacity hover:opacity-90 disabled:opacity-30"
           >
-            {running ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <ArrowUp className="size-4" aria-hidden="true" />}
+            <ArrowUp className="size-4" aria-hidden="true" />
           </button>
         </div>
       </div>
     </form>
   );
 
+  // 有产物时，输入框背后露出一条灰色上下文条：基于哪个文件继续改，点一下切换
+  const composer = !home && activeTask.artifactCode ? (
+    <div className="ans-wb-tray">
+      <button
+        type="button"
+        aria-pressed={iterateOnCurrent}
+        onClick={() => setIterateOnCurrent(v => !v)}
+        title={w("label.iterateOnCurrent")}
+        className={`flex w-full min-w-0 items-center gap-1.5 rounded-t-[20px] px-3.5 pb-2 pt-1.5 text-xs transition-colors ${
+          iterateOnCurrent ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        {iterateOnCurrent ? <Check className="size-3.5 shrink-0" aria-hidden="true" /> : <FileCode2 className="size-3.5 shrink-0" aria-hidden="true" />}
+        <span className="shrink-0">{w("label.iterateOnCurrent")}</span>
+        <MiddleEllipsis name={activeTask.artifactFile} className="font-mono text-muted-foreground" />
+      </button>
+      {composerCard}
+    </div>
+  ) : (
+    composerCard
+  );
+
   // 对话：用户指令是右侧气泡；Agent 回复是正文，上面一行可折叠的执行步骤，下面是文件变更条和操作
+  const taskRunning = running && activeTask.status === "running";
+  const elapsedSec = taskRunning && runStartedAt !== null ? (now - runStartedAt) / 1000 : activeTask.durationSec ?? 0;
+  const runStatusLabel = taskRunning
+    ? `${w("status.working")} ${formatDuration(elapsedSec)}`
+    : activeTask.status === "stopped"
+      ? w("status.stoppedAfter", { time: formatDuration(elapsedSec) })
+      : w("status.workedFor", { time: formatDuration(elapsedSec) });
+
   const thread = (
-    <div className="mx-auto w-full max-w-[720px] space-y-5 px-4 pb-6 pt-6 sm:px-6">
+    <div className="mx-auto w-full max-w-[768px] space-y-4 px-4 pb-6 pt-6 sm:px-6">
       <div className="flex flex-col items-end gap-1.5">
         {isViewingGuideSample && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -1279,13 +1446,13 @@ function PiCodexWorkbench({
               aria-expanded={traceExpanded}
               className="inline-flex items-center gap-1.5 rounded-md py-0.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
-              {running && activeTask.status === "running" ? (
+              {taskRunning ? (
                 <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
               ) : (
                 <ListChecks className="size-3.5" aria-hidden="true" />
               )}
-              {w("trace.heading")} <span className="ans-num">{activeTask.trace.length}</span> {w("trace.unit")}
-              {activeTask.durationSec ? <span className="ans-num">{activeTask.durationSec}s</span> : null}
+              <span className="ans-num">{runStatusLabel}</span>
+              <span className="ans-num text-muted-foreground/70">{w("label.steps", { n: activeTask.trace.length })}</span>
               <ChevronDown className={`size-3.5 transition-transform ${traceExpanded ? "rotate-180" : "-rotate-90"}`} aria-hidden="true" />
             </button>
             <div className="ans-collapse" data-open={traceExpanded}>
@@ -1339,6 +1506,19 @@ function PiCodexWorkbench({
         )}
 
         <div className="-ml-2 flex flex-wrap items-center gap-0.5">
+          <button
+            type="button"
+            onClick={() => void replyCopy.copy(activeTask.summary)}
+            title={w("label.copyReply")}
+            aria-label={w("label.copyReply")}
+            className="ans-wb-icon"
+          >
+            {replyCopy.copied ? (
+              <Check className={`size-3.5 ${addTone} ${replyCopy.state === "leaving" ? "ans-feedback-leaving" : "ans-pop"}`} aria-hidden="true" />
+            ) : (
+              <Copy className="size-3.5" aria-hidden="true" />
+            )}
+          </button>
           {isViewingGuideSample && (
             <button type="button" onClick={forkActiveSampleToDraft} className="ans-wb-icon">
               <CopyPlus className="size-3.5" aria-hidden="true" />
@@ -1365,7 +1545,7 @@ function PiCodexWorkbench({
   // 右侧面板：预览、变更、源码、终端
   const panel = (
     <section className="flex h-full min-h-0 flex-1 flex-col bg-background">
-      <div className="ans-wb-rule-b flex h-12 shrink-0 items-center justify-between gap-2 px-2">
+      <div className="ans-wb-rule-b flex h-11 shrink-0 items-center justify-between gap-2 px-2">
         <div className="flex min-w-0 items-center gap-0.5 overflow-x-auto" role="tablist">
           {[
             { id: "preview", label: w("tab.preview"), Icon: Eye },
@@ -1561,25 +1741,24 @@ function PiCodexWorkbench({
     <section className="relative flex h-full min-h-0 flex-1 flex-col bg-card">
       <div ref={threadRef} className="min-h-0 flex-1 overflow-y-auto">
         {home ? (
-          <div className="mx-auto flex min-h-full w-full max-w-[720px] flex-col justify-center gap-6 px-4 py-10 sm:px-6">
-            <h1 className="text-center text-2xl font-medium tracking-tight [text-wrap:balance]">{w("home.title")}</h1>
+          <div className="mx-auto flex min-h-full w-full max-w-[768px] flex-col justify-center gap-6 px-4 py-10 sm:px-6">
+            <h1 className="text-center text-[28px] font-medium leading-9 tracking-tight [text-wrap:balance]">{w("home.title")}</h1>
             {composer}
-            <div>
-              <div className="mb-2 px-1 text-xs text-muted-foreground">{w("home.samples")}</div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {guideTasks.map(t => (
+            {/* 范例收成一排轻标签，逐条浮入；点开是引导范例，不冒充用户自己的任务 */}
+            <div className="space-y-2">
+              <div className="text-center text-xs text-muted-foreground">{w("home.samples")}</div>
+              <div className="flex flex-wrap justify-center gap-2">
+                {guideTasks.map((t, idx) => (
                   <button
                     key={t.id}
                     type="button"
                     onClick={() => focusTask(t.id)}
                     title={t.summary}
-                    className="flex min-w-0 flex-col gap-1 rounded-[14px] bg-background px-3.5 py-3 text-left shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-colors hover:bg-muted"
+                    style={{ animationDelay: `${idx * 25}ms` }}
+                    className="ans-wb-rise inline-flex h-11 max-w-full items-center gap-1.5 rounded-full px-3.5 text-sm text-muted-foreground shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-colors hover:bg-muted hover:text-foreground sm:h-9"
                   >
-                    <span className="truncate text-sm">{t.title}</span>
-                    <span className="flex min-w-0 items-center justify-between gap-2 text-xs text-muted-foreground">
-                      <MiddleEllipsis name={t.artifactFile} className="font-mono" />
-                      <span className="shrink-0">{t.tag.replace("范例", "")}</span>
-                    </span>
+                    <Lightbulb className="size-3.5 shrink-0" aria-hidden="true" />
+                    <span className="truncate">{t.title}</span>
                   </button>
                 ))}
               </div>
@@ -1599,7 +1778,28 @@ function PiCodexWorkbench({
           {w("label.jumpLatest")}
         </button>
       )}
-      {!home && <div className="mx-auto w-full max-w-[720px] px-4 pb-4 sm:px-6">{composer}</div>}
+      {!home && (
+        <div className="mx-auto w-full max-w-[768px] px-4 pb-4 sm:px-6">
+          {queue.length > 0 && (
+            <ul className="mb-2 space-y-1" aria-label={w("label.queued")}>
+              {queue.map(item => (
+                <li key={item.id} className="flex min-w-0 items-center gap-2 rounded-[12px] bg-muted py-1 pl-3 pr-1 text-sm">
+                  <span className="shrink-0 text-xs text-muted-foreground">{w("label.queued")}</span>
+                  <span className="min-w-0 flex-1 truncate" title={item.text}>{item.text}</span>
+                  <button
+                    type="button"
+                    onClick={() => setQueue(prev => prev.filter(entry => entry.id !== item.id))}
+                    className="ans-wb-icon h-7 min-w-7"
+                  >
+                    {w("label.withdraw")}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {composer}
+        </div>
+      )}
     </section>
   );
 
@@ -1610,7 +1810,38 @@ function PiCodexWorkbench({
       className="ans-wb relative flex h-[calc(100dvh-var(--wb-top)-64px-env(safe-area-inset-bottom))] min-h-[560px] overflow-hidden bg-background text-foreground xl:h-[calc(100dvh-var(--wb-top))]"
     >
       {wide ? (
-        <aside className="ans-wb-side w-[248px] shrink-0 bg-background">{sidebar}</aside>
+        <aside style={{ width: sidebarWidth }} className="ans-wb-side relative shrink-0 bg-background">
+          {sidebar}
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            aria-label={w("label.resizeSidebar")}
+            aria-valuemin={SIDEBAR_MIN}
+            aria-valuemax={SIDEBAR_MAX}
+            aria-valuenow={sidebarWidth}
+            title={w("label.resizeSidebar")}
+            tabIndex={0}
+            data-dragging={gripDragging}
+            className="ans-wb-grip"
+            onPointerDown={startSidebarDrag}
+            onPointerMove={moveSidebarDrag}
+            onPointerUp={() => endSidebarDrag()}
+            onPointerCancel={() => endSidebarDrag(true)}
+            onDoubleClick={() => {
+              setSidebarWidth(SIDEBAR_DEFAULT);
+              saveSidebarWidth(SIDEBAR_DEFAULT);
+            }}
+            onKeyDown={e => {
+              if (e.key === "Escape") endSidebarDrag(true);
+              if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+                e.preventDefault();
+                const next = clampSidebar(sidebarWidth + (e.key === "ArrowLeft" ? -16 : 16));
+                setSidebarWidth(next);
+                saveSidebarWidth(next);
+              }
+            }}
+          />
+        </aside>
       ) : navOpen ? (
         <div className="fixed inset-0 z-[60] flex" onKeyDown={e => { if (e.key === "Escape") setNavOpen(false); }}>
           <aside className="h-full w-[min(300px,85vw)] bg-background shadow-[0_0_48px_-12px_rgb(26_26_25/35%)]">{sidebar}</aside>
@@ -1620,7 +1851,7 @@ function PiCodexWorkbench({
 
       <div className="flex min-w-0 flex-1 flex-col bg-card">
         {/* 顶栏：任务标题与状态；右侧是预览面板开关、Agent 对话、上手说明 */}
-        <header className="ans-wb-rule-b flex h-12 shrink-0 items-center justify-between gap-2 px-2 sm:px-3">
+        <header className="ans-wb-rule-b flex h-11 shrink-0 items-center justify-between gap-2 px-2 sm:px-3">
           <div className="flex min-w-0 items-center gap-1.5">
             {!wide && (
               <button type="button" onClick={() => setNavOpen(true)} aria-label={w("label.openMenu")} className="ans-wb-icon">
@@ -1638,7 +1869,9 @@ function PiCodexWorkbench({
                     ? w("status.running")
                     : isViewingGuideSample
                       ? w("status.guidedSample")
-                      : activeTask.mode === "ask"
+                      : activeTask.status === "stopped"
+                        ? runStatusLabel
+                        : activeTask.mode === "ask"
                         ? w("status.askMode")
                         : w("status.applied")}
                 </span>

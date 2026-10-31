@@ -71,7 +71,13 @@
     "moreTools": "更多选项",
     "send": "发送",
     "jumpLatest": "跳至最新",
-    "stop": "关闭"
+    "stop": "关闭",
+    "stopRun": "停止",
+    "queued": "待发送",
+    "withdraw": "撤回",
+    "copyReply": "复制回复",
+    "resizeSidebar": "拖动调整侧栏宽度，双击复位",
+    "steps": "{n} 步"
   },
   "aria": {
     "nicknameInput": "新昵称",
@@ -146,7 +152,8 @@
     "guestMode": "当前为访客预览模式，已在右侧生成可交互草稿与代码变更记录。登录账号后可调用云端模型算力。",
     "done": "已完成处理。",
     "appliedChange": "已在当前文件 {p1} 基础上完成增量修改（+{p2} -{p3} 行），可点击右侧「± 变更」查看具体代码对比。",
-    "localAnswer": "针对「{p1}」的本地解答\\n1. 当前文件为 {p2}，可在右侧「源码」或「变更」里直接检查结构。\\n2. 切换到「写代码」再发送，修改会直接应用到当前文件，并能查看变更。"
+    "localAnswer": "针对「{p1}」的本地解答\\n1. 当前文件为 {p2}，可在右侧「源码」或「变更」里直接检查结构。\\n2. 切换到「写代码」再发送，修改会直接应用到当前文件，并能查看变更。",
+    "stopped": "已停止，这次没有改动文件。"
   },
   "title": {
     "openAgentChat": "唤起右下角 Agent 悬浮对话窗",
@@ -201,7 +208,10 @@
     "guidedSample": "引导范例",
     "running": "运行中",
     "askMode": "问答模式",
-    "applied": "已应用变更"
+    "applied": "已应用变更",
+    "working": "工作中",
+    "workedFor": "已工作 {time}",
+    "stoppedAfter": "你在 {time} 后停止了"
   },
   "summary": {
     "sample": "范例产出说明",
@@ -210,10 +220,15 @@
   },
   "placeholder": {
     "newTask": "输入你要新建的网页、Python 脚本或农客松方案（Enter 执行）...",
-    "iterate": "描述要对 {file} 做的修改（如：切换为浅色主题、增加导出 CSV 按钮）…"
+    "iterate": "描述要对 {file} 做的修改（如：切换为浅色主题、增加导出 CSV 按钮）…",
+    "queue": "Agent 正在执行，继续输入会排在后面"
   },
   "home": {
     "title": "想做点什么？",
     "samples": "从范例开始"
+  },
+  "time": {
+    "seconds": "{s} 秒",
+    "minutes": "{m} 分 {s} 秒"
   }
 }

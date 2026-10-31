@@ -71,7 +71,13 @@
     "moreTools": "More options",
     "send": "Send",
     "jumpLatest": "Jump to latest",
-    "stop": "Close"
+    "stop": "Close",
+    "stopRun": "Stop",
+    "queued": "Queued",
+    "withdraw": "Withdraw",
+    "copyReply": "Copy reply",
+    "resizeSidebar": "Drag to resize the sidebar, double-click to reset",
+    "steps": "{n} steps"
   },
   "aria": {
     "nicknameInput": "New nickname",
@@ -146,7 +152,8 @@
     "guestMode": "You are in guest preview mode: an interactive draft and change log were generated on the right. Sign in to use cloud model compute.",
     "done": "Done.",
     "appliedChange": "Applied an incremental change on top of {p1} (+{p2} -{p3} lines). Open the Changes tab to review the diff.",
-    "localAnswer": "Local answer for “{p1}”:\\n1. The current file is {p2} — inspect its structure under “Source” or “± Diff” on the right.\\n2. Switch to “Write code” mode and send an instruction to apply the edits and review the diff."
+    "localAnswer": "Local answer for “{p1}”:\\n1. The current file is {p2} — inspect its structure under “Source” or “± Diff” on the right.\\n2. Switch to “Write code” mode and send an instruction to apply the edits and review the diff.",
+    "stopped": "Stopped. No files were changed."
   },
   "title": {
     "openAgentChat": "Open the Agent chat panel",
@@ -201,7 +208,10 @@
     "guidedSample": "Guided sample",
     "running": "Running",
     "askMode": "Q&A mode",
-    "applied": "Changes applied"
+    "applied": "Changes applied",
+    "working": "Working",
+    "workedFor": "Worked for {time}",
+    "stoppedAfter": "You stopped after {time}"
   },
   "summary": {
     "sample": "What this sample produces",
@@ -210,10 +220,15 @@
   },
   "placeholder": {
     "newTask": "Describe the web page, Python script or project brief you want (Enter to run)...",
-    "iterate": "Describe the change to {file} (for example: switch to a light theme, add an export CSV button)…"
+    "iterate": "Describe the change to {file} (for example: switch to a light theme, add an export CSV button)…",
+    "queue": "Agent is working. Anything you type now is queued."
   },
   "home": {
     "title": "What do you want to build?",
     "samples": "Start from a sample"
+  },
+  "time": {
+    "seconds": "{s}s",
+    "minutes": "{m}m {s}s"
   }
 }
