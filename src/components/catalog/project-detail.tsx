@@ -13,13 +13,15 @@ import type { ProductConnections as Connections } from "@/contracts/product-conn
 import { ProductConnectionsSection } from "./product-connections";
 import styles from "./project-detail.module.css";
 
-export async function CatalogProjectDetail({ project, guide, related = [], connections = { projects: [], workflows: [], offers: [] }, accountId, favorited }: {
+export async function CatalogProjectDetail({ project, guide, related = [], connections = { projects: [], workflows: [], offers: [] }, accountId, favorited, community }: {
   project: CatalogProject;
   guide?: ProjectGuide;
   related?: readonly CatalogProject[];
   connections?: Connections;
   accountId: string | null;
   favorited: boolean;
+  /** 「社区里的同款」，放在相关项目上面。 */
+  community?: React.ReactNode;
 }) {
   const [t, d, ct, locale] = await Promise.all([getTranslations("product"), getTranslations("product.projectDetail"), getTranslations("product.connections"), getLocale()]);
   const text = (field: Parameters<typeof catalogText>[2]) => catalogText(project, t, field, locale);
@@ -109,6 +111,7 @@ export async function CatalogProjectDetail({ project, guide, related = [], conne
         </section>
       </aside>
     </div>
+    {community}
     {related.length > 0 && <section className={styles.related} aria-labelledby="related-projects-title">
       <div className={styles.relatedHeading}><h2 id="related-projects-title">{d("related")}</h2><Link href={`/explore?category=${project.category}`} className="ans-text-link">{d("seeCategory")}<ArrowRight size={15} aria-hidden="true" /></Link></div>
       <div className={styles.relatedGrid}>{related.map(item => <ProjectCard key={item.slug} project={item} compact />)}</div>
