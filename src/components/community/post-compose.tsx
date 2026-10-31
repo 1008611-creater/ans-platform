@@ -24,9 +24,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useCommunityRequest } from "./use-community-request";
+import { imeBlocks, imeSubmitGuard } from "@/lib/ui/ime-enter-guard";
 
 const BOARD_CHANNEL: Record<CommunityBoardId, string> = { TEAM: "team", CAREER: "career", RESEARCH: "research", AIGC: "aigc", CAMPUS: "campus" };
-const FIELD = "h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const FIELD = "h-10 w-full rounded-lg bg-card px-3 text-sm outline-none shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-shadow focus-visible:shadow-[inset_0_0_0_0.5px_var(--hairline),var(--focus-ring)]";
 const LABEL = "text-sm font-semibold";
 
 function dayInput(offsetDays: number) {
@@ -144,7 +145,7 @@ export function PostCompose({ teams, competitions, defaultBoard }: { teams: Arra
 
           {kind !== "TEXT" && <div className="flex flex-col gap-1.5">
             <label htmlFor={`${id}-title`} className={LABEL}>{kind === "NOTE" ? t("noteTitle") : t("stallTitle")}</label>
-            <input id={`${id}-title`} value={title} maxLength={POST_TITLE_MAX} onChange={(event) => setTitle(event.target.value)} className={FIELD} />
+            <input onKeyDown={imeSubmitGuard} id={`${id}-title`} value={title} maxLength={POST_TITLE_MAX} onChange={(event) => setTitle(event.target.value)} className={FIELD} />
           </div>}
 
           {isTeam && <>
@@ -176,7 +177,7 @@ export function PostCompose({ teams, competitions, defaultBoard }: { teams: Arra
               </div>)}
               {roles.length < TEAM_ROLE_MAX && <div className="flex gap-2">
                 <label htmlFor={`${id}-role`} className="sr-only">{t("roleName")}</label>
-                <input id={`${id}-role`} value={roleDraft} maxLength={20} placeholder={t("roleName")} onChange={(event) => setRoleDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addRole(); } }} className={FIELD} />
+                <input id={`${id}-role`} value={roleDraft} maxLength={20} placeholder={t("roleName")} onChange={(event) => setRoleDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); if (!imeBlocks(event)) addRole(); } }} className={FIELD} />
                 <Button type="button" variant="outline" onClick={addRole} disabled={!roleDraft.trim()}><Plus className="h-4 w-4" aria-hidden="true" />{t("addRole")}</Button>
               </div>}
             </fieldset>
@@ -187,7 +188,7 @@ export function PostCompose({ teams, competitions, defaultBoard }: { teams: Arra
               <label htmlFor={`${id}-body`} className={LABEL}>{kind === "TEXT" ? t("textBody") : kind === "NOTE" ? t("body") : t("stallBody")}</label>
               {kind === "TEXT" && <span className="text-xs text-muted-foreground">{t("counter", { count: body.length, max: TEXT_POST_MAX })}</span>}
             </div>
-            <textarea id={`${id}-body`} value={body} maxLength={bodyMax} rows={kind === "TEXT" ? 3 : 5} onChange={(event) => setBody(event.target.value)} className="w-full resize-none rounded-lg border bg-background px-3 py-2.5 text-sm leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+            <textarea id={`${id}-body`} value={body} maxLength={bodyMax} rows={kind === "TEXT" ? 3 : 5} onChange={(event) => setBody(event.target.value)} className="w-full resize-none rounded-lg bg-card px-3 py-2.5 text-sm leading-relaxed outline-none shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-shadow focus-visible:shadow-[inset_0_0_0_0.5px_var(--hairline),var(--focus-ring)]" />
           </div>
 
           {kind === "NOTE" && canUpload && <div className="flex flex-col gap-1.5">

@@ -62,8 +62,8 @@ export function CommunityReportQueue({ items }: { items: CommunityReportItem[] }
       <ul className="space-y-1 rounded-xl bg-muted/60 px-3 py-2 text-sm">
         {item.reports.map((report) => <li key={report.id}>
           <span className="font-medium">{reasons(report.reason)}</span>
-          <span className="text-muted-foreground"> · {nameOf(report.reporter)}</span>
-          {report.details && <span className="text-muted-foreground"> · {report.details}</span>}
+          <span className="ml-2 text-muted-foreground">{nameOf(report.reporter)}</span>
+          {report.details && <span className="ml-2 text-muted-foreground">{report.details}</span>}
         </li>)}
       </ul>
       <ReviewButtons item={item} />

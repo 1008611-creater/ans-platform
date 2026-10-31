@@ -27,6 +27,8 @@ import { MascotStageDeck } from "./mascot-stage-deck";
 import { DinoSoulToolbar } from "./dino-soul-plugins";
 import { buildSoulTurnAugmentation } from "@/domain/mascot/soul-plugins";
 import { getSoulPluginsSnapshot, settleSoulTurn } from "@/lib/mascot/soul-store";
+import { useImeEnterGuard } from "@/lib/ui/ime-enter-guard";
+import { distanceFromBottom, FOLLOW_THRESHOLD_PX, JUMP_THRESHOLD_PX } from "@/lib/ui/follow-bottom";
 import "./companion.css";
 
 const CompanionReply = lazy(() => import("./companion-reply").then(module => ({ default: module.CompanionReply })));
@@ -61,6 +63,11 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   const sequence = useRef(0), welcomed = useRef(false), focusTarget = useRef<string | null>(null), list = useRef<HTMLDivElement>(null), lastAgentInput = useRef("");
   const scrollState = useRef<Record<Mode, { top: number; follow: boolean; lastId: number | undefined }>>({ agent: { top: 0, follow: true, lastId: undefined }, guide: { top: 0, follow: true, lastId: undefined } });
   const titleId = useId(), taskId = useId(), composer = useRef<HTMLTextAreaElement>(null);
+  const ime = useImeEnterGuard();
+  /** 用户最近一次主动滚动的时间；只有用户滚动才会让列表停止跟随，程序滚动不算。 */
+  const userScrollAt = useRef(0);
+  /** 会话恢复时已有的消息不播放逐字动画，只有之后新到的回复才播。 */
+  const animateAfter = useRef(Number.POSITIVE_INFINITY);
   const agent = useCompanionAgent(actor, pathname, locale, (text, links) => {
     updateThread("agent", current => ({ ...current, messages: [...current.messages, { id: ++sequence.current, role: "guide" as const, text }].slice(-40), recommendations: links.length ? links : pageActions(pathname, ui) }));
     settleSoulTurn(lastAgentInput.current, text, "user");
@@ -81,6 +88,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
       setMode(saved.mode === "agent" && !actor ? "guide" : saved.mode);
       sequence.current = Math.max(0, ...Object.values(saved.threads).flatMap(thread => thread.messages.map(item => item.id)));
     }
+    animateAfter.current = sequence.current;
     setSessionLoaded(true);
   }, [actor, storageReady]);
   useEffect(() => { if (sessionLoaded && storageReady) saveCompanionConversation(actor, mode, threads); }, [actor, sessionLoaded, storageReady, mode, threads]);
@@ -102,9 +110,22 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   }, [pathname]);
   const rememberScroll = useCallback(() => {
     const node = list.current; if (!node) return;
-    const follow = node.scrollHeight - node.scrollTop - node.clientHeight < 64;
-    scrollState.current[mode].top = node.scrollTop; scrollState.current[mode].follow = follow;
-    setShowLatest(!follow); if (follow) setUnread(false);
+    const state = scrollState.current[mode], distance = distanceFromBottom(node);
+    // 离底部 40px 内才跟随；用户一滚动就停止跟随，程序滚动不改变跟随状态。
+    if (distance <= FOLLOW_THRESHOLD_PX) state.follow = true;
+    else if (performance.now() - userScrollAt.current < 400) state.follow = false;
+    state.top = node.scrollTop;
+    setShowLatest(distance > JUMP_THRESHOLD_PX); if (state.follow) setUnread(false);
+  }, [mode]);
+  /** 内容变高时：跟随状态就贴底，否则只更新「跳至最新」。 */
+  const onContentResize = useCallback(() => {
+    const node = list.current; if (!node) return;
+    if (scrollState.current[mode].follow) node.scrollTop = node.scrollHeight;
+    rememberScroll();
+  }, [mode, rememberScroll]);
+  const markUserScroll = useCallback((event?: Event) => {
+    userScrollAt.current = performance.now();
+    if (event?.type === "touchmove" || (event instanceof WheelEvent && event.deltaY < 0)) scrollState.current[mode].follow = false;
   }, [mode]);
   const scrollObserver = useRef<ResizeObserver | null>(null);
   const bindList = useCallback((node: HTMLDivElement | null) => {
@@ -113,11 +134,25 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     const state = scrollState.current[mode];
     node.scrollTop = state.follow && node.querySelector(".ans-companion-message") ? node.scrollHeight : state.top;
     if (typeof ResizeObserver !== "undefined") {
-      const observer = new ResizeObserver(rememberScroll);
+      const observer = new ResizeObserver(onContentResize);
       for (const child of Array.from(node.children)) observer.observe(child);
       scrollObserver.current = observer;
     }
-  }, [mode, rememberScroll]);
+  }, [mode, onContentResize]);
+  useEffect(() => {
+    const node = list.current; if (!node || !open) return;
+    const keys = (event: KeyboardEvent) => { if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) markUserScroll(); };
+    node.addEventListener("wheel", markUserScroll, { passive: true });
+    node.addEventListener("touchmove", markUserScroll, { passive: true });
+    node.addEventListener("pointerdown", markUserScroll, { passive: true });
+    node.addEventListener("keydown", keys);
+    return () => {
+      node.removeEventListener("wheel", markUserScroll);
+      node.removeEventListener("touchmove", markUserScroll);
+      node.removeEventListener("pointerdown", markUserScroll);
+      node.removeEventListener("keydown", keys);
+    };
+  }, [open, mode, markUserScroll]);
   useLayoutEffect(() => {
     if (!open || !list.current) return;
     const state = scrollState.current[mode], node = list.current;
@@ -131,7 +166,11 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     if (!state.follow) { if (changed && latest?.role === "guide") setUnread(true); return; }
     // Show a new answer from its beginning, so a long reply doesn't skip its first half.
     const reply = mode === "agent" && agent.phase === "confirm" ? node.querySelector<HTMLElement>(".ans-agent-quote") : changed && latest?.role === "guide" ? node.querySelector<HTMLElement>(`[data-message-id="${latest.id}"]`) : null;
-    if (reply) node.scrollTop += reply.getBoundingClientRect().top - node.getBoundingClientRect().top - 16;
+    if (reply) {
+      node.scrollTop += reply.getBoundingClientRect().top - node.getBoundingClientRect().top - 16;
+      // 长回复停在开头让人从头读；离开底部后就不再自动贴底，等用户回到底部再恢复。
+      if (distanceFromBottom(node) > FOLLOW_THRESHOLD_PX) state.follow = false;
+    }
     else node.scrollTop = node.scrollHeight;
     rememberScroll();
   }, [messages, open, mode, agent.phase, rememberScroll]);
@@ -230,7 +269,9 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   }
   function jumpToLatest() {
     const node = list.current; if (!node) return;
-    node.scrollTop = node.scrollHeight; rememberScroll();
+    scrollState.current[mode].follow = true;
+    node.scrollTo({ top: node.scrollHeight, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    setShowLatest(false); setUnread(false);
   }
   function settings() { changeOpen(false); requestAnimationFrame(openSiteSettings); }
   function toggleVoice() {
@@ -306,7 +347,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
               const next = mascotForm === "2d" ? "3d" : "2d";
               writeForm(next);
               if (next === "3d") window.dispatchEvent(new CustomEvent("ans:dino-activate"));
-            }}><span aria-hidden="true" className="text-[11px] font-bold tracking-tight">{mascotForm === "2d" ? "3D" : "2D"}</span></button>
+            }}><span aria-hidden="true" className="text-xs font-bold tracking-tight">{mascotForm === "2d" ? "3D" : "2D"}</span></button>
             <button type="button" aria-label={ui("openSiteSettings")} title={ui("openSiteSettings")} onClick={settings}><Settings aria-hidden="true" /></button>
             <button id="ans-companion-dismiss" type="button" aria-label={t("close")} title={t("close")} onClick={() => changeOpen(false)}><X aria-hidden="true" /></button>
           </div>
@@ -361,7 +402,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
             {task && <section className="ans-companion-task" aria-labelledby={taskId}><div><h3 id={taskId}>{ui("currentTask")}</h3><span>{task.step}/3</span></div><p role="status">{t(`task.${task.phase}`)}</p><ol aria-label={t("taskSteps")}>{([1, 2, 3] as const).map(step => <li key={step} aria-current={step === task.step ? "step" : undefined}><span>0{step}</span>{t(`taskStep.${step}`)}</li>)}</ol><footer>{task.targetId && <button type="button" onClick={() => { focusTarget.current = task.targetId ?? null; changeOpen(false); }}>{t("taskAction")}<ArrowUpRight aria-hidden="true" /></button>}</footer></section>}
             <div className="ans-companion-conversation" role="log" aria-label={ui("conversationWithDino")} aria-live="polite" aria-relevant="additions">
               {!messages.length && !agent.quote && <div className="ans-companion-welcome"><Sparkles aria-hidden="true" /><div><p>{greeting}</p></div></div>}
-              {messages.map(message => <div key={message.id} data-message-id={message.id} className={`ans-companion-message ${message.role}`}><span className="sr-only">{message.role === "user" ? ui("you") : t("name")}</span>{message.role === "user" ? <p>{message.text}</p> : <Suspense fallback={<div className="ans-companion-reply"><p>{message.text}</p></div>}><CompanionReply text={message.text} /></Suspense>}</div>)}
+              {messages.map(message => <div key={message.id} data-message-id={message.id} className={`ans-companion-message ${message.role}`}><span className="sr-only">{message.role === "user" ? ui("you") : t("name")}</span>{message.role === "user" ? <p>{message.text}</p> : <Suspense fallback={<div className="ans-companion-reply"><p>{message.text}</p></div>}><CompanionReply text={message.text} animate={message.id > animateAfter.current} /></Suspense>}</div>)}
               {!messages.length && !agent.quote && !agent.busy && <div className="ans-companion-prompts" aria-label={ui("tryAsking")}>{pagePrompts(pathname, ui).map(prompt => <button key={prompt} type="button" onClick={() => submit(undefined, prompt)}>{prompt}</button>)}</div>}
               {mode === "agent" && <><AgentRecoveryStatus turns={agent.recovery.turns.filter(turn => turn.ticket !== agent.currentTicket)} onCheck={agent.recovery.check} /><AgentTurnStatus agent={agent} /></>}
               {/* companion.css 用 .ans-companion-next > a 做整行布局：a 必须是直接子元素，
@@ -383,11 +424,11 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
               </nav>
             </div>
           </div>
-          {showLatest && (messages.length > 0 || agent.quote) && <button className="ans-companion-latest" type="button" onClick={jumpToLatest}><ArrowDown aria-hidden="true" />{ui(unread ? "newReplyBelow" : "backToLatest")}</button>}
+          {(showLatest || unread) && (messages.length > 0 || agent.quote) && <button className="ans-companion-latest" type="button" onClick={jumpToLatest}><ArrowDown aria-hidden="true" />{ui(unread ? "newReplyBelow" : "backToLatest")}</button>}
         </div>
         <form className="ans-companion-composer" onSubmit={event => submit(event)}>
           <label className="sr-only" htmlFor="ans-companion-input">{ui("tellDinoWhatYouWantToDo")}</label>
-          <div><textarea ref={composer} id="ans-companion-input" rows={1} maxLength={1200} value={draft} onChange={event => updateThread(mode, current => ({ ...current, draft: event.target.value }))} placeholder={ui(mode === "agent" && agent.busy ? "draftWhileWaiting" : "whatWouldYouLikeToDo")} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) { event.preventDefault(); submit(); } }} />
+          <div><textarea ref={composer} id="ans-companion-input" rows={1} maxLength={1200} value={draft} onChange={event => updateThread(mode, current => ({ ...current, draft: event.target.value }))} placeholder={ui(mode === "agent" && agent.busy ? "draftWhileWaiting" : "whatWouldYouLikeToDo")} {...ime.bind} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !ime.blocks(event)) { event.preventDefault(); submit(); } }} />
             {mode === "agent" && <CompanionModelSelect model={model} onChange={changeModel} disabled={agent.busy || agent.checkingReceipts} />}
             {mode === "agent" && agent.busy ? <button className="ans-companion-stop" type="button" onClick={agent.stop} aria-label={ui("agentStop")} title={ui("agentStop")}><Square aria-hidden="true" /></button> : <button type="submit" disabled={!draft.trim() || blocked} aria-label={ui("sendMessage")} title={ui("sendMessage")}><ArrowUp aria-hidden="true" /></button>}
           </div>

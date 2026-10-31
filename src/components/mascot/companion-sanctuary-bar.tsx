@@ -23,6 +23,7 @@ import {
 } from "@/domain/mascot/sanctuary";
 import { advanceAndClaimQuest } from "@/domain/mascot/quest-arcade";
 import { DinoAdoptionPod } from "./dino-adoption-pod";
+import { useImeEnterGuard } from "@/lib/ui/ime-enter-guard";
 
 import {
   BLIND_BOX_FOODS,
@@ -57,10 +58,10 @@ function SecretAchievementBanner({
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-0.5">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-slate-950 shadow-sm">
+            <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 px-2 py-0.5 text-xs font-black uppercase tracking-wider text-slate-950 shadow-sm">
               🏆 {ui("bar.bannerSecretQUESTUNLOCKED")} · {quest.code}
             </span>
-            <span className="rounded-full border border-amber-400/50 bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-200">
+            <span className="rounded-full border border-amber-400/50 bg-amber-500/15 px-1.5 py-0.5 text-xs font-bold text-amber-700 dark:text-amber-200">
               {quest.icon} {isZh ? quest.badgeZh : quest.badgeEn}
             </span>
           </div>
@@ -71,10 +72,10 @@ function SecretAchievementBanner({
             </span>
           </p>
           <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-            <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-background/85 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-300">
+            <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-background/85 px-2 py-0.5 text-xs font-bold text-amber-600 dark:text-amber-300">
               🎁 {isZh ? quest.rewardLabelZh : quest.rewardLabelEn}
             </span>
-            <span className="text-[10px] font-semibold text-amber-700/90 dark:text-amber-200/90">
+            <span className="text-xs font-semibold text-amber-700/90 dark:text-amber-200/90">
               +{quest.arcadeTokens} 🎰 · +{quest.starBeansBonus} 🪙 · +{quest.affectionBonus} ♥
             </span>
           </div>
@@ -900,7 +901,7 @@ export function CompanionQuestPin({
                   window.dispatchEvent(new CustomEvent("ans:open-companion-chat"));
                 }}
                 title={ui("bar.dockOpenAgentChat1")}
-                className="rounded-full bg-emerald-700 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
+                className="rounded-full bg-emerald-700 px-2.5 py-0.5 text-xs font-bold text-white transition hover:bg-emerald-800 dark:bg-emerald-400 dark:text-slate-950"
               >
                 {ui("bar.dockAgent")}
               </button>
@@ -908,7 +909,7 @@ export function CompanionQuestPin({
                 type="button"
                 onClick={navigateToWorkMode}
                 title={ui("bar.dockOpenWorkMode")}
-                className="inline-flex rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-950"
+                className="inline-flex rounded-full bg-slate-900 px-2.5 py-0.5 text-xs font-bold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-950"
               >
                 {ui("bar.dockWorkMode")}
               </button>
@@ -1411,6 +1412,7 @@ export function CompanionSanctuaryBar({
   const locale = useLocale();
   const ui = useTranslations("companion");
   const isZh = locale === "zh";
+  const ime = useImeEnterGuard();
   const [state, setState] = useState<MascotSanctuaryState>(() => loadSanctuaryState());
   const [tab, setTab] = useState<"none" | "pi">("none");
   const [statusNote, setStatusNote] = useState<string>("");
@@ -1681,7 +1683,7 @@ export function CompanionSanctuaryBar({
       )}
 
       {isOnStrike && (
-        <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-rose-500/60 bg-rose-500/15 px-2.5 py-1.5 text-[11px] font-semibold text-rose-700 dark:text-rose-200">
+        <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-rose-500/60 bg-rose-500/15 px-2.5 py-1.5 text-xs font-semibold text-rose-700 dark:text-rose-200">
           <span>
             🕶️{" "}
             {ui("bar.quickbarStrikeStrikeRemainingSecSFeed", { strikeRemainingSec: strikeRemainingSec })}
@@ -1689,7 +1691,7 @@ export function CompanionSanctuaryBar({
           <button
             type="button"
             onClick={handleFeed}
-            className="shrink-0 rounded-lg bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm hover:bg-emerald-500"
+            className="shrink-0 rounded-lg bg-emerald-600 px-2 py-0.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-500"
           >
             {ui("bar.quickbarFeed")}
           </button>
@@ -1708,7 +1710,7 @@ export function CompanionSanctuaryBar({
             title={ui("bar.quickbarDailyCheckIn5")}
             data-testid="pi-agent-action-checkin"
             onClick={() => void runPiAction("checkin")}
-            className="rounded-full border border-emerald-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-emerald-700 transition hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300"
+            className="rounded-full border border-emerald-500/40 bg-background/90 px-2 py-0.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300"
           >
             📅 {ui("bar.quickbarCheckIn")}
           </button>
@@ -1723,7 +1725,7 @@ export function CompanionSanctuaryBar({
                 (piPrompt || currentDraft).trim(),
               )
             }
-            className="rounded-full border border-purple-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-purple-700 transition hover:bg-purple-500/15 disabled:opacity-50 dark:text-purple-300"
+            className="rounded-full border border-purple-500/40 bg-background/90 px-2 py-0.5 text-xs font-bold text-purple-700 transition hover:bg-purple-500/15 disabled:opacity-50 dark:text-purple-300"
           >
             📝 {ui("bar.quickbarNewProject")}
           </button>
@@ -1733,7 +1735,7 @@ export function CompanionSanctuaryBar({
             title={ui("bar.quickbarFindMarketTools")}
             data-testid="pi-agent-action-market"
             onClick={() => void runPiAction("market", (piPrompt || currentDraft).trim())}
-            className="rounded-full border border-sky-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-sky-700 transition hover:bg-sky-500/15 disabled:opacity-50 dark:text-sky-300"
+            className="rounded-full border border-sky-500/40 bg-background/90 px-2 py-0.5 text-xs font-bold text-sky-700 transition hover:bg-sky-500/15 disabled:opacity-50 dark:text-sky-300"
           >
             🛒 {ui("bar.quickbarTools")}
           </button>
@@ -1743,7 +1745,7 @@ export function CompanionSanctuaryBar({
             title={ui("bar.quickbar5ptInstantRedeem")}
             data-testid="pi-agent-action-redeem"
             onClick={() => void runPiAction("redeem", (piPrompt || currentDraft).trim())}
-            className="rounded-full border border-rose-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-rose-700 transition hover:bg-rose-500/15 disabled:opacity-50 dark:text-rose-300"
+            className="rounded-full border border-rose-500/40 bg-background/90 px-2 py-0.5 text-xs font-bold text-rose-700 transition hover:bg-rose-500/15 disabled:opacity-50 dark:text-rose-300"
           >
             🎁 {ui("bar.quickbarRedeem")}
           </button>
@@ -1753,7 +1755,7 @@ export function CompanionSanctuaryBar({
             title={ui("bar.quickbarPlay3DClawMachine")}
             data-testid="pi-agent-action-claw"
             onClick={() => void runPiAction("claw")}
-            className="rounded-full border border-amber-500/40 bg-background/90 px-2 py-0.5 text-[10px] font-bold text-amber-700 transition hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300"
+            className="rounded-full border border-amber-500/40 bg-background/90 px-2 py-0.5 text-xs font-bold text-amber-700 transition hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300"
           >
             🕹️ {ui("bar.quickbarClaw")}
           </button>
@@ -1764,7 +1766,7 @@ export function CompanionSanctuaryBar({
             type="button"
             data-testid="pi-agent-tab-toggle"
             onClick={() => setTab(current => (current === "pi" ? "none" : "pi"))}
-            className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition ${
+            className={`rounded-full px-2 py-0.5 text-xs font-bold transition ${
               tab === "pi"
                 ? "bg-emerald-600 text-white shadow-sm"
                 : "border border-emerald-500/40 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/25 dark:text-emerald-300"
@@ -1778,7 +1780,7 @@ export function CompanionSanctuaryBar({
               window.dispatchEvent(new CustomEvent("ans:enter-dino-macro", { detail: { drawer: "wardrobe" } }));
             }}
             title={ui("bar.quickbarOpen3DCloseUp")}
-            className="rounded-full border border-purple-500/35 bg-purple-500/10 px-2 py-0.5 text-[10px] font-semibold text-purple-700 transition hover:bg-purple-500/20 dark:text-purple-300"
+            className="rounded-full border border-purple-500/35 bg-purple-500/10 px-2 py-0.5 text-xs font-semibold text-purple-700 transition hover:bg-purple-500/20 dark:text-purple-300"
           >
             🎥 {ui("bar.quickbar3dStage")}
           </button>
@@ -1790,7 +1792,7 @@ export function CompanionSanctuaryBar({
           data-testid="pi-agent-confirm"
           role="status"
           aria-live="polite"
-          className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-500/60 bg-amber-500/10 px-2.5 py-1.5 text-[11px] text-amber-800 dark:text-amber-200"
+          className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-500/60 bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-800 dark:text-amber-200"
         >
           <span>
             {ui("bar.quickbarSpendsPiConfirmPricePointsPts", { pricePoints: piConfirm.pricePoints })}
@@ -1804,14 +1806,14 @@ export function CompanionSanctuaryBar({
                 setPiConfirm(null);
                 void runPiAction(pending.intent, pending.prompt, pending.pricePoints);
               }}
-              className="rounded-md bg-amber-600 px-2 py-0.5 text-[10px] font-bold text-white transition hover:bg-amber-500 disabled:opacity-50"
+              className="rounded-md bg-amber-600 px-2 py-0.5 text-xs font-bold text-white transition hover:bg-amber-500 disabled:opacity-50"
             >
               {ui("bar.quickbarConfirmPiConfirmPricePointsPts", { pricePoints: piConfirm.pricePoints })}
             </button>
             <button
               type="button"
               onClick={() => setPiConfirm(null)}
-              className="rounded-md border border-amber-500/50 px-2 py-0.5 text-[10px] font-bold transition hover:bg-amber-500/15"
+              className="rounded-md border border-amber-500/50 px-2 py-0.5 text-xs font-bold transition hover:bg-amber-500/15"
             >
               {ui("bar.quickbarCancel")}
             </button>
@@ -1820,7 +1822,7 @@ export function CompanionSanctuaryBar({
       )}
 
       {statusNote && (
-        <p className="mt-1.5 rounded-lg bg-background/80 px-2.5 py-1 text-[11px] text-muted-foreground">
+        <p className="mt-1.5 rounded-lg bg-background/80 px-2.5 py-1 text-xs text-muted-foreground">
           {statusNote}
         </p>
       )}
@@ -1836,9 +1838,10 @@ export function CompanionSanctuaryBar({
                 type="search"
                 value={piPrompt}
                 onChange={e => setPiPrompt(e.target.value)}
+                {...ime.bind}
                 onKeyDown={e => {
-                  // 中文/日文输入法选词也会发 Enter：放过 IME 组词，否则半句话就被当指令执行（可能触发扣分动作）。
-                  if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229) {
+                  // 中文/日文输入法选词也会发 Enter：放过 IME 组词和选字后 500ms，否则半句话就被当指令执行（可能触发扣分动作）。
+                  if (e.key === "Enter" && !ime.blocks(e)) {
                     e.preventDefault();
                     void runPiAction("auto", piPrompt);
                   }
@@ -1846,14 +1849,14 @@ export function CompanionSanctuaryBar({
                 placeholder={ui("bar.podQuickCommandPlaceholder")}
                 aria-label={ui("bar.podAgentCommandInput")}
                 data-testid="pi-agent-search-input"
-                className="flex-1 rounded-lg border border-border bg-muted/40 px-2.5 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:border-emerald-500 focus:outline-none"
+                className="flex-1 rounded-lg border border-border bg-muted/40 px-2.5 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:border-emerald-500 focus:outline-none"
               />
               <button
                 type="button"
                 disabled={piBusy}
                 data-testid="pi-agent-run-btn"
                 onClick={() => void runPiAction("auto", piPrompt)}
-                className="shrink-0 rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs transition hover:bg-emerald-500 disabled:opacity-50"
+                className="shrink-0 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-500 disabled:opacity-50"
               >
                 {piBusy ? (ui("bar.podRunning")) : ui("bar.podRun")}
               </button>
@@ -1865,12 +1868,12 @@ export function CompanionSanctuaryBar({
               ref={resultRef}
               tabIndex={-1}
               data-testid="pi-agent-result"
-              className="space-y-1.5 rounded-lg border border-emerald-500/25 bg-emerald-500/5 p-2 text-[11px]"
+              className="space-y-1.5 rounded-lg border border-emerald-500/25 bg-emerald-500/5 p-2 text-xs"
             >
               <div className="flex flex-wrap items-center justify-between gap-1.5">
                 <div className="flex items-center gap-1.5">
                   <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
                       piResult.ok
                         ? "bg-emerald-600/15 text-emerald-800 dark:text-emerald-200"
                         : "bg-amber-500/20 text-amber-800 dark:text-amber-200"
@@ -1883,7 +1886,7 @@ export function CompanionSanctuaryBar({
                         : `✕ ${ui("bar.podNotExecuted")}`}
                   </span>
                   {typeof piResult.balancePoints === "number" && (
-                    <span className="text-[10px] font-bold text-amber-600 dark:text-amber-300">
+                    <span className="text-xs font-bold text-amber-600 dark:text-amber-300">
                       {ui("bar.podBalancePts", { points: piResult.balancePoints.toFixed(1) })}
                     </span>
                   )}
@@ -1893,7 +1896,7 @@ export function CompanionSanctuaryBar({
                     <button
                       type="button"
                       onClick={() => onSwitchToWorkMode((piPrompt || currentDraft).trim())}
-                      className="rounded-md border border-emerald-500/40 bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-500/25 dark:text-emerald-300"
+                      className="rounded-md border border-emerald-500/40 bg-emerald-500/15 px-1.5 py-0.5 text-xs font-bold text-emerald-700 hover:bg-emerald-500/25 dark:text-emerald-300"
                     >
                       {ui("bar.podWorkMode")}
                     </button>
@@ -1902,7 +1905,7 @@ export function CompanionSanctuaryBar({
                     type="button"
                     aria-label={ui("bar.podDismissResult")}
                     onClick={() => setPiResult(null)}
-                    className="rounded px-1 text-[10px] text-muted-foreground hover:text-foreground"
+                    className="rounded px-1 text-xs text-muted-foreground hover:text-foreground"
                   >
                     ✕
                   </button>
@@ -1910,7 +1913,7 @@ export function CompanionSanctuaryBar({
               </div>
 
               {traceSteps && traceSteps.length > 0 && (
-                <details className="rounded-md border border-border/60 bg-background/70 px-2 py-1 font-mono text-[10px] text-muted-foreground">
+                <details className="rounded-md border border-border/60 bg-background/70 px-2 py-1 font-mono text-xs text-muted-foreground">
                   <summary className="cursor-pointer font-sans font-semibold text-emerald-700 dark:text-emerald-300">
                     ⚡ {ui("bar.podExecutionTracePiResultTrace", { length: traceSteps.length })}
                   </summary>
@@ -1932,15 +1935,15 @@ export function CompanionSanctuaryBar({
                       key={link.href}
                       href={link.href}
                       title={isZh ? link.detail : link.detailEn ?? link.detail}
-                      className="group flex items-center justify-between rounded-lg border border-border/80 bg-background px-2.5 py-1.5 text-[11px] font-semibold text-foreground transition hover:border-emerald-500/50 hover:bg-emerald-500/10"
+                      className="group flex items-center justify-between rounded-lg border border-border/80 bg-background px-2.5 py-1.5 text-xs font-semibold text-foreground transition hover:border-emerald-500/50 hover:bg-emerald-500/10"
                     >
                       <div className="truncate">
                         <span className="font-bold text-emerald-700 dark:text-emerald-300">{isZh ? link.title : link.titleEn ?? link.title}</span>
-                        <span className="ml-1.5 hidden text-[10px] text-muted-foreground group-hover:inline">
+                        <span className="ml-1.5 hidden text-xs text-muted-foreground group-hover:inline">
                           {isZh ? link.detail : link.detailEn ?? link.detail}
                         </span>
                       </div>
-                      <span className="ml-2 shrink-0 text-[10px] font-bold text-emerald-600">→</span>
+                      <span className="ml-2 shrink-0 text-xs font-bold text-emerald-600">→</span>
                     </a>
                   ))}
                 </div>

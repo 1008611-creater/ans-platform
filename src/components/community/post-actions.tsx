@@ -8,8 +8,9 @@ import { toast } from "sonner";
 import { COMMUNITY_REPORT_REASONS, HELP_REWARD_XP } from "@/contracts/community-posts";
 import { Button } from "@/components/ui/button";
 import { useCommunityRequest } from "./use-community-request";
+import { imeSubmitGuard } from "@/lib/ui/ime-enter-guard";
 
-const FIELD = "h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const FIELD = "h-10 w-full rounded-lg bg-card px-3 text-sm outline-none shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-shadow focus-visible:shadow-[inset_0_0_0_0.5px_var(--hairline),var(--focus-ring)]";
 type Person = { id: string; username: string; nickname: string | null; avatar: string | null };
 const nameOf = (user: Person) => user.nickname || user.username;
 
@@ -21,8 +22,9 @@ function usePostAction(postId: string) {
 export function LikeButton({ postId, liked, count }: { postId: string; liked: boolean; count: number }) {
   const t = useTranslations("product.communityPost.detail");
   const { run, pending } = usePostAction(postId);
+  // 点赞用欠阻尼弹簧微弹一下（key 随状态变化，重新挂载才会重播动画）。
   return <Button type="button" variant="outline" size="sm" aria-pressed={liked} disabled={pending} onClick={() => void run({ action: "like" })}>
-    <Heart className={`h-4 w-4 ${liked ? "fill-current text-rose-600" : ""}`} aria-hidden="true" />{count}<span className="sr-only"> {liked ? t("unlike") : t("like")}</span>
+    <Heart key={String(liked)} className={`h-4 w-4 ${liked ? "ans-pop fill-current text-rose-600" : ""}`} aria-hidden="true" /><span className="ans-num">{count}</span><span className="sr-only"> {liked ? t("unlike") : t("like")}</span>
   </Button>;
 }
 
@@ -33,7 +35,7 @@ export function ReplyForm({ postId }: { postId: string }) {
   const [body, setBody] = useState("");
   return <form className="flex gap-2" onSubmit={async (event) => { event.preventDefault(); if (body.trim() && await run({ action: "reply", body })) setBody(""); }}>
     <label htmlFor={id} className="sr-only">{t("replyLabel")}</label>
-    <input id={id} value={body} maxLength={1000} placeholder={t("replyPlaceholder")} onChange={(event) => setBody(event.target.value)} className={FIELD} />
+    <input onKeyDown={imeSubmitGuard} id={id} value={body} maxLength={1000} placeholder={t("replyPlaceholder")} onChange={(event) => setBody(event.target.value)} className={FIELD} />
     <Button type="submit" variant="outline" disabled={pending || !body.trim()}>{t("send")}</Button>
   </form>;
 }
@@ -47,7 +49,7 @@ export function HelpForm({ postId, verb, done }: { postId: string; verb: "help" 
   return <form className="flex flex-col gap-2 rounded-xl bg-muted p-4 sm:flex-row sm:items-end" onSubmit={(event) => { event.preventDefault(); void run({ action: "help", message: message || undefined }); }}>
     <div className="flex flex-1 flex-col gap-1.5">
       <label htmlFor={id} className="text-sm font-semibold">{t("helpMessage")}</label>
-      <input id={id} value={message} maxLength={200} onChange={(event) => setMessage(event.target.value)} className={FIELD} />
+      <input onKeyDown={imeSubmitGuard} id={id} value={message} maxLength={200} onChange={(event) => setMessage(event.target.value)} className={FIELD} />
     </div>
     <Button type="submit" disabled={pending}>{t(verb === "want" ? "wantSubmit" : "helpSubmit")}</Button>
   </form>;
@@ -71,7 +73,7 @@ export function ApplyForm({ postId, roles, application }: { postId: string; role
     </div>}
     <div className="flex flex-1 flex-col gap-1.5">
       <label htmlFor={`${id}-msg`} className="text-sm font-semibold">{t("applyMessage")}</label>
-      <input id={`${id}-msg`} value={message} maxLength={300} onChange={(event) => setMessage(event.target.value)} className={FIELD} />
+      <input onKeyDown={imeSubmitGuard} id={`${id}-msg`} value={message} maxLength={300} onChange={(event) => setMessage(event.target.value)} className={FIELD} />
     </div>
     <Button type="submit" disabled={pending || !role}>{t("applySubmit")}</Button>
   </form>;
@@ -89,7 +91,7 @@ export function ApplicationList({ postId, applications }: { postId: string; appl
     {waiting.length === 0 && <p className="text-sm text-muted-foreground">{t("noApplications")}</p>}
     <ul className="divide-y">
       {waiting.map((item) => <li key={item.id} className="space-y-2 py-3 first:pt-0 last:pb-0">
-        <div className="flex items-center gap-2 text-sm"><span className="flex-1 font-semibold">{nameOf(item.applicant)} · {item.role}</span><Link href={`/@${item.applicant.username}`} className="text-xs text-muted-foreground hover:text-foreground">@{item.applicant.username}</Link></div>
+        <div className="flex items-center gap-2 text-sm"><span className="flex flex-1 items-center gap-2"><span className="font-semibold">{nameOf(item.applicant)}</span><span className="rounded-md bg-muted px-1.5 text-xs">{item.role}</span></span><Link href={`/@${item.applicant.username}`} className="text-xs text-muted-foreground hover:text-foreground">@{item.applicant.username}</Link></div>
         {item.message && <p className="text-sm leading-relaxed text-foreground/80">{item.message}</p>}
         <div className="flex gap-2">
           <Button type="button" size="sm" className="flex-1" disabled={pending} onClick={() => void run({ action: "decide", applicationId: item.id, decision: "ACCEPT" })}>{t("accept")}</Button>
@@ -139,7 +141,7 @@ export function ReportPost({ postId }: { postId: string }) {
   const [details, setDetails] = useState("");
   const [sent, setSent] = useState(false);
   if (sent) return <p className="text-xs text-muted-foreground">{t("reported")}</p>;
-  return <details className="text-sm">
+  return <details className="ans-details text-sm">
     <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs text-muted-foreground hover:text-foreground"><Flag className="h-3.5 w-3.5" aria-hidden="true" />{t("report")}</summary>
     <form className="mt-3 space-y-3 rounded-xl border p-4" onSubmit={async (event) => {
       event.preventDefault();
@@ -151,7 +153,7 @@ export function ReportPost({ postId }: { postId: string }) {
       </fieldset>
       <div className="space-y-1.5">
         <label htmlFor={`${id}-details`} className="font-semibold">{t("reportDetails")}</label>
-        <input id={`${id}-details`} value={details} maxLength={500} onChange={(event) => setDetails(event.target.value)} className={FIELD} />
+        <input onKeyDown={imeSubmitGuard} id={`${id}-details`} value={details} maxLength={500} onChange={(event) => setDetails(event.target.value)} className={FIELD} />
       </div>
       <Button type="submit" size="sm" variant="outline" disabled={pending}>{t("reportSubmit")}</Button>
     </form>

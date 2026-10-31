@@ -109,7 +109,7 @@ export default async function ShowcasePage() {
                     className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
-                  <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent p-3 text-white">
+                  <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-ink/60 to-transparent p-3 text-white">
                     <Badge variant="secondary">{isEn ? `Reviewed · v${artifact.version}` : `评审通过 · v${artifact.version}`}</Badge>
                     <span className="text-xs">{isEn ? `${artifact.counts.reactions} likes` : `${artifact.counts.reactions} 赞`}</span>
                   </div>
@@ -155,7 +155,7 @@ export default async function ShowcasePage() {
                     className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
-                  <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/65 to-transparent p-3.5 text-white">
+                  <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-ink/65 to-transparent p-3.5 text-white">
                     <Badge variant="secondary">{isEn ? `📖 Guide Sample · ${item.version}` : `📖 官方参考范例 · ${item.version}`}</Badge>
                     <span className="text-xs font-medium">{isEn ? "Reference Template" : "可参考同款结构"}</span>
                   </div>

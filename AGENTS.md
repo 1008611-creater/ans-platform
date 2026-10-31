@@ -8,6 +8,20 @@
 
 > Guidelines for AI coding agents working on this project.
 
+## Authoritative UI Design System (`dachang-ui`, 2026-10-31)
+
+The owner designated these 16 rules as **authoritative** for every ANS UI change; they override `ans-ui-ux-baseline` where they conflict. Full text and the delivery checklist live in [`docs/design/dachang-ui.md`](docs/design/dachang-ui.md); shared tokens and helpers live in `src/app/globals.css` (`--surface-*`, `--hairline`, `--focus-ring`, `--spring-*`, `.ans-collapse`, `.ans-stream-char`) and `src/lib/ui/`.
+
+- **Chat**: IME guard on Enter (`isComposing` / keyCode 229, plus 500ms after `compositionend`); auto-follow only within 40px of the bottom, stop on user scroll, show "jump to latest" past 120px; one border layer (inner buttons borderless, hover = background, outlines via `inset box-shadow`); outer radius = inner radius + padding; split drag covers the preview with a transparent shield, Esc restores, double-click = 50/50, left > 82% collapses the right pane; long file names truncate in the middle and keep the extension.
+- **Surfaces**: separate layers by 1–3% lightness instead of borders; never `#000` (light `#f5f5f3`/`#fcfcfb`, dark `#0b0b0a`/`#151515`/`#1a1a19`/`#20201e`).
+- **Inputs**: no outline on focus; a deeper double-ring `box-shadow`.
+- **Dark mode**: every font weight drops by 40 (400 → 360).
+- **Streaming text**: each new character fades from `blur(6px)` over 90ms with `cubic-bezier(.215,.61,.355,1)`, staggered 30ms.
+- **Details**: inline icons `vertical-align: -0.125em`; numbers `tabular-nums`; collapses via `grid-template-rows: 0fr → 1fr` (no JS height); body text `text-wrap: pretty`.
+- **Motion**: drag/snap uses an over-damped spring (1200/80, zero overshoot); like/check uses an under-damped spring (380/18); respect `prefers-reduced-motion`.
+- **Feedback**: copy checkmarks fade out after 2.5s.
+- **Also**: minimum font size 12px, ≤4 font sizes per page, no "·" as a text separator, no left color-bar cards, one primary action per area.
+
 ## Project Overview
 
 **ANS (AI Never Stops)** is a project discovery, Hub, workflow, community, event and marketplace platform built with Next.js. The six primary destinations, in order, are /explore, /hubs, /community, /competitions, /market and /workspace. Preserve all six in desktop navigation, mobile navigation and the navigation drawer. Remove only the standalone workflow discovery entry; public /workflows directory/details redirect to market. Favorites and compute center belong to the account menu. Hubs organize explicitly related contents; immutable workflows execute personal inputs; reviewed marketplace listings bind the exact runnable version. Keep historical data and shared backend interfaces when retiring old prompt UI. Retained upstream code remains governed by its source licenses.

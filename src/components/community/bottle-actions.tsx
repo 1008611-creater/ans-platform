@@ -7,6 +7,7 @@ import { Flag, Waves } from "lucide-react";
 import { BOTTLE_BODY_MAX, BOTTLE_REPLY_MAX, COMMUNITY_REPORT_REASONS } from "@/contracts/community-posts";
 import { useCommunityRequest } from "@/components/community/use-community-request";
 import { Button } from "@/components/ui/button";
+import { imeSubmitGuard } from "@/lib/ui/ime-enter-guard";
 
 export function ThrowBottleForm() {
   const t = useTranslations("product.communityBottle");
@@ -24,7 +25,7 @@ export function ThrowBottleForm() {
   }}>
     <label htmlFor="bottle-body" className="sr-only">{t("throwLabel")}</label>
     <textarea id="bottle-body" value={body} onChange={(event) => setBody(event.target.value)} maxLength={BOTTLE_BODY_MAX} rows={4} placeholder={t("throwPlaceholder")}
-      className="w-full resize-none rounded-xl border bg-background px-3.5 py-3 text-[15px] leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+      className="w-full resize-none rounded-xl bg-card px-3.5 py-3 text-base leading-relaxed outline-none shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-shadow focus-visible:shadow-[inset_0_0_0_0.5px_var(--hairline),var(--focus-ring)]" />
     <div className="flex items-center justify-between gap-3">
       <span className="text-xs tabular-nums text-muted-foreground">{body.length}/{BOTTLE_BODY_MAX}</span>
       <Button type="submit" disabled={!ready || pending}>{t("throw")}</Button>
@@ -57,8 +58,8 @@ export function BottleReplyForm({ bottleId }: { bottleId: string }) {
     }
   }}>
     <label htmlFor={`bottle-reply-${bottleId}`} className="sr-only">{t("replyLabel")}</label>
-    <input id={`bottle-reply-${bottleId}`} value={body} onChange={(event) => setBody(event.target.value)} maxLength={BOTTLE_REPLY_MAX} placeholder={t("replyPlaceholder")}
-      className="h-9 min-w-0 flex-1 rounded-lg border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+    <input onKeyDown={imeSubmitGuard} id={`bottle-reply-${bottleId}`} value={body} onChange={(event) => setBody(event.target.value)} maxLength={BOTTLE_REPLY_MAX} placeholder={t("replyPlaceholder")}
+      className="h-9 min-w-0 flex-1 rounded-lg bg-card px-3 text-sm outline-none shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-shadow focus-visible:shadow-[inset_0_0_0_0.5px_var(--hairline),var(--focus-ring)]" />
     <Button type="submit" size="sm" disabled={!body.trim() || pending}>{t("reply")}</Button>
   </form>;
 }
@@ -70,7 +71,7 @@ export function ReportBottle({ bottleId }: { bottleId: string }) {
   const [reason, setReason] = useState<(typeof COMMUNITY_REPORT_REASONS)[number]>("SPAM");
   const [sent, setSent] = useState(false);
   if (sent) return <p className="text-xs text-muted-foreground">{t("reported")}</p>;
-  return <details className="group text-sm">
+  return <details className="ans-details group text-sm">
     <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs text-muted-foreground hover:text-foreground"><Flag className="h-3.5 w-3.5" aria-hidden="true" />{t("report")}</summary>
     <form className="mt-2 space-y-2 rounded-xl border bg-background p-3" onSubmit={async (event) => {
       event.preventDefault();

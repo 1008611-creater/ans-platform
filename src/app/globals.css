@@ -47,6 +47,16 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  /* dachang-ui：纯黑禁用，遮罩和深色底统一用暖墨色 */
+  --color-ink: #0b0b0a;
+  --color-surface-raised: var(--surface-raised);
+  /* dachang-ui：暗色下字重整体降 40，见 .dark 里的 --fw-* */
+  --font-weight-normal: var(--fw-400);
+  --font-weight-medium: var(--fw-500);
+  --font-weight-semibold: var(--fw-600);
+  --font-weight-bold: var(--fw-700);
+  --font-weight-extrabold: var(--fw-800);
+  --ease-out-cubic: cubic-bezier(.215, .61, .355, 1);
 }
 
 :root {
@@ -56,75 +66,98 @@
   --font-playfair: Georgia, "Times New Roman", serif;
   --font-kids: "Trebuchet MS", "Comic Sans MS", sans-serif;
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  /* dachang-ui 色阶：靠 1%–3% 明度分层，不靠边框；禁纯黑。 */
+  --background: #f5f5f3;
+  --foreground: #1a1a19;
+  --card: #fcfcfb;
+  --card-foreground: #1a1a19;
+  --popover: #fcfcfb;
+  --popover-foreground: #1a1a19;
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  /* 0.556 是 shadcn 的默认值，但在 --muted 背景上只有 4.35:1，低于 WCAG AA 的
-     4.5:1。提示词卡片正文正是「text-muted-foreground + bg-muted」这个组合，
-     所以调深到 0.54（#6f6f6f，在 --muted 上 4.61:1、在白底上 5.03:1）。 */
-  --muted-foreground: oklch(0.54 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --secondary: #efefec;
+  --secondary-foreground: #1a1a19;
+  --muted: #efefec;
+  /* 在最深的次级面 #e9e9e6 上仍有 4.6:1，满足 WCAG AA。 */
+  --muted-foreground: #686864;
+  --accent: #efefec;
+  --accent-foreground: #1a1a19;
+  --surface-raised: #e9e9e6;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: #e4e4e0;
+  --input: #e4e4e0;
+  --ring: #8f8f8a;
+  /* 单层描边用 inset box-shadow 画，不占布局。 */
+  --hairline: rgb(26 26 25 / 10%);
+  --focus-ring: 0 0 0 1px rgb(26 26 25 / 34%), 0 0 0 4px rgb(26 26 25 / 7%);
+  --fw-400: 400;
+  --fw-500: 500;
+  --fw-600: 600;
+  --fw-700: 700;
+  --fw-800: 800;
+  /* 过阻尼弹簧 1200/80：拖拽、吸附，零回弹（约 365ms） */
+  --spring-drag: linear(0, .0582, .1767, .3076, .4301, .5369, .6266, .7004, .7603, .8086, .8473, .8783, .903, .9228, .9385, .951, .961, .969, .9753, .9803, .9843, .9875, .9901, .9921, .9937, .995, .996, .9968, .9975, .998, .9984, .9987, 1);
+  --spring-drag-duration: 365ms;
+  /* 欠阻尼弹簧 380/18：点赞、对勾，微弹（约 775ms） */
+  --spring-pop: linear(0, .0949, .3165, .5808, .8259, 1.0154, 1.1352, 1.1888, 1.1901, 1.1573, 1.1082, 1.0573, 1.0143, .9839, .9671, .962, .9655, .9738, .9838, .9932, 1.0004, 1.0051, 1.0072, 1.0072, 1.006, 1.0042, 1.0022, 1.0006, .9994, .9988, .9986, .9987, 1);
+  --spring-pop-duration: 775ms;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar: #fcfcfb;
+  --sidebar-foreground: #1a1a19;
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-accent: #efefec;
+  --sidebar-accent-foreground: #1a1a19;
+  --sidebar-border: #e4e4e0;
   --sidebar-ring: oklch(0.708 0 0);
 }
 
 .font-kids { font-family: var(--font-kids); }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
+  --background: #0b0b0a;
+  --foreground: #ededeb;
+  --card: #151515;
+  --card-foreground: #ededeb;
+  --popover: #1a1a19;
+  --popover-foreground: #ededeb;
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --secondary: #1a1a19;
+  --secondary-foreground: #ededeb;
+  --muted: #1a1a19;
+  --muted-foreground: #9a9a95;
+  --accent: #1a1a19;
+  --accent-foreground: #ededeb;
+  --surface-raised: #20201e;
+  --hairline: rgb(237 237 235 / 9%);
+  --focus-ring: 0 0 0 1px rgb(237 237 235 / 38%), 0 0 0 4px rgb(237 237 235 / 8%);
+  /* 白字在深底上显胖，字重统一降 40。 */
+  --fw-400: 360;
+  --fw-500: 460;
+  --fw-600: 560;
+  --fw-700: 660;
+  --fw-800: 760;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --border: rgb(237 237 235 / 10%);
+  --input: rgb(237 237 235 / 14%);
+  --ring: #6f6f6a;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar: #151515;
+  --sidebar-foreground: #ededeb;
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-accent: #1a1a19;
+  --sidebar-accent-foreground: #ededeb;
+  --sidebar-border: rgb(237 237 235 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
 
@@ -134,6 +167,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-weight: var(--fw-400);
     min-width: 0;
     overflow-x: hidden;
     padding-top: env(safe-area-inset-top);
@@ -148,6 +182,28 @@
   pre,
   code {
     max-width: 100%;
+  }
+  /* dachang-ui：正文防孤字，标题均衡换行 */
+  p, li, blockquote, figcaption, dd {
+    text-wrap: pretty;
+  }
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+  }
+  /* dachang-ui：文字里的行内图标对齐文字视觉中心（flex 容器里 vertical-align 不生效，不受影响） */
+  svg.lucide {
+    vertical-align: -0.125em;
+  }
+  /* dachang-ui：输入框聚焦不加 outline，用加深的双环咬合 */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  [role="combobox"]:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+  b, strong {
+    font-weight: var(--fw-600);
   }
   /* Container utility */
   .container {
@@ -756,7 +812,7 @@
 }
 
 .pixel-text-shadow {
-  text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+  text-shadow: 2px 2px 0 rgba(11, 11, 10, 0.3);
 }
 
 /* Pixelated image rendering */
@@ -775,7 +831,7 @@
 .kids-prose-pixel h2,
 .kids-prose-pixel h3 {
   color: #2C1810;
-  text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+  text-shadow: 2px 2px 0 rgba(11, 11, 10, 0.2);
   margin-bottom: 1rem;
   border-bottom: none;
   padding-bottom: 0;
@@ -837,7 +893,7 @@
 .ans-hero-character { position: relative; max-width: 430px; width: 100%; margin-inline: auto; padding-top: 45px; }
 .ans-hero-dino { position: relative; width: 100%; height: auto; border-radius: 42%; transform: rotate(-5deg); }
 .ans-hero-orbit { position: absolute; inset: 15% -3% 0; border: 1px dashed color-mix(in oklch, var(--primary) 40%, transparent); border-radius: 50%; transform: rotate(16deg); }
-.ans-dino-bubble { position: relative; z-index: 1; max-width: 300px; margin: 0 0 -12px auto; padding: 18px 22px; border: 1px solid var(--border); background: var(--card); border-radius: 22px 22px 4px 22px; box-shadow: 0 8px 30px #00000008; font-size: 14px; line-height: 1.8; transform: rotate(3deg); }
+.ans-dino-bubble { position: relative; z-index: 1; max-width: 300px; margin: 0 0 -12px auto; padding: 18px 22px; border: 1px solid var(--border); background: var(--card); border-radius: 22px 22px 4px 22px; box-shadow: 0 8px 30px rgb(26 26 25 / 3%); font-size: 14px; line-height: 1.8; transform: rotate(3deg); }
 .ans-hero-sticker { position: absolute; left: 4%; bottom: 6%; font-size: 64px; color: var(--primary); }
 .ans-section-heading { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 20px; margin-bottom: 28px; }
 .ans-section-heading h2 { font-size: clamp(23px, 2.8vw, 32px); font-weight: 650; text-wrap: balance; letter-spacing: -.025em; }
@@ -1053,4 +1109,42 @@
 @media (prefers-reduced-motion: reduce) {
   .ans-page-content [data-slot="button"], .ans-home-page [data-slot="button"], .ans-tool-link, .ans-project-card, .ans-workflow-tile, .ans-competition-card { transition: none; transform: none; }
   .ans-inline-notice { animation: none; }
+}
+
+/* ===== dachang-ui 通用工具（规范见 docs/design/dachang-ui.md） ===== */
+
+/* 单层描边：inset 阴影画线，hover/聚焦时不改变盒子尺寸 */
+.ans-hairline { box-shadow: inset 0 0 0 0.5px var(--hairline); }
+@media (max-resolution: 1dppx) { .ans-hairline { box-shadow: inset 0 0 0 1px var(--hairline); } }
+
+/* 数字防抖：等宽数字 */
+.ans-num { font-variant-numeric: tabular-nums; }
+
+/* 丝滑折叠：外层 grid 0fr→1fr，内层裁切，不用 JS 量高度 */
+.ans-collapse { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 280ms var(--ease-out-cubic), opacity 200ms var(--ease-out-cubic); opacity: 0; }
+.ans-collapse > * { min-height: 0; overflow: hidden; }
+.ans-collapse[data-open="true"] { grid-template-rows: 1fr; opacity: 1; }
+/* <details> 版：内容区同样走 0fr→1fr */
+details.ans-details::details-content { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 280ms var(--ease-out-cubic), content-visibility 280ms allow-discrete; }
+details.ans-details[open]::details-content { grid-template-rows: 1fr; }
+details.ans-details::details-content > * { min-height: 0; overflow: hidden; }
+
+/* 流式打字：每个新字 90ms 从 blur(6px) 晕开，相邻字错开 30ms（延迟由内联 style 给出） */
+@keyframes ans-stream-char { from { opacity: 0; filter: blur(6px); } to { opacity: 1; filter: blur(0); } }
+.ans-stream-char { animation: ans-stream-char 90ms var(--ease-out-cubic) both; }
+
+/* 点赞 / 对勾：欠阻尼弹簧微弹 */
+@keyframes ans-pop { from { transform: scale(.6); } to { transform: scale(1); } }
+.ans-pop { animation: ans-pop var(--spring-pop-duration) var(--spring-pop) both; }
+
+/* 拖拽吸附：过阻尼弹簧，零回弹 */
+.ans-spring-drag { transition-timing-function: var(--spring-drag); transition-duration: var(--spring-drag-duration); }
+
+/* 反馈自熄：对勾 2.5s 后淡出 */
+@keyframes ans-fade-out { to { opacity: 0; } }
+.ans-feedback-leaving { animation: ans-fade-out 180ms var(--ease-out-cubic) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ans-stream-char, .ans-pop, .ans-feedback-leaving { animation: none; }
+  .ans-collapse, details.ans-details::details-content, .ans-spring-drag { transition: none; }
 }

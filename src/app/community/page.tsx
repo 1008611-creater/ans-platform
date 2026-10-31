@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const t = await getTranslations("product.communityPage");
-  return { title: `${t("title")} · ANS`, description: t("description") };
+  return { title: t("title"), description: t("description") };
 }
 
 type SearchParams = Promise<{ c?: string | string[]; tab?: string | string[]; sort?: string | string[] }>;
@@ -119,7 +119,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
                       <span className="text-xs text-muted-foreground">{formatLevel(growth.xp)}</span>
                     </div>
                     <CheckInHeatmap today={growth.growthDay} days={growth.checkIns.map(record => record.day)} label={t("checkInLabel")} />
-                    <p className="text-xs text-muted-foreground">{t("streak", { days: growth.checkInStreak })} · {growth.xp.toLocaleString()} XP</p>
+                    <p className="text-xs text-muted-foreground">{t("streak", { days: growth.checkInStreak })} <span className="ans-num">{growth.xp.toLocaleString()} XP</span></p>
                     <Button asChild size="sm" variant="outline" className="w-full">
                       <Link href="/community?tab=growth">{growth.checkIns.some(record => record.day === growth.growthDay) ? t("viewGrowth") : t("goCheckIn")}</Link>
                     </Button>

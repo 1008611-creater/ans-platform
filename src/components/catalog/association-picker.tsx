@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { imeBlocks } from "@/lib/ui/ime-enter-guard";
 export type AssociationChoice = { slug: string; title: string };
 export function AssociationPicker({ kind, selected, choices, onChange }: {
   kind: "workflows" | "offers"; selected: string[]; choices: AssociationChoice[]; onChange: (slugs: string[]) => void;
@@ -20,7 +21,7 @@ export function AssociationPicker({ kind, selected, choices, onChange }: {
   }
   return <div className="space-y-3">
     <label htmlFor={id} className="block text-sm font-medium">{t(kind)}</label>
-    <div className="flex gap-2"><Input id={id} list={id + "-choices"} value={value} disabled={selected.length >= 8} aria-invalid={invalid} aria-describedby={id + "-hint"} placeholder={t("placeholder")} onChange={event => { setValue(event.target.value); setInvalid(false); }} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); add(); } }} />
+    <div className="flex gap-2"><Input id={id} list={id + "-choices"} value={value} disabled={selected.length >= 8} aria-invalid={invalid} aria-describedby={id + "-hint"} placeholder={t("placeholder")} onChange={event => { setValue(event.target.value); setInvalid(false); }} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); if (!imeBlocks(event)) add(); } }} />
       <Button type="button" variant="outline" onClick={add} disabled={!value.trim() || selected.length >= 8}><Plus size={15} aria-hidden="true" /><span>{t("add")}</span></Button></div>
     <datalist id={id + "-choices"}>{choices.filter(choice => !selected.includes(choice.slug)).map(choice => <option key={choice.slug} value={choice.slug}>{choice.title}</option>)}</datalist>
     <p id={id + "-hint"} className="text-xs leading-6 text-muted-foreground">{t("hint")}</p>

@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Resolver } from "react-hook-form";
+import { imeBlocks } from "@/lib/ui/ime-enter-guard";
 
 const createSchema = z.object({
   maxUses: z.coerce.number().int().min(1, "至少 1 次").max(100, "最多 100 次"),
@@ -260,7 +261,7 @@ export function InvitesManagement() {
                         type="email"
                         value={mailTo}
                         onChange={(event) => setMailTo(event.target.value)}
-                        onKeyDown={(event) => { if (event.key === "Enter") void sendInvite(invite); }}
+                        onKeyDown={(event) => { if (event.key === "Enter" && !imeBlocks(event)) void sendInvite(invite); }}
                         placeholder="收件邮箱，如 student@cau.edu.cn"
                         className="h-8 min-w-[220px] flex-1 text-sm"
                       />

@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: Params }) {
   const { id } = await params;
   const post = await getCommunityPost(id, null).catch(() => null);
   const t = await getTranslations("product.communityPage");
-  return { title: `${post?.title || post?.body.slice(0, 30) || t("title")} · ANS` };
+  return { title: `${post?.title || post?.body.slice(0, 30) || t("title")}` };
 }
 
 export default async function CommunityPostPage({ params }: { params: Params }) {
@@ -47,7 +47,7 @@ export default async function CommunityPostPage({ params }: { params: Params }) 
   const loginHref = `/login?callbackUrl=${encodeURIComponent(`/community/posts/${post.id}`)}`;
 
   return <div className="ans-product-container ans-page-content space-y-4">
-    <Link href={`/community?c=${channel}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ChevronLeft className="h-4 w-4" aria-hidden="true" />{t("back")} · {page(`channels.${channel}`)}</Link>
+    <Link href={`/community?c=${channel}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ChevronLeft className="h-4 w-4" aria-hidden="true" />{page(`channels.${channel}`)}</Link>
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="min-w-0 space-y-4">
         <article className="space-y-5 rounded-2xl border bg-card p-5 sm:p-7">
@@ -110,7 +110,7 @@ export default async function CommunityPostPage({ params }: { params: Params }) 
             {post.replies.map((reply) => <li key={reply.id} className="flex gap-3">
               <Avatar user={reply.author} />
               <div className="min-w-0 space-y-1">
-                <p className="text-sm"><Link href={`/@${reply.author.username}`} className="font-semibold hover:underline">{nameOf(reply.author)}</Link> <span className="text-muted-foreground">· {time.format(reply.createdAt)}</span></p>
+                <p className="text-sm"><Link href={`/@${reply.author.username}`} className="font-semibold hover:underline">{nameOf(reply.author)}</Link> <span className="ml-1.5 text-xs text-muted-foreground ans-num">{time.format(reply.createdAt)}</span></p>
                 <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{reply.body}</p>
               </div>
             </li>)}

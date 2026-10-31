@@ -430,13 +430,13 @@ export function spawnWhipScreenFx(labelText?: string) {
     "🍑 啪叽！红屁股预警 · 帧率拉满！",
   ];
   const tag = document.createElement("div");
-  tag.style.cssText = `position:fixed;left:${x}px;top:${y - 26}px;z-index:2147483646;pointer-events:none;padding:6px 14px;border-radius:999px;font-weight:800;font-size:13px;white-space:nowrap;background:linear-gradient(135deg,#ff6b4a,#ffb36b);color:#1c100e;box-shadow:0 8px 20px rgba(0,0,0,0.45);animation:ansDinoFloatTagAnim 1.25s cubic-bezier(0.22,1,0.36,1) forwards;`;
+  tag.style.cssText = `position:fixed;left:${x}px;top:${y - 26}px;z-index:2147483646;pointer-events:none;padding:6px 14px;border-radius:999px;font-weight:800;font-size:13px;white-space:nowrap;background:linear-gradient(135deg,#ff6b4a,#ffb36b);color:#1c100e;box-shadow:0 8px 20px rgba(11, 11, 10, 0.45);animation:ansDinoFloatTagAnim 1.25s cubic-bezier(0.22,1,0.36,1) forwards;`;
   tag.textContent = labelText || slogans[whipCounter % slogans.length];
   document.body.appendChild(tag);
 
   window.setTimeout(() => {
     const workHolo = document.createElement("div");
-    workHolo.style.cssText = `position:fixed;left:${Math.min(window.innerWidth - 190, Math.max(190, x))}px;top:${y + 38}px;z-index:2147483646;pointer-events:none;padding:7px 14px;border-radius:14px;background:rgba(12,28,30,0.92);border:1.5px solid rgba(132,250,176,0.85);color:#b9f6ca;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,0.5),0 0 18px rgba(132,250,176,0.3);animation:ansDinoCyberWorkAnim 2.4s cubic-bezier(0.22,1,0.36,1) forwards;`;
+    workHolo.style.cssText = `position:fixed;left:${Math.min(window.innerWidth - 190, Math.max(190, x))}px;top:${y + 38}px;z-index:2147483646;pointer-events:none;padding:7px 14px;border-radius:14px;background:rgba(12,28,30,0.92);border:1.5px solid rgba(132,250,176,0.85);color:#b9f6ca;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 8px 24px rgba(11, 11, 10, 0.5),0 0 18px rgba(132,250,176,0.3);animation:ansDinoCyberWorkAnim 2.4s cubic-bezier(0.22,1,0.36,1) forwards;`;
     const codeTasks = [
       "💻 正在光速敲代码中: git push origin feat/ans-120fps ⚡",
       "⌨️ 啪啪啪狂改 Bug 中: 0 errors, 0 warnings, KPI +100% 🔥",
@@ -460,14 +460,14 @@ export function spawnFoodScreenFx(icon: string, burstText: string) {
   const { x, y } = getDinoAnchorCoords();
 
   const flyer = document.createElement("div");
-  flyer.style.cssText = `position:fixed;left:${x}px;top:${y}px;z-index:2147483646;pointer-events:none;font-size:38px;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.5));animation:ansDinoFoodArc 0.48s cubic-bezier(0.22,1,0.36,1) forwards;`;
+  flyer.style.cssText = `position:fixed;left:${x}px;top:${y}px;z-index:2147483646;pointer-events:none;font-size:38px;filter:drop-shadow(0 8px 16px rgba(11, 11, 10, 0.5));animation:ansDinoFoodArc 0.48s cubic-bezier(0.22,1,0.36,1) forwards;`;
   flyer.textContent = icon;
   document.body.appendChild(flyer);
 
   window.setTimeout(() => {
     flyer.remove();
     const pop = document.createElement("div");
-    pop.style.cssText = `position:fixed;left:${x}px;top:${y - 22}px;z-index:2147483646;pointer-events:none;padding:6px 14px;border-radius:999px;font-weight:800;font-size:13px;white-space:nowrap;background:linear-gradient(135deg,#84fab0,#ffe082);color:#10241e;box-shadow:0 8px 20px rgba(0,0,0,0.45);animation:ansDinoFloatTagAnim 1.2s cubic-bezier(0.22,1,0.36,1) forwards;`;
+    pop.style.cssText = `position:fixed;left:${x}px;top:${y - 22}px;z-index:2147483646;pointer-events:none;padding:6px 14px;border-radius:999px;font-weight:800;font-size:13px;white-space:nowrap;background:linear-gradient(135deg,#84fab0,#ffe082);color:#10241e;box-shadow:0 8px 20px rgba(11, 11, 10, 0.45);animation:ansDinoFloatTagAnim 1.2s cubic-bezier(0.22,1,0.36,1) forwards;`;
     pop.textContent = `${icon} 咔哧！炫完【${burstText}】！`;
     document.body.appendChild(pop);
     window.setTimeout(() => pop.remove(), 1220);

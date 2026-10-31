@@ -174,7 +174,7 @@ export function DinoAdoptionPod({
         background:
           "linear-gradient(145deg, rgba(13, 25, 32, 0.94), rgba(20, 36, 44, 0.92))",
         border: `1.5px solid ${currentSpecies.palette.skinHex}66`,
-        boxShadow: "0 14px 36px rgba(0, 0, 0, 0.22)",
+        boxShadow: "0 14px 36px rgba(11, 11, 10, 0.22)",
         color: "#f2fbf8",
         display: "flex",
         flexDirection: "column",
@@ -244,7 +244,7 @@ export function DinoAdoptionPod({
               alignItems: "center",
               padding: "12px",
               borderRadius: "16px",
-              background: "rgba(0, 0, 0, 0.28)",
+              background: "rgba(11, 11, 10, 0.28)",
               border: "1px solid rgba(255, 255, 255, 0.1)",
             }}
           >
@@ -472,7 +472,7 @@ export function DinoAdoptionPod({
                   padding: "4px 8px",
                   borderRadius: "8px",
                   border: "1px solid rgba(132,250,176,0.5)",
-                  background: "rgba(0,0,0,0.35)",
+                  background: "rgba(11, 11, 10, 0.35)",
                   color: "#fff",
                   fontSize: "12px",
                   fontWeight: 700,

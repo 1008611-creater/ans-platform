@@ -430,7 +430,7 @@ export default function Skill({ initialScenario }: { initialScenario?: string })
                 {lang === "en" ? "🎨 Concept Poster (List Card)" : "🎨 概念海报（列表卡片外封）"}
               </span>
             </div>
-            <div style={{ borderRadius: "14px", overflow: "hidden", border: "1px solid rgba(0,0,0,0.12)", marginTop: "0.75rem" }}>
+            <div style={{ borderRadius: "14px", overflow: "hidden", border: "1px solid rgba(11, 11, 10, 0.12)", marginTop: "0.75rem" }}>
               <img
                 src={
                   coverDemoSlug === "liu-resume"
@@ -457,7 +457,7 @@ export default function Skill({ initialScenario }: { initialScenario?: string })
                 {lang === "en" ? "Open Project Detail" : "进入详情页查看"} <ArrowUpRight size={14} aria-hidden="true" />
               </Link>
             </div>
-            <div style={{ borderRadius: "14px", overflow: "hidden", border: "1px solid rgba(0,0,0,0.12)", marginTop: "0.75rem" }}>
+            <div style={{ borderRadius: "14px", overflow: "hidden", border: "1px solid rgba(11, 11, 10, 0.12)", marginTop: "0.75rem" }}>
               <img
                 src={
                   coverDemoSlug === "ans-3d-showcase"
