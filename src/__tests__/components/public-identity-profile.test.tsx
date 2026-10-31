@@ -19,6 +19,11 @@ vi.mock("@/lib/db", () => ({ db: {
   artifactPublication: { findMany: vi.fn() },
   marketListing: { findMany: vi.fn() },
 } }));
+vi.mock("@/server/community/follows", () => ({
+  getFollowCounts: vi.fn(async () => ({ followers: 2, following: 1, relays: 0 })),
+  getFollowRelation: vi.fn(async () => ({ following: false, followedBy: false })),
+  listFollowPeople: vi.fn(async () => []),
+}));
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string, values?: Record<string, unknown>) => `${key}${values ? JSON.stringify(values) : ""}`,
 }));

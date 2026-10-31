@@ -3,8 +3,10 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 /** 点提醒跳到哪：社区帖子直达详情，需要处理的跳到操作区，漂流瓶回到「我的瓶子」。 */
-function notificationHref(n: { type: string; communityPostId: string | null; bottleId: string | null }) {
+function notificationHref(n: { type: string; communityPostId: string | null; bottleId: string | null; actor: { username: string } | null }) {
   if (n.type === "BOTTLE_REPLY") return "/community/bottles#mine";
+  if (n.type === "COMMUNITY_FOLLOWED") return n.actor ? `/@${n.actor.username}` : "/community";
+  if (n.type === "COMMUNITY_RELAY" && n.communityPostId) return `/community/posts/${n.communityPostId}#relays`;
   if (n.communityPostId) {
     const needsAction = n.type === "COMMUNITY_APPLICATION" || n.type === "COMMUNITY_HELP_OFFER";
     return `/community/posts/${n.communityPostId}${needsAction ? "#act" : ""}`;

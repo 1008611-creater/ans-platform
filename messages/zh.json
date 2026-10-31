@@ -850,7 +850,10 @@
       "COMMUNITY_APPLICATION_ACCEPTED": "通过了你的入队申请",
       "COMMUNITY_APPLICATION_DECLINED": "这次没有通过你的入队申请",
       "COMMUNITY_HELPED": "确认你帮上了忙",
-      "BOTTLE_REPLY": "有人回了你的漂流瓶"
+      "BOTTLE_REPLY": "有人回了你的漂流瓶",
+      "COMMUNITY_RELAY": "接了你的帖子",
+      "COMMUNITY_FOLLOWED": "关注了你",
+      "COMMUNITY_FOLLOWEE_POST": "发了新帖"
     }
   },
   "errors": {

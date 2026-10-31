@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 export type CommunityNotificationType = Extract<NotificationType, `COMMUNITY_${string}` | "BOTTLE_REPLY">;
 
 /** 同一个帖子上还没读的同类提醒合并成一条，避免一串回复刷满铃铛。 */
-const MERGEABLE = new Set<CommunityNotificationType>(["COMMUNITY_REPLY", "COMMUNITY_HELP_OFFER", "COMMUNITY_APPLICATION", "BOTTLE_REPLY"]);
+const MERGEABLE = new Set<CommunityNotificationType>(["COMMUNITY_REPLY", "COMMUNITY_HELP_OFFER", "COMMUNITY_APPLICATION", "BOTTLE_REPLY", "COMMUNITY_RELAY", "COMMUNITY_FOLLOWED"]);
 const EXCERPT_MAX = 80;
 
 export function notificationExcerpt(text: string | null | undefined) {

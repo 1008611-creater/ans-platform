@@ -22,6 +22,8 @@ export const TEAM_ROLE_MAX = 6;
 export const TEAM_ROLE_SLOTS_MAX = 5;
 export const STALL_MAX_DAYS = 60;
 export const HELP_REWARD_XP = 20;
+/** 一次发帖最多提醒多少个粉丝，防止大号一发帖就写爆提醒表。 */
+export const FOLLOWER_NOTIFY_MAX = 500;
 
 const board = z.enum(COMMUNITY_BOARDS);
 const imageUrl = z.string().trim().max(500).url().refine((value) => value.startsWith("https://"), "IMAGE_URL");
@@ -40,11 +42,13 @@ export const createCommunityPostSchema = z.discriminatedUnion("kind", [
     title: z.string().trim().min(2).max(POST_TITLE_MAX),
     body: z.string().trim().min(2).max(POST_BODY_MAX),
     images: z.array(imageUrl).max(POST_IMAGE_MAX).default([]),
+    relayOfId: optionalId,
   }),
   z.object({
     kind: z.literal("TEXT"),
     board,
     body: z.string().trim().min(2).max(TEXT_POST_MAX),
+    relayOfId: optionalId,
   }),
   z.object({
     kind: z.literal("STALL"),
@@ -77,6 +81,12 @@ export const communityPostActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("report"), reason: z.enum(COMMUNITY_REPORT_REASONS), details: z.string().trim().max(500).optional() }),
 ]);
 export type CommunityPostAction = z.input<typeof communityPostActionSchema>;
+
+export const followActionSchema = z.object({
+  action: z.enum(["follow", "unfollow"]),
+  userId: z.string().trim().min(1).max(40),
+});
+export type FollowAction = z.input<typeof followActionSchema>;
 
 /** 「我能帮」用在求和换上，「我想要」用在出上；组队走入队申请。 */
 export function helpVerb(stall: CommunityStallKindId | null | undefined): "help" | "want" | null {

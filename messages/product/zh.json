@@ -3667,6 +3667,7 @@
     "growth": "我的成长",
     "channelsLabel": "社区板块",
     "channels": {
+      "following": "关注",
       "all": "推荐",
       "team": "组队",
       "career": "求职就业",
@@ -3712,7 +3713,17 @@
     "myStallTeam": "{count} 人申请，等你处理",
     "myStallHelp": "{count} 人回应",
     "myStallNone": "还没有人回应",
-    "bottlesLink": "漂流瓶"
+    "bottlesLink": "漂流瓶",
+    "followingHint": "只看你关注的 {count} 个人",
+    "followingEmpty": "你还没关注任何人。看到喜欢的作者，点他名字旁边的「关注」，他发帖就会出现在这里。",
+    "followingQuiet": "你关注的人最近还没发帖。",
+    "suggestTitle": "可能想关注",
+    "suggestFan": "已关注你",
+    "suggestRelays": "最近两周接力 {count} 次",
+    "suggestPosts": "最近两周发帖 {count} 条",
+    "relayOf": "接力「{title}」",
+    "relayOfHidden": "接力的原帖已隐藏",
+    "relayCount": "{count} 人接力"
   },
   "modelPlaza": {
     "title": "模型广场",
@@ -4211,7 +4222,22 @@
       "BOTTLE_THROW_LIMIT": "今天已经扔了 3 个瓶子，明天再来",
       "BOTTLE_PICK_LIMIT": "今天捞了 10 个了，明天再来",
       "NOT_PICKED": "只能回自己捞到的瓶子",
-      "ALREADY_REPLIED": "每个瓶子只能回一句"
+      "ALREADY_REPLIED": "每个瓶子只能回一句",
+      "INVALID_RELAY": "这条帖子不能接力，可能已被隐藏"
+    },
+    "relay": {
+      "title": "接力 {count}",
+      "hint": "每个人的版本按时间排开，最早的在前",
+      "open": "接一下",
+      "dialogTitle": "接一下",
+      "from": "接力自 {name}，已有 {count} 人接",
+      "kindLabel": "接力形式",
+      "boardNote": "板块跟着原帖，发在「{board}」。你的帖子会出现在原帖的接力串里，也会推给关注你的人。",
+      "submit": "发布接力",
+      "empty": "还没有人接，做第一个吧。",
+      "loginToRelay": "登录后接一下",
+      "rootLink": "看原帖和整串接力",
+      "index": "#{n}"
     }
   },
   "communityBottle": {
@@ -4259,5 +4285,20 @@
     "removed": "已下架",
     "restored": "已恢复显示",
     "failed": "操作失败，刷新后再试"
+  },
+  "communityFollow": {
+    "follow": "关注",
+    "followBack": "回关",
+    "following": "已关注",
+    "mutual": "互相关注",
+    "unfollow": "取消关注",
+    "followers": "粉丝",
+    "followingCount": "关注",
+    "relays": "次接力",
+    "followersTab": "粉丝 {count}",
+    "followingTab": "关注 {count}",
+    "noFollowers": "还没有粉丝。",
+    "noFollowing": "还没关注任何人。",
+    "peopleLabel": "关系列表"
   }
 }
