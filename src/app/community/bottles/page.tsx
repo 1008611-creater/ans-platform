@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const t = await getTranslations("product.communityBottle");
-  return { title: `${t("title")} · ANS` };
+  return { title: t("title") };
 }
 
 const NOTE = "rounded-2xl border border-sky-200/70 bg-sky-50/60 p-4 dark:border-sky-900 dark:bg-sky-950/30";
@@ -77,7 +77,7 @@ export default async function CommunityBottlesPage() {
               {mine.map((bottle) => <li key={bottle.id} className="space-y-3 rounded-2xl border bg-card p-4" data-testid="my-bottle">
                 <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{bottle.body}</p>
                 <p className="text-xs text-muted-foreground">
-                  {date.format(bottle.createdAt)} · {bottle._count.picks > 0 ? t("pickedBy", { count: bottle._count.picks }) : t("stillFloating")}
+                  {date.format(bottle.createdAt)} {bottle._count.picks > 0 ? t("pickedBy", { count: bottle._count.picks }) : t("stillFloating")}
                 </p>
                 {bottle.status === "HIDDEN" && <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-100">{t("hiddenNote")}</p>}
                 {bottle.replies.length > 0 && <ul className="space-y-2 border-t pt-3">

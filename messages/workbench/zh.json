@@ -59,7 +59,9 @@
     "iterateOnCurrent": "基于当前文件迭代修改",
     "added": "新增",
     "removed": "删除",
-    "docPreview": "生成文档预览"
+    "docPreview": "生成文档预览",
+    "splitHandle": "拖动调整对话和预览的宽度",
+    "showPreview": "展开预览"
   },
   "aria": {
     "nicknameInput": "新昵称",

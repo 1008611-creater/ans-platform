@@ -318,7 +318,7 @@ export function SwissOnboardingModal({
         {/* Modal Body: Left Video (8 cols) + Right Concise Card (4 cols) */}
         <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto p-5 lg:grid-cols-12">
           <div className="lg:col-span-8">
-            <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-[#E5E0D5] bg-black shadow-sm">
+            <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-[#E5E0D5] bg-ink shadow-sm">
               <video
                 ref={videoRef}
                 src="/videos/ans-compute-swiss-guide.mp4"

@@ -1,25 +1,20 @@
 "use client";
 
-import { memo, useEffect, useRef, useState } from "react";
+import { memo } from "react";
 import { Check, Copy, ArrowUpRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { WorkspaceLink } from "@/components/providers/workspace-navigation";
+import { useCopyFeedback } from "@/lib/ui/copy-feedback";
+import { rehypeStreamChars } from "@/lib/ui/stream-chars";
 
-export const CompanionReply = memo(function CompanionReply({ text }: { text: string }) {
+/** `animate` 只给新到达的回复：逐字从模糊晕开到清晰。 */
+export const CompanionReply = memo(function CompanionReply({ text, animate = false }: { text: string; animate?: boolean }) {
   const t = useTranslations("companion");
-  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
-  async function copy() {
-    try { await navigator.clipboard.writeText(text); setCopyState("copied"); }
-    catch { setCopyState("failed"); }
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setCopyState("idle"), 3000);
-  }
+  const feedback = useCopyFeedback();
   return <div className="ans-companion-reply">
-    <div className="ans-companion-markdown"><ReactMarkdown remarkPlugins={[remarkGfm]} skipHtml disallowedElements={["img", "input"]} components={{
+    <div className="ans-companion-markdown"><ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={animate ? [rehypeStreamChars] : []} skipHtml disallowedElements={["img", "input"]} components={{
       // Responses cannot load tracking images or execute HTML. Links require an explicit click.
       a: ({ href, children }) => {
         if (href && /^\/(?![/\\])/.test(href) && !href.includes("\\")) return <WorkspaceLink href={href}>{children}</WorkspaceLink>;
@@ -29,6 +24,6 @@ export const CompanionReply = memo(function CompanionReply({ text }: { text: str
       h1: ({ children }) => <h3>{children}</h3>, h2: ({ children }) => <h3>{children}</h3>,
       table: ({ children }) => <div className="ans-companion-table" role="region" aria-label={t("replyTable")} tabIndex={0}><table>{children}</table></div>,
     }}>{text}</ReactMarkdown></div>
-    <div className="ans-companion-reply-actions"><button type="button" onClick={() => void copy()} aria-label={t(copyState === "copied" ? "replyCopied" : "copyReply")} title={t("copyReply")}>{copyState === "copied" ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}{t(copyState === "copied" ? "replyCopied" : "copyReply")}</button><span role="status">{copyState === "failed" ? t("replyCopyFailed") : ""}</span></div>
+    <div className="ans-companion-reply-actions"><button type="button" onClick={() => void feedback.copy(text)} aria-label={t(feedback.copied ? "replyCopied" : "copyReply")} title={t("copyReply")}>{feedback.copied ? <Check aria-hidden="true" className={feedback.state === "leaving" ? "ans-feedback-leaving" : "ans-pop"} /> : <Copy aria-hidden="true" />}<span className={feedback.state === "leaving" ? "ans-feedback-leaving" : undefined}>{t(feedback.copied ? "replyCopied" : "copyReply")}</span></button><span role="status">{feedback.state === "failed" ? t("replyCopyFailed") : ""}</span></div>
   </div>;
 });

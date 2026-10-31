@@ -76,7 +76,7 @@ export function AgriPublicationsShowcase({publicationId}:{publicationId?:string}
             <div key={idx} className="group flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/90 transition hover:-translate-y-0.5 hover:border-emerald-500/40 hover:shadow-md">
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
                 <img src={sample.cover} alt={sample.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/15 to-transparent" />
                 <span className="absolute bottom-2.5 left-3 rounded-full bg-emerald-500/90 px-2.5 py-0.5 text-[11px] font-medium text-white">
                   {sample.track}
                 </span>

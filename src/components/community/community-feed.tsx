@@ -32,7 +32,7 @@ type Labels = Awaited<ReturnType<typeof getTranslations>>;
 function Avatar({ name, src }: { name: string; src: string | null }) {
   return src
     ? <img src={src} alt="" className="h-5 w-5 shrink-0 rounded-full object-cover" loading="lazy" />
-    : <span aria-hidden="true" className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-muted text-[10px] font-semibold text-foreground/80">{name.charAt(0).toUpperCase()}</span>;
+    : <span aria-hidden="true" className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold text-foreground/80">{name.charAt(0).toUpperCase()}</span>;
 }
 
 function Byline({ author, children }: { author: { name: string; avatar: string | null }; children?: React.ReactNode }) {
@@ -44,8 +44,8 @@ function Byline({ author, children }: { author: { name: string; avatar: string |
 
 function Counts({ likes, replies, t }: { likes: number; replies: number; t: Labels }) {
   return <>
-    <span className="flex items-center gap-0.5"><Heart className="h-3.5 w-3.5" aria-hidden="true" />{likes}<span className="sr-only"> {t("likes")}</span></span>
-    {replies > 0 && <span className="flex items-center gap-0.5"><MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />{replies}<span className="sr-only"> {t("comments")}</span></span>}
+    <span className="ans-num flex items-center gap-0.5"><Heart className="h-3.5 w-3.5" aria-hidden="true" />{likes}<span className="sr-only"> {t("likes")}</span></span>
+    {replies > 0 && <span className="ans-num flex items-center gap-0.5"><MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />{replies}<span className="sr-only"> {t("comments")}</span></span>}
   </>;
 }
 
@@ -64,7 +64,7 @@ function StallCard({ post, t, date }: { post: CommunityPostSummary; t: Labels; d
       {!(post.stall === "TEAM" && post.board === "TEAM") && <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${BOARD_CHIP[post.board]}`}>{t(`channels.${BOARD_CHANNEL[post.board]}`)}</span>}
     </div>
     <h3 className="text-[15px] font-semibold leading-snug"><Link href={href} prefetch={false} className={STRETCH}>{post.title}</Link></h3>
-    {post.stall === "TEAM" && (post.competition || post.team) && <p className="truncate text-xs text-muted-foreground">{[post.competition?.title, post.team?.name].filter(Boolean).join(" · ")}</p>}
+    {post.stall === "TEAM" && (post.competition || post.team) && <p className="truncate text-xs text-muted-foreground">{[post.competition?.title, post.team?.name].filter(Boolean).join(" ")}</p>}
     {post.vacancies.length > 0 && <ul className="space-y-1">
       {post.vacancies.map((role) => <li key={role.name} className={`flex justify-between rounded-lg bg-muted px-2.5 py-1.5 text-xs ${role.filled >= role.slots ? "text-muted-foreground" : ""}`}>
         <span>{role.name}</span>{role.filled >= role.slots ? <span>{t("roleFull")}</span> : <strong>{role.filled} / {role.slots}</strong>}
@@ -75,7 +75,7 @@ function StallCard({ post, t, date }: { post: CommunityPostSummary; t: Labels; d
     </p>}
     <Byline author={author}>
       {post.active && post.expiresAt && <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" aria-hidden="true" />{t("deadline", { date: date(post.expiresAt) })}</span>}
-      {post.active && verb && post._count.helpOffers > 0 && <span>{t(verb === "want" ? "wantCount" : "helpCount", { count: post._count.helpOffers })}</span>}
+      {post.active && verb && post._count.helpOffers > 0 && <span className="ans-num">{t(verb === "want" ? "wantCount" : "helpCount", { count: post._count.helpOffers })}</span>}
     </Byline>
     {post.active && <Link href={`${href}#act`} prefetch={false} className={`relative z-10 inline-flex h-9 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${post.stall === "TEAM" ? "bg-foreground text-background hover:bg-foreground/90" : "border bg-background hover:bg-muted"}`}>{cta}</Link>}
   </article>;
@@ -105,7 +105,7 @@ function TextCard({ post, t }: { post: CommunityPostSummary; t: Labels }) {
 function WorkCard({ item, t }: { item: Extract<CommunityFeedItem, { type: "work" }>; t: Labels }) {
   return <article className={CARD}>
     <div className={`relative flex aspect-square items-end p-4 ${BOARD_TINT.AIGC}`}>
-      <span className="absolute left-2.5 top-2.5 rounded-full bg-background/85 px-2 py-0.5 font-mono text-[11px] font-medium">v{item.version}</span>
+      <span className="absolute left-2.5 top-2.5 rounded-full bg-background/85 px-2 py-0.5 font-mono text-xs font-medium">v{item.version}</span>
       <p className="line-clamp-4 text-lg font-bold leading-snug">{item.title}</p>
     </div>
     <div className="space-y-2 p-3">

@@ -26,6 +26,9 @@ export interface CodexWorkbenchProps {
 
 import { INITIAL_CODEX_TASKS, type CodexTask } from "./codex-preset-tasks";
 import { usePausedRunModels, useRunModelMultipliers } from "@/components/providers/run-model-pricing";
+import { imeBlocks } from "@/lib/ui/ime-enter-guard";
+import { ResizableSplit } from "@/lib/ui/resizable-split";
+import { MiddleEllipsis } from "@/lib/ui/middle-ellipsis";
 
 export function DisplayNameEditor(props: CodexWorkbenchProps) {
   if (props.codexWorkbench) {
@@ -99,7 +102,7 @@ function DisplayNameForm({ current, actorId }: { current: string; actorId: strin
         value={value}
         maxLength={40}
         onChange={(event) => setValue(event.target.value)}
-        onKeyDown={(event) => { if (event.key === "Enter") void save(); if (event.key === "Escape") setOpen(false); }}
+        onKeyDown={(event) => { if (event.key === "Enter" && !imeBlocks(event)) void save(); if (event.key === "Escape") setOpen(false); }}
         className="h-7 w-40 text-sm"
         aria-label={w("aria.nicknameInput")}
       />
@@ -888,7 +891,7 @@ function PiCodexWorkbench({
           </div>
           <span
             title={w("title.branch")}
-            className="hidden items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 px-2.5 py-1 font-mono text-[11px] text-slate-400 sm:inline-flex"
+            className="hidden items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 px-2.5 py-1 font-mono text-xs text-slate-400 sm:inline-flex"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             {activeTask.branch || "ans-workspace/main"}
@@ -917,7 +920,7 @@ function PiCodexWorkbench({
 
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <span className="rounded-xl border border-slate-800 bg-slate-900 px-2.5 py-1 text-slate-300">
-            👤 {current} · <strong className="text-amber-300">{levelName}</strong>
+            👤 {current} <strong className="text-amber-300">{levelName}</strong>
             {actorId && <LegacyDisplayNameEditor actorId={actorId} current={current} />}
           </span>
           <span className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 font-bold text-emerald-300">
@@ -970,14 +973,14 @@ function PiCodexWorkbench({
       )}
 
       {/* 3-Column Codex Grid: Task Queue (240px) | Agent Execution Thread & Composer (360px) | Artifact & Diff Inspector (1fr) */}
-      <div className="grid min-h-[640px] grid-cols-1 lg:grid-cols-[240px_360px_1fr]">
+      <div className="grid min-h-[640px] grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)]">
         {/* Left Column: Codex Task Sidebar with Git Diff Stats */}
         <aside className="flex flex-col justify-between border-b border-slate-800 bg-slate-900/40 p-3 lg:border-r lg:border-b-0">
           <div className="space-y-3.5">
             {/* Section 1: Real User Tasks */}
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-emerald-400">
+                <span className="text-xs font-extrabold text-emerald-400">
                   📂 我的任务 ({userTasks.length})
                 </span>
                 <div className="flex items-center gap-1">
@@ -986,7 +989,7 @@ function PiCodexWorkbench({
                       type="button"
                       onClick={handleClearUserTasks}
                       title={w("title.clearTasks")}
-                      className="rounded-lg border border-slate-700/80 bg-slate-900 px-1.5 py-0.5 text-[10px] text-slate-400 hover:border-rose-500/40 hover:text-rose-300"
+                      className="rounded-lg border border-slate-700/80 bg-slate-900 px-1.5 py-0.5 text-xs text-slate-400 hover:border-rose-500/40 hover:text-rose-300"
                     >
                       {w("label.clear")}
                     </button>
@@ -994,14 +997,14 @@ function PiCodexWorkbench({
                   <button
                     type="button"
                     onClick={handleStartBlankTask}
-                    className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-bold text-emerald-300 hover:bg-emerald-500/25"
+                    className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-300 hover:bg-emerald-500/25"
                   >
                     + {w("label.new")}
                   </button>
                 </div>
               </div>
               {userTasks.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/50 px-2.5 py-2 text-center text-[11px] text-slate-300">
+                <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/50 px-2.5 py-2 text-center text-xs text-slate-300">
                   {w("empty.tasks")}
                 </div>
               ) : (
@@ -1030,7 +1033,7 @@ function PiCodexWorkbench({
                         <div className="flex items-center justify-between gap-1">
                           <span className="line-clamp-1 text-xs font-bold">{t.title}</span>
                           <span className="flex shrink-0 items-center gap-1">
-                            <span className="text-[10px] text-emerald-300">
+                            <span className="text-xs text-emerald-300">
                               {t.status === "running" ? "⚡" : t.mode === "ask" ? "💬" : "✓"}
                             </span>
                             <button
@@ -1038,14 +1041,14 @@ function PiCodexWorkbench({
                               onClick={e => handleDeleteUserTask(t.id, e)}
                               title={w("title.deleteRecord")}
                               aria-label={w("aria.deleteRecord", { p1: t.title })}
-                              className="hidden rounded px-1 text-[10px] text-slate-400 hover:bg-rose-500/20 hover:text-rose-300 group-hover:inline-block"
+                              className="hidden rounded px-1 text-xs text-slate-400 hover:bg-rose-500/20 hover:text-rose-300 group-hover:inline-block"
                             >
                               ×
                             </button>
                           </span>
                         </div>
-                        <div className="flex items-center justify-between font-mono text-[10px] text-slate-400">
-                          <span className="truncate">{t.artifactFile}</span>
+                        <div className="flex items-center justify-between font-mono text-xs text-slate-400">
+                          <MiddleEllipsis name={t.artifactFile} />
                           <span className="shrink-0 space-x-1">
                             <span className="text-emerald-400">+{addCount}</span>
                             {delCount > 0 && <span className="text-rose-400">-{delCount}</span>}
@@ -1061,10 +1064,10 @@ function PiCodexWorkbench({
             {/* Section 2: Onboarding Sample Walkthroughs */}
             <div className="border-t border-slate-800/80 pt-3">
               <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-amber-300/90">
+                <span className="text-xs font-extrabold text-amber-300/90">
                   {w("status.guidedSample")}
                 </span>
-                <span className="font-mono text-[10px] text-slate-300">含 Diff 对比</span>
+                <span className="font-mono text-xs text-slate-300">含 Diff 对比</span>
               </div>
               <div className="space-y-1">
                 {guideTasks.map(t => (
@@ -1081,13 +1084,13 @@ function PiCodexWorkbench({
                   >
                     <div className="flex items-center justify-between gap-1.5">
                       <span className="line-clamp-1 text-xs font-semibold">{t.title}</span>
-                      <span className="shrink-0 font-mono text-[10px] text-emerald-400">
+                      <span className="shrink-0 font-mono text-xs text-emerald-400">
                         +{t.diffAdditions ?? 64}
                         {t.diffDeletions ? <span className="ml-0.5 text-rose-400">-{t.diffDeletions}</span> : null}
                       </span>
                     </div>
-                    <div className="mt-0.5 flex items-center justify-between font-mono text-[10px] text-slate-300">
-                      <span>{t.artifactFile}</span>
+                    <div className="mt-0.5 flex items-center justify-between font-mono text-xs text-slate-300">
+                      <MiddleEllipsis name={t.artifactFile} />
                       <span>{t.tag.replace("范例", "")}</span>
                     </div>
                   </button>
@@ -1102,7 +1105,7 @@ function PiCodexWorkbench({
                   type="button"
                   onClick={() => void executeCodexTask(activeTask.title, "scaffold")}
                   title={w("title.saveToProjects")}
-                  className="rounded-xl border border-indigo-500/35 bg-indigo-500/15 px-2 py-1.5 text-center text-[11px] font-bold text-indigo-200 transition hover:bg-indigo-500/25"
+                  className="rounded-xl border border-indigo-500/35 bg-indigo-500/15 px-2 py-1.5 text-center text-xs font-bold text-indigo-200 transition hover:bg-indigo-500/25"
                 >
                   🚀 {w("label.saveAsProject")}
                 </button>
@@ -1110,7 +1113,7 @@ function PiCodexWorkbench({
                   type="button"
                   onClick={() => void executeCodexTask("", "checkin")}
                   title={w("title.checkin")}
-                  className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2 py-1.5 text-center text-[11px] font-bold text-emerald-300 transition hover:bg-emerald-500/20"
+                  className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2 py-1.5 text-center text-xs font-bold text-emerald-300 transition hover:bg-emerald-500/20"
                 >
                   📅 {w("label.checkin")}
                 </button>
@@ -1118,7 +1121,7 @@ function PiCodexWorkbench({
             </div>
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-1.5 border-t border-slate-800/80 pt-2.5 text-center text-[11px]">
+          <div className="mt-3 grid grid-cols-2 gap-1.5 border-t border-slate-800/80 pt-2.5 text-center text-xs">
             <a href="/projects" className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-slate-300 hover:border-emerald-500/40 hover:text-white">
               📂 {w("label.projects")}
             </a>
@@ -1128,22 +1131,27 @@ function PiCodexWorkbench({
           </div>
         </aside>
 
-        {/* Center Column: OpenAI Codex Execution Thread + Dual-Mode Composer */}
-        <section className="flex flex-col justify-between border-b border-slate-800 bg-slate-950 p-3.5 sm:p-4 lg:border-r lg:border-b-0">
+        {/* 中栏对话 | 右栏产物预览：可拖动分栏，拖动时给预览盖遮罩；Esc 复原，双击 50/50，左栏超过 82% 收起预览 */}
+        <ResizableSplit
+          label={w("label.splitHandle")}
+          reopenLabel={w("label.showPreview")}
+          initialRatio={0.4}
+          // 中栏：Agent 执行线程与输入框
+          left={
+        <section className="flex flex-1 flex-col justify-between border-b border-slate-800 bg-slate-950 p-3.5 sm:p-4 lg:border-r lg:border-b-0">
           <div className="max-h-[420px] space-y-2.5 overflow-y-auto pr-0.5">
             {/* Compact Task Header */}
             <div className="flex items-start justify-between gap-2 border-b border-slate-800/80 pb-2.5">
               <div className="min-w-0">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
                   <span>{activeTask.tag}</span>
-                  <span>·</span>
-                  <span className="font-mono text-slate-400">{activeTask.artifactFile}</span>
+                  <MiddleEllipsis name={activeTask.artifactFile} className="font-mono text-slate-400" />
                 </div>
                 <h2 className="mt-0.5 truncate text-sm font-extrabold text-white" title={activeTask.title}>
                   {activeTask.title}
                 </h2>
               </div>
-              <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold ${
+              <span className={`shrink-0 rounded-full border px-2 py-0.5 text-xs font-bold ${
                 running
                   ? "border-emerald-500/50 bg-emerald-500/20 text-emerald-300"
                   : isViewingGuideSample
@@ -1164,7 +1172,7 @@ function PiCodexWorkbench({
 
             {/* Step 1: User Task Prompt Bubble */}
             <div className="rounded-xl border border-slate-800/90 bg-slate-900/60 p-2.5">
-              <div className="flex items-center justify-between text-[10px] font-bold text-slate-400">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-400">
                 <span>{isViewingGuideSample ? "💡 范例指令" : "🧑 任务指令"}</span>
                 {isViewingGuideSample && (
                   <button
@@ -1190,21 +1198,21 @@ function PiCodexWorkbench({
                 <button
                   type="button"
                   onClick={() => setTraceExpanded(v => !v)}
-                  className="flex w-full items-center justify-between text-left text-[11px] font-bold text-slate-300 hover:text-white"
+                  className="flex w-full items-center justify-between text-left text-xs font-bold text-slate-300 hover:text-white"
                 >
                   <span className="flex items-center gap-1.5">
                     <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
                     <span>
-                      ⚡ Agent 执行链路 · {activeTask.trace.length} 步
+                      ⚡ Agent 执行链路 {activeTask.trace.length} 步
                       {activeTask.durationSec ? ` (${activeTask.durationSec}s)` : ""}
                     </span>
                   </span>
-                  <span className="font-mono text-[10px] text-slate-400">
+                  <span className="font-mono text-xs text-slate-400">
                     {traceExpanded ? w("label.expandTrace") : "展开 ▾"}
                   </span>
                 </button>
                 {traceExpanded && (
-                  <ol className="mt-2 space-y-1 border-t border-slate-800/80 pt-2 font-mono text-[11px] leading-5 text-slate-400">
+                  <ol className="mt-2 space-y-1 border-t border-slate-800/80 pt-2 font-mono text-xs leading-5 text-slate-400">
                     {activeTask.trace.map((step, idx) => (
                       <li key={idx} className="flex items-start gap-1.5">
                         <span className="mt-0.5 text-emerald-400">›</span>
@@ -1219,14 +1227,14 @@ function PiCodexWorkbench({
             {/* Step 3: Agent Result & Diff File Summary Card */}
             <div className="rounded-xl border border-emerald-500/25 bg-emerald-950/15 p-3">
               <div className="mb-1.5 flex items-center justify-between gap-2">
-                <span className="text-[11px] font-extrabold text-emerald-300">
+                <span className="text-xs font-extrabold text-emerald-300">
                   {isViewingGuideSample ? w("summary.sample") : activeTask.mode === "ask" ? "💬 Agent 解答" : "✓ 变更摘要"}
                 </span>
                 {isViewingGuideSample && (
                   <button
                     type="button"
                     onClick={forkActiveSampleToDraft}
-                    className="shrink-0 rounded-lg bg-amber-400 px-2 py-0.5 text-[10px] font-black text-slate-950 hover:bg-amber-300"
+                    className="shrink-0 rounded-lg bg-amber-400 px-2 py-0.5 text-xs font-black text-slate-950 hover:bg-amber-300"
                   >
                     {w("label.copyAsDraft")}
                   </button>
@@ -1237,15 +1245,15 @@ function PiCodexWorkbench({
               </div>
 
               {/* Codex File Diff Pill — click to jump to Diff tab */}
-              <div className="mt-2.5 flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/90 px-2.5 py-1.5 font-mono text-[11px]">
-                <span className="truncate text-slate-200">📄 {activeTask.artifactFile}</span>
+              <div className="mt-2.5 flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/90 px-2.5 py-1.5 font-mono text-xs">
+                <span className="flex min-w-0 items-center gap-1 text-slate-200"><span aria-hidden="true">📄</span><MiddleEllipsis name={activeTask.artifactFile} /></span>
                 <div className="flex shrink-0 items-center gap-2">
                   <span className="text-emerald-400">+{activeDiff.additions}</span>
                   {activeDiff.deletions > 0 && <span className="text-rose-400">-{activeDiff.deletions}</span>}
                   <button
                     type="button"
                     onClick={() => setCanvasTab("diff")}
-                    className="rounded bg-slate-800 px-1.5 py-0.5 font-sans text-[10px] font-bold text-emerald-300 hover:bg-slate-700"
+                    className="rounded bg-slate-800 px-1.5 py-0.5 font-sans text-xs font-bold text-emerald-300 hover:bg-slate-700"
                   >
                     {w("label.viewDiff")} →
                   </button>
@@ -1259,7 +1267,7 @@ function PiCodexWorkbench({
                       key={i}
                       href={lk.href}
                       title={lk.detail}
-                      className="rounded-lg border border-indigo-400/50 bg-indigo-500/20 px-2.5 py-1 text-[11px] font-bold text-indigo-200 hover:bg-indigo-500/30"
+                      className="rounded-lg border border-indigo-400/50 bg-indigo-500/20 px-2.5 py-1 text-xs font-bold text-indigo-200 hover:bg-indigo-500/30"
                     >
                       {lk.labelZh || lk.title || lk.labelEn || "已完成今日签到 (+5 积分)"} ↗
                     </a>
@@ -1277,7 +1285,7 @@ function PiCodexWorkbench({
             }}
             className="mt-3 rounded-2xl border border-slate-700/90 bg-slate-900 p-2.5 shadow-inner"
           >
-            <div className="mb-1.5 flex items-center justify-between text-[11px]">
+            <div className="mb-1.5 flex items-center justify-between text-xs">
               <label className="inline-flex cursor-pointer items-center gap-1.5 text-slate-300 select-none">
                 <input
                   type="checkbox"
@@ -1286,10 +1294,10 @@ function PiCodexWorkbench({
                   className="h-3.5 w-3.5 rounded border-slate-700 accent-emerald-500"
                 />
                 <span>
-                  基于当前文件迭代修改 <code className="text-[10px] text-emerald-300">({activeTask.artifactFile})</code>
+                  基于当前文件迭代修改 <code className="text-xs text-emerald-300">({activeTask.artifactFile})</code>
                 </span>
               </label>
-              <span className="font-mono text-[10px] text-slate-400">
+              <span className="font-mono text-xs text-slate-400">
                 {composerMode === "code" ? w("mode.codeShort") : w("label.ask")}
               </span>
             </div>
@@ -1306,7 +1314,7 @@ function PiCodexWorkbench({
               }
               className="w-full resize-none bg-transparent text-xs leading-5 text-white placeholder:text-slate-400 focus:outline-none"
               onKeyDown={e => {
-                if (e.key === "Enter" && !e.shiftKey) {
+                if (e.key === "Enter" && !e.shiftKey && !imeBlocks(e)) {
                   e.preventDefault();
                   void executeCodexTask(undefined, "playground", undefined, composerMode);
                 }
@@ -1330,7 +1338,7 @@ function PiCodexWorkbench({
                             return base.includes(term.appendText.zh) ? base : `${base}\n- ${term.appendText.zh}`;
                           });
                         }}
-                        className="rounded-md border border-slate-700/80 bg-slate-900 px-1.5 py-0.5 text-[10px] text-slate-300 transition hover:border-emerald-400/60 hover:text-emerald-300"
+                        className="rounded-md border border-slate-700/80 bg-slate-900 px-1.5 py-0.5 text-xs text-slate-300 transition hover:border-emerald-400/60 hover:text-emerald-300"
                       >
                         + {term.label.zh}
                       </button>
@@ -1350,7 +1358,7 @@ function PiCodexWorkbench({
                       setPromptInput(upgraded);
                       toast.success(w("toast.detailsExpanded"));
                     }}
-                    className="rounded-md border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-300 transition hover:bg-emerald-500/25"
+                    className="rounded-md border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-300 transition hover:bg-emerald-500/25"
                   >
                     ✨ {w("label.expandDetails")}
                   </button>
@@ -1369,7 +1377,7 @@ function PiCodexWorkbench({
                     key={label}
                     type="button"
                     onClick={() => setPromptInput(sample)}
-                    className="rounded-lg border border-slate-700/80 bg-slate-800/90 px-2 py-0.5 text-[10px] text-slate-300 hover:border-emerald-500/50 hover:text-white"
+                    className="rounded-lg border border-slate-700/80 bg-slate-800/90 px-2 py-0.5 text-xs text-slate-300 hover:border-emerald-500/50 hover:text-white"
                   >
                     {label}
                   </button>
@@ -1411,9 +1419,10 @@ function PiCodexWorkbench({
             </div>
           </form>
         </section>
-
-        {/* Right Column: Codex Artifact & Unified Diff Inspector */}
-        <section className="flex flex-col bg-slate-900/80">
+          }
+          // 右栏：产物与 Diff 预览
+          right={
+        <section className="flex flex-1 flex-col bg-slate-900/80">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 bg-slate-950/80 px-4 py-2">
             <div className="flex flex-wrap items-center gap-1">
               {[
@@ -1434,13 +1443,13 @@ function PiCodexWorkbench({
                   {t.label}
                 </button>
               ))}
-              <code className="ml-1.5 hidden rounded-md border border-slate-800 bg-slate-900 px-2 py-0.5 text-[11px] text-emerald-300 sm:inline-block">
-                {activeTask.artifactFile}
+              <code className="ml-1.5 hidden max-w-[220px] rounded-md border border-slate-800 bg-slate-900 px-2 py-0.5 text-xs text-emerald-300 sm:inline-flex">
+                <MiddleEllipsis name={activeTask.artifactFile} />
               </code>
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
               {canvasTab === "preview" && activeTask.artifactType === "html" && (
-                <div className="inline-flex items-center rounded-lg border border-slate-700 bg-slate-900 p-0.5 text-[11px]">
+                <div className="inline-flex items-center rounded-lg border border-slate-700 bg-slate-900 p-0.5 text-xs">
                   <button
                     type="button"
                     data-testid="codex-viewport-desktop"
@@ -1468,7 +1477,7 @@ function PiCodexWorkbench({
                   type="button"
                   onClick={revertToPreviousCode}
                   title={w("title.restoreVersion")}
-                  className="rounded-lg border border-amber-500/40 bg-amber-500/15 px-2 py-1 text-[11px] font-bold text-amber-300 hover:bg-amber-500/25"
+                  className="rounded-lg border border-amber-500/40 bg-amber-500/15 px-2 py-1 text-xs font-bold text-amber-300 hover:bg-amber-500/25"
                 >
                   ↩️ {w("label.restore")}
                 </button>
@@ -1477,7 +1486,7 @@ function PiCodexWorkbench({
                 type="button"
                 onClick={() => setPreviewKey(k => k + 1)}
                 title={w("title.reloadPreview")}
-                className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-800"
+                className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-800"
               >
                 🔄 {w("label.refresh")}
               </button>
@@ -1487,14 +1496,14 @@ function PiCodexWorkbench({
                   navigator.clipboard?.writeText(activeTask.artifactCode);
                   toast.success(w("toast.copied"));
                 }}
-                className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-800"
+                className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-800"
               >
                 📋 {w("label.copy")}
               </button>
               <button
                 type="button"
                 onClick={downloadActiveHtml}
-                className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-bold text-emerald-300 hover:bg-emerald-500/25"
+                className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-xs font-bold text-emerald-300 hover:bg-emerald-500/25"
               >
                 💾 {w("label.download")}
               </button>
@@ -1502,7 +1511,7 @@ function PiCodexWorkbench({
                 <button
                   type="button"
                   onClick={openFullscreenPreview}
-                  className="rounded-lg border border-indigo-400/40 bg-indigo-500/20 px-2.5 py-1 text-[11px] font-bold text-indigo-200 hover:bg-indigo-500/30"
+                  className="rounded-lg border border-indigo-400/40 bg-indigo-500/20 px-2.5 py-1 text-xs font-bold text-indigo-200 hover:bg-indigo-500/30"
                 >
                   🖥️ {w("label.newWindow")} ↗
                 </button>
@@ -1527,8 +1536,8 @@ function PiCodexWorkbench({
               ) : activeTask.artifactType === "markdown" ? (
                 <article className="min-h-[540px] flex-1 overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-5 text-sm leading-7 text-slate-100">
                   <div className="mb-3 flex items-center justify-between border-b border-slate-800 pb-2.5">
-                    <span className="text-xs font-extrabold text-emerald-400">📄 生成文档预览 · {activeTask.title}</span>
-                    <span className="text-[11px] text-slate-400">{activeTask.model}</span>
+                    <span className="text-xs font-extrabold text-emerald-400">📄 生成文档预览 {activeTask.title}</span>
+                    <span className="text-xs text-slate-400">{activeTask.model}</span>
                   </div>
                   <div className="whitespace-pre-wrap">{activeTask.artifactCode}</div>
                 </article>
@@ -1544,7 +1553,7 @@ function PiCodexWorkbench({
                 data-testid="codex-diff-viewer"
                 className="min-h-[540px] flex-1 overflow-auto rounded-2xl border border-slate-800 bg-slate-950 font-mono text-xs"
               >
-                <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-800 bg-slate-900/95 px-4 py-2 text-[11px]">
+                <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-800 bg-slate-900/95 px-4 py-2 text-xs">
                   <span className="text-slate-300">
                     diff --git a/{activeTask.artifactFile} b/{activeTask.artifactFile}
                   </span>
@@ -1565,10 +1574,10 @@ function PiCodexWorkbench({
                             : "text-slate-400"
                       }`}
                     >
-                      <span className="select-none pr-2 text-right text-[10px] text-slate-400">
+                      <span className="select-none pr-2 text-right text-xs text-slate-400">
                         {line.oldLine ?? ""}
                       </span>
-                      <span className="select-none pr-2 text-right text-[10px] text-slate-400">
+                      <span className="select-none pr-2 text-right text-xs text-slate-400">
                         {line.newLine ?? ""}
                       </span>
                       <span className="select-none font-bold">
@@ -1601,16 +1610,16 @@ function PiCodexWorkbench({
             )}
 
             {canvasTab === "terminal" && (
-              <div className="min-h-[540px] flex-1 overflow-auto rounded-2xl border border-slate-800 bg-black p-4 font-mono text-xs leading-6 text-emerald-400">
+              <div className="min-h-[540px] flex-1 overflow-auto rounded-2xl border border-slate-800 bg-ink p-4 font-mono text-xs leading-6 text-emerald-400">
                 <div className="mb-2 flex items-center justify-between border-b border-slate-800 pb-2 text-slate-400">
                   <span>Agent 已完成今日签到 (+5 积分) {activeTask.branch || "ans-workspace/main"}</span>
                   <span>{activeTask.model}</span>
                 </div>
                 {activeTask.trace && activeTask.trace.length > 0 && (
                   <div className="mb-3 rounded-xl border border-slate-800/90 bg-slate-950/90 p-2.5 text-slate-300">
-                    <div className="mb-1 text-[11px] font-bold text-emerald-300">{w("label.currentTaskSteps")}</div>
+                    <div className="mb-1 text-xs font-bold text-emerald-300">{w("label.currentTaskSteps")}</div>
                     {activeTask.trace.map((step, idx) => (
-                      <div key={idx} className="text-[11px] leading-5">
+                      <div key={idx} className="text-xs leading-5">
                         {step}
                       </div>
                     ))}
@@ -1623,6 +1632,8 @@ function PiCodexWorkbench({
             )}
           </div>
         </section>
+          }
+        />
       </div>
     </div>
   );

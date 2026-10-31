@@ -1247,7 +1247,7 @@ export function ComputeQuestArcade({
               <div className="mt-3">
                 <div className="relative h-64 w-full overflow-hidden rounded-xl bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-slate-100">
                   {/* Top Header */}
-                  <div className="relative z-10 flex items-center justify-between border-b border-white/10 bg-black/55 px-3 py-1.5 text-[10px] font-bold text-amber-300">
+                  <div className="relative z-10 flex items-center justify-between border-b border-white/10 bg-ink/55 px-3 py-1.5 text-[10px] font-bold text-amber-300">
                     <span>3D CLAW</span>
                     <span className="text-emerald-300">
                       {isEn ? `Target: ${targetCapsule.labelEn}` : `当前瞄准：${targetCapsule.labelZh}`}

@@ -59,7 +59,9 @@
     "iterateOnCurrent": "Iterate on the current file",
     "added": "added",
     "removed": "removed",
-    "docPreview": "Generated document preview"
+    "docPreview": "Generated document preview",
+    "splitHandle": "Drag to resize chat and preview",
+    "showPreview": "Show preview"
   },
   "aria": {
     "nicknameInput": "New nickname",

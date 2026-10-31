@@ -75,7 +75,7 @@ export default async function CollectionPage() {
                 >
                   <div className="relative aspect-[16/9] w-full overflow-hidden border-b bg-muted">
                     <img src={item.cover} alt={item.title} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                    <span className="absolute bottom-2.5 left-3 rounded-full bg-black/75 px-2.5 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
+                    <span className="absolute bottom-2.5 left-3 rounded-full bg-ink/75 px-2.5 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
                       {item.tag}
                     </span>
                   </div>

@@ -116,8 +116,8 @@ export function CommunityPanel({ actorId, showGrowth = true }: { actorId?: strin
           <CardContent className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p className="text-2xl font-semibold">{me.xp.toLocaleString()} XP <span className="text-base font-normal">· {formatLevel(me.xp)}</span></p>
-                <p className="mt-1 text-sm text-muted-foreground">连续签到 {me.checkInStreak} 天 · 按上海时间每日重置</p>
+                <p className="text-2xl font-semibold">{me.xp.toLocaleString()} XP <span className="ml-1.5 text-base font-normal text-muted-foreground">{formatLevel(me.xp)}</span></p>
+                <p className="mt-1 text-sm text-muted-foreground">连续签到 {me.checkInStreak} 天 按上海时间每日重置</p>
               </div>
               <Button onClick={() => void submitCheckIn()} disabled={pending || loading || Boolean(me.todayCheckIn)}>
                 {pending ? "签到中…" : me.todayCheckIn ? "今日已签到" : "每日签到"}
@@ -170,7 +170,7 @@ export function CommunityPanel({ actorId, showGrowth = true }: { actorId?: strin
           <Card>
             <CardHeader><RevealDetails id="community-board-guide" kind="heading" className="pe-12" label={t("boardGuide")} details={<p>{t("boardDetails")}</p>}><h2 className="text-lg font-semibold">贡献榜</h2></RevealDetails></CardHeader>
             <CardContent className="space-y-4">
-              <p className="rounded-lg bg-muted p-3 text-sm">我的名次：第 {contributions.me.rank} 名 · {contributions.me.xp.toLocaleString()} XP</p>
+              <p className="rounded-lg bg-muted p-3 text-sm">我的名次：第 {contributions.me.rank} 名 {contributions.me.xp.toLocaleString()} XP</p>
               <div className="max-h-96 overflow-auto">
                 <table className="w-full text-left text-sm">
                   <thead><tr className="border-b"><th scope="col" className="py-2">名次</th><th scope="col">昵称 / 称号</th><th scope="col" className="text-right">经验</th></tr></thead>

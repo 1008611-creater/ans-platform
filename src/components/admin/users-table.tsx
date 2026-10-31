@@ -42,6 +42,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { imeBlocks } from "@/lib/ui/ime-enter-guard";
 
 interface UserData {
   id: string;
@@ -306,7 +307,7 @@ export function UsersTable() {
                 placeholder={t("searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                onKeyDown={(e) => e.key === "Enter" && !imeBlocks(e) && handleSearch()}
                 className="pl-9 w-full sm:w-[200px]"
               />
             </div>

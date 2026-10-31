@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { imeBlocks } from "@/lib/ui/ime-enter-guard";
 
 interface Skill {
   id: string;
@@ -79,7 +80,7 @@ export function SkillsManagement() {
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="搜索 Skill 标题或描述..." onKeyDown={(e) => e.key === "Enter" && fetchSkills()} />
+            <Input className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="搜索 Skill 标题或描述..." onKeyDown={(e) => e.key === "Enter" && !imeBlocks(e) && fetchSkills()} />
           </div>
           <Button variant="outline" onClick={fetchSkills} disabled={loading}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "搜索"}</Button>
         </div>

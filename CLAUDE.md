@@ -70,6 +70,20 @@ src/
 3. Use existing UI components from `src/components/ui/`
 4. Never commit secrets (use `.env`)
 
+## Authoritative UI Design System (`dachang-ui`, 2026-10-31)
+
+The owner designated these 16 rules as **authoritative** for every ANS UI change; they override `ans-ui-ux-baseline` where they conflict. Full text and the delivery checklist live in [`docs/design/dachang-ui.md`](docs/design/dachang-ui.md); shared tokens and helpers live in `src/app/globals.css` (`--surface-*`, `--hairline`, `--focus-ring`, `--spring-*`, `.ans-collapse`, `.ans-stream-char`) and `src/lib/ui/`.
+
+- **Chat**: IME guard on Enter (`isComposing` / keyCode 229, plus 500ms after `compositionend`); auto-follow only within 40px of the bottom, stop on user scroll, show "jump to latest" past 120px; one border layer (inner buttons borderless, hover = background, outlines via `inset box-shadow`); outer radius = inner radius + padding; split drag covers the preview with a transparent shield, Esc restores, double-click = 50/50, left > 82% collapses the right pane; long file names truncate in the middle and keep the extension.
+- **Surfaces**: separate layers by 1–3% lightness instead of borders; never `#000` (light `#f5f5f3`/`#fcfcfb`, dark `#0b0b0a`/`#151515`/`#1a1a19`/`#20201e`).
+- **Inputs**: no outline on focus; a deeper double-ring `box-shadow`.
+- **Dark mode**: every font weight drops by 40 (400 → 360).
+- **Streaming text**: each new character fades from `blur(6px)` over 90ms with `cubic-bezier(.215,.61,.355,1)`, staggered 30ms.
+- **Details**: inline icons `vertical-align: -0.125em`; numbers `tabular-nums`; collapses via `grid-template-rows: 0fr → 1fr` (no JS height); body text `text-wrap: pretty`.
+- **Motion**: drag/snap uses an over-damped spring (1200/80, zero overshoot); like/check uses an under-damped spring (380/18); respect `prefers-reduced-motion`.
+- **Feedback**: copy checkmarks fade out after 2.5s.
+- **Also**: minimum font size 12px, ≤4 font sizes per page, no "·" as a text separator, no left color-bar cards, one primary action per area.
+
 ## Mandatory UI/UX & Copy Baseline (`ans-ui-ux-baseline` = `oil-ui` + `oil-frontend` + `ui-ux-guide` + `oil-tone`)
 
 1. **Zero Fake State Masquerading as Real Activity**: Never render fabricated live winner tickers, fake user tasks/orders, or fake stats pretending to be real activity. Any preset sample must be framed as `📖 新手引导 / 参考范例`, while user state is 100% real.

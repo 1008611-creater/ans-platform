@@ -115,7 +115,7 @@ export function NotificationBell() {
         <Button variant="ghost" size="icon" className="h-8 w-8 relative" aria-label={t("title")}>
           <Bell className="h-4 w-4" aria-hidden="true" />
           {totalCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-medium flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-red-500 text-white text-xs leading-none font-medium flex items-center justify-center ans-num">
               {totalCount > 9 ? "9+" : totalCount}
             </span>
           )}
@@ -138,7 +138,7 @@ export function NotificationBell() {
           <DropdownMenuItem asChild>
             <Link href={`/@${session.user.username}`} className="flex items-center justify-between">
               <span>{t("pendingChangeRequests")}</span>
-              <span className="ml-2 h-5 min-w-5 px-1 rounded-full bg-red-500 text-white text-xs font-medium flex items-center justify-center">
+              <span className="ml-2 h-5 min-w-5 px-1 rounded-full bg-red-500 text-white text-xs font-medium flex items-center justify-center ans-num">
                 {notifications.pendingChangeRequests}
               </span>
             </Link>
