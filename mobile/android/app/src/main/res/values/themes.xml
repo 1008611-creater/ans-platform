@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 启动时先铺品牌深蓝，避免 WebView 加载前闪白屏。Android 12+ 的系统启动页会自动用应用图标。 -->
+    <!-- 启动时先铺网页底色（跟随系统深浅色），避免 WebView 加载前闪一下别的颜色。Android 12+ 的系统启动页会自动用应用图标。 -->
     <style name="Theme.ANS" parent="@android:style/Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@color/ans_navy</item>
-        <item name="android:statusBarColor">@color/ans_navy</item>
-        <item name="android:navigationBarColor">@color/ans_navy</item>
+        <item name="android:windowBackground">@color/ans_surface</item>
+        <item name="android:statusBarColor">@color/ans_surface</item>
+        <item name="android:navigationBarColor">@color/ans_surface</item>
     </style>
 </resources>
