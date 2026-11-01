@@ -48,13 +48,13 @@ export const SWISS_COMPUTE_STEPS: SwissStepItem[] = [
   {
     num: "02",
     tag: "免费积分",
-    title: "免费领 150 积分，站内免配即跑",
-    subtitle: "问卷立领 50 积分 + 福利街机日常",
+    title: "问卷领 $5 DeepSeek 额度，不用配 Key 直接跑",
+    subtitle: "问卷领额度，每天签到攒积分",
     accent: "#D97757",
     stillImg: "/videos/stills/t04.50.png",
     seekSeconds: 13.34,
     bullets: [
-      "30 秒问卷领 50 积分，街机互动累计 100~150 积分",
+      "30 秒问卷领 $5 DeepSeek 额度，30 天内有效",
       "模型演练场与 3D 小恐龙免配 Key 直接在线试玩",
     ],
     ctaLabel: "免费领积分 →",

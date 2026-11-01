@@ -18,14 +18,12 @@ export interface ArcadeServerCreditedDetail {
 }
 
 /**
- * Approved billing & benefit ratio:
- * 1 Point = ¥0.10 CNY = $0.10 USD APIC nominal quota
- * 10 Points = ¥1.00 CNY = $1.00 USD APIC nominal quota
- * 100 Points = ¥10.00 CNY = $10.00 USD APIC nominal quota
+ * Points: 10 Points = ¥1 (purchase and model billing).
+ * `unlockUsd` is only an internal reward scale (unlockUsd × POINTS_PER_USD = points granted);
+ * it is not a USD price, so never show it to members as dollars.
  */
 export const POINTS_PER_USD = 10;
 export const CNY_PER_POINT = 0.1;
-export const USD_PER_POINT = 0.1;
 
 export type QuestCategory = "daily" | "weekly" | "agri" | "secret";
 export type PrizeRarity = "SP" | "UR" | "SSR" | "SR" | "R";
@@ -438,15 +436,15 @@ export const ARCADE_PRIZES: readonly ArcadePrize[] = [
     rarity: "SR",
     icon: "🌾",
     color: "from-amber-300 via-orange-400 to-amber-600",
-    nameZh: "农大黄金麦穗胶囊 · 工作流市场券 + 15 积分 (30%)",
-    nameEn: "CAU Golden Wheat Capsule · Market Voucher + 15 Pts (30%)",
-    descZh: "解锁 $1.5（15 积分）DeepSeek V4.1 Flash 算力额度 + 1 张工作流市场体验抵扣券！",
-    descEn: "Unlock $1.5 (15 pts) DeepSeek V4.1 Flash quota + 1 Workflow Marketplace Discount Voucher!",
+    nameZh: "农大黄金麦穗胶囊 · 15 积分 (30%)",
+    nameEn: "CAU Golden Wheat Capsule · 15 Pts (30%)",
+    descZh: "得 15 积分！",
+    descEn: "Win 15 pts!",
     unlockPool: "deepseek",
     unlockUsd: 1.5,
     starBeans: 45,
-    bonusBadgeZh: "SR 稀有 · 15 积分 + 市场券",
-    bonusBadgeEn: "SR Rare · 15 Pts + Market Voucher",
+    bonusBadgeZh: "SR 稀有 · 15 积分",
+    bonusBadgeEn: "SR Rare · 15 Pts",
     probability: 0.3,
   },
   {
@@ -454,15 +452,15 @@ export const ARCADE_PRIZES: readonly ArcadePrize[] = [
     rarity: "R",
     icon: "🦖",
     color: "from-sky-400 via-blue-500 to-indigo-500",
-    nameZh: "Q版薄荷星龙盲盒 · 10 Flash 算力积分 + 灵感星豆 (65%)",
-    nameEn: "Mint Star Dino Capsule · 10 Flash Pts + Star Beans (65%)",
-    descZh: "每次必得！立即解锁 $1.0（10 积分）DeepSeek V4.1 Flash 算力额度 + 30 灵感星豆！",
-    descEn: "100% guaranteed! Unlock $1.0 (10 pts) DeepSeek V4.1 Flash quota + 30 Star Beans!",
+    nameZh: "Q版薄荷星龙盲盒 · 10 积分 + 灵感星豆 (65%)",
+    nameEn: "Mint Star Dino Capsule · 10 Pts + Star Beans (65%)",
+    descZh: "得 10 积分 + 30 灵感星豆！",
+    descEn: "Win 10 pts + 30 Star Beans!",
     unlockPool: "deepseek",
     unlockUsd: 1,
     starBeans: 30,
-    bonusBadgeZh: "R 必得 · 10 Flash 积分",
-    bonusBadgeEn: "R Guaranteed · 10 Flash Pts",
+    bonusBadgeZh: "R 普通 · 10 积分",
+    bonusBadgeEn: "R Common · 10 Pts",
     probability: 0.65,
   },
 ] as const;

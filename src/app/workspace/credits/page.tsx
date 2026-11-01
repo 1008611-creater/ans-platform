@@ -136,7 +136,7 @@ export default async function CreditsPage({ searchParams }: { searchParams?: Pro
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Button asChild size="sm" className="bg-emerald-600 text-white hover:bg-emerald-500">
-                <Link href="/workspace/benefits">🎁 免费领 100~150 积分</Link>
+                <Link href="/workspace/benefits">🎁 领新人福利</Link>
               </Button>
               <Button asChild variant="outline" size="sm">
                 <a href="/api/canvas/sso" target="_blank" rel="noopener noreferrer">🎨 AIGC 无限画布 ↗</a>

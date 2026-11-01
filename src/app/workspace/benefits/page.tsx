@@ -53,8 +53,8 @@ export default async function BenefitsPage() {
               </Badge>
               <span className="font-semibold text-foreground">
                 {isEn
-                  ? "Sign in to complete the 30s survey (+50 pts) and claim claw machine rewards"
-                  : "登录后可完成新手问卷（+50 积分）并将抓娃娃机奖励转入账户"}
+                  ? "Sign in to get $5 of DeepSeek credit from the survey and keep your claw machine rewards"
+                  : "登录后填新手问卷领 $5 DeepSeek 额度，抓娃娃奖励也会存进账户"}
               </span>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2">

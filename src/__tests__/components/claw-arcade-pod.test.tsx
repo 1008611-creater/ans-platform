@@ -5,7 +5,6 @@ import {
   CNY_PER_POINT,
   POINTS_PER_USD,
   QUEST_DEFINITIONS,
-  USD_PER_POINT,
   advanceAndClaimQuest,
   drawArcadePrize,
   loadQuestArcadeState,
@@ -25,10 +24,9 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
     cleanup();
   });
 
-  it("enforces the official 1 Point = ¥0.10 CNY = $0.10 USD APIC nominal quota ratio", () => {
+  it("keeps 10 points = ¥1 and the internal reward scale", () => {
     expect(POINTS_PER_USD).toBe(10);
     expect(CNY_PER_POINT).toBe(0.1);
-    expect(USD_PER_POINT).toBe(0.1);
 
     const initial = loadQuestArcadeState("u-ratio");
     expect(initial.deepseekTotalUsd).toBe(15); // $15 = 150 pts All-ANS 90% normal-distribution upper bound
@@ -82,7 +80,7 @@ describe("Quest Arcade & 3D Claw Machine / Starlight Roulette", () => {
 
   it("renders ComputeQuestArcade with 3D Claw Machine, Roulette switcher, and 4 quest tabs", () => {
     render(<ComputeQuestArcade actorId="u-ui" />);
-    expect(screen.getByText(/1 积分 = ¥0.10 元 = \$0.10 USD/i)).toBeTruthy();
+    expect(screen.getByText("计费规则：10 积分 = ¥1")).toBeTruthy();
     expect(screen.getByTestId("arcade-token-count").textContent).toContain("3");
     expect(screen.getByTestId("gateway-live-points").textContent).toContain("50");
 

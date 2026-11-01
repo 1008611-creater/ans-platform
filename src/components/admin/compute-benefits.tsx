@@ -47,8 +47,8 @@ function AdminBenefitsSession({ actorId, initialData = null }: { actorId: string
     <section aria-label="全站算力发放与额度监控大盘" className="rounded-2xl border bg-card p-5 shadow-xs">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
         <div>
-          <h2 className="text-base font-semibold">📊 全站算力预算与额度风控大盘（100 积分 = ¥10 元 = $10）</h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">实时监控全站注册赠金、破冰问卷、农业调研与 3D 游乐场积分发放水位，确保 90% 用户稳定落在 100~150 积分区间</p>
+          <h2 className="text-base font-semibold">📊 全站算力预算与额度风控大盘（10 积分 = ¥1）</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">问卷和农客松发的是模型专属额度（美元）；签到、任务和抓娃娃发的是通用积分。两类分开看</p>
         </div>
         <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${inNormalBand ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-600 border border-amber-500/20"}`}>
           {inNormalBand ? "✓ 人均积分区间正常 (100~150分)" : "⚠ 均值偏离预警"}

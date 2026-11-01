@@ -6,12 +6,10 @@ import { useLocale } from "next-intl";
 import {
   ARCADE_PRIZES,
   ARCADE_TOKEN_COST_POINTS,
-  CNY_PER_POINT,
   POINTS_PER_USD,
   QUEST_ARCADE_EVENT,
   QUEST_ARCADE_SERVER_CREDITED_EVENT,
   QUEST_DEFINITIONS,
-  USD_PER_POINT,
   advanceAndClaimQuest,
   buyArcadeTokensWithPoints,
   drawArcadePrize,
@@ -730,8 +728,8 @@ export function ComputeQuestArcade({
       if (detail.errorCode === "INSUFFICIENT_POINTS") {
         setBannerMessage(
           isEn
-            ? "⚠️ Insufficient API Gateway points (10 Pts = 1 Token). Complete the Onboarding Questionnaire (+50 pts) or daily quests first!"
-            : "⚠️ 账户可用积分不足（10 积分 = 1 枚抓娃娃币）！请先完成下方新手问卷（+50分）或右侧打卡任务领积分。",
+            ? "⚠️ Not enough points for a token (10 pts each). Do the daily quests first."
+            : "⚠️ 积分不够换抓娃娃币（10 积分 = 1 枚）。先做右侧的打卡任务攒积分。",
         );
         return;
       }
@@ -837,8 +835,8 @@ export function ComputeQuestArcade({
     if (serverBalancePoints !== null && serverBalancePoints < cost) {
       setBannerMessage(
         isEn
-          ? `⚠️ Need ${cost} Pts to exchange ${count} Token(s), current balance: ${serverBalancePoints} Pts. Complete the questionnaire (+50 pts) or daily quests first!`
-          : `⚠️ 兑换 ${count} 枚抓娃娃币需 ${cost} 积分（当前余额 ${serverBalancePoints} 积分），请先完成下方新手问卷（+50分）或右侧打卡任务！`,
+          ? `⚠️ Need ${cost} Pts to exchange ${count} Token(s), current balance: ${serverBalancePoints} Pts. Do the daily quests first.`
+          : `⚠️ 兑换 ${count} 枚抓娃娃币要 ${cost} 积分，你现在有 ${serverBalancePoints} 积分。先做右侧打卡任务攒积分。`,
       );
       return;
     }
@@ -1023,8 +1021,8 @@ export function ComputeQuestArcade({
               </span>
               <span className="rounded-full border border-emerald-600/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
                 {isEn
-                  ? `1 Point = ¥${CNY_PER_POINT.toFixed(2)} CNY = $${USD_PER_POINT.toFixed(2)} USD Quota`
-                  : `计费规则：1 积分 = ¥${CNY_PER_POINT.toFixed(2)} 元 = $${USD_PER_POINT.toFixed(2)} USD 算力额度`}
+                  ? "10 pts = ¥1"
+                  : "计费规则：10 积分 = ¥1"}
               </span>
               {isGuest && (
                 <span className="rounded-full border border-amber-500/40 bg-amber-500/15 px-2.5 py-0.5 text-xs font-bold text-amber-900 dark:text-amber-300">
@@ -1043,8 +1041,8 @@ export function ComputeQuestArcade({
             type="button"
             onClick={() => {
               const shareText = isEn
-                ? `Come claim 100–150 free compute points at ANS: https://ans.cauai.fun/workspace/benefits`
-                : `农大 ANS 平台可以免费领 100~150 算力积分（能直接调 DeepSeek 和 GPT），链接：https://ans.cauai.fun/workspace/benefits`;
+                ? `Get $5 of DeepSeek credit on ANS with a short survey, and earn points every day: https://ans.cauai.fun/workspace/benefits`
+                : `在 ANS 填个问卷就能领 $5 DeepSeek 额度，每天签到还能攒积分，链接：https://ans.cauai.fun/workspace/benefits`;
               if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
                 void navigator.clipboard.writeText(shareText).catch(() => {});
               }
@@ -1152,7 +1150,7 @@ export function ComputeQuestArcade({
         <div
           data-testid="arcade-jackpot-ticker"
           className="group mt-2.5 flex flex-wrap items-center justify-between gap-2 text-xs"
-          title="玩法：用方向键或点击球体瞄准后点投币下爪，每次必得 10~1000 积分 · 概率：SP(1000分,0.1%) / UR(300分,0.9%) / SSR(80分,4%) / SR(15分,30%) / R(10分,65%)"
+          title="玩法：用方向键或点击球体瞄准后点投币下爪，每次都有奖（10~1000 积分），免费积分累计有上限 · 概率：SP(1000分,0.1%) / UR(300分,0.9%) / SSR(80分,4%) / SR(15分,30%) / R(10分,65%)"
         >
           <div className="flex flex-wrap items-center gap-2">
             <span className="cursor-help rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
@@ -1160,8 +1158,8 @@ export function ComputeQuestArcade({
             </span>
             <span className="hidden text-muted-foreground group-hover:inline">
               {isEn
-                ? "Aim & drop claw (100% win: 10–1,000 pts) · SP 0.1% / UR 0.9% / SSR 4% / SR 30% / R 65%"
-                : "点击球体或方向键瞄准后下爪，每次必得 10~1000 积分 · SP(1000分,0.1%) · UR(300分,0.9%) · SSR(80分,4%) · SR(15分,30%) · R(10分,65%)"}
+                ? "Aim & drop claw (every grab wins 10–1,000 pts, up to a free-points limit) · SP 0.1% / UR 0.9% / SSR 4% / SR 30% / R 65%"
+                : "点击球体或方向键瞄准后下爪，每次都有奖（10~1000 积分），免费积分累计有上限 · SP(1000分,0.1%) · UR(300分,0.9%) · SSR(80分,4%) · SR(15分,30%) · R(10分,65%)"}
             </span>
           </div>
         </div>
@@ -1509,7 +1507,7 @@ export function ComputeQuestArcade({
                     },
                     {
                       id: "agri",
-                      labelZh: "农客松 M1-M4 (+60分)",
+                      labelZh: "农客松 M1-M4",
                       labelEn: "AgriHackathon M1-M4",
                     },
                     {
@@ -1564,7 +1562,7 @@ export function ComputeQuestArcade({
                               : "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
                           }`}
                         >
-                          +${quest.unlockUsd} ({pts} {isEn ? "pts" : "积分"})
+                          +{pts} {isEn ? "pts" : "积分"}
                         </span>
                         <span className="rounded-full bg-purple-500/15 px-2 py-0.5 text-[11px] font-bold text-purple-900 dark:text-purple-200">
                           {quest.rewardTokens > 0 ? `+${quest.rewardTokens}币 ` : ""}+{quest.rewardStarBeans}星豆
