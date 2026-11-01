@@ -122,7 +122,7 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
             <dl className={`${styles.terms} mt-4`}>
               <div><dt>汇率与定价基准</dt><dd>1 元人民币 = 10 积分（1 积分 = ¥0.10）。所有已开放购买商品均按真实研发/算力成本与市场价透明定价。</dd></div>
               <div><dt>{td("licenseTitle")}</dt><dd className="whitespace-pre-wrap">{listing.licenseTerms}</dd></div>
-              <div><dt>交付保障</dt><dd>{runnable ? "在线工作台实时运行并保存结果" : purchasable ? "官方已验真完整交付包：支付积分后系统立即自动秒发完整脚本、源码与配置文档" : "该方案涉及人工 1v1 定制或硬件/大体积数据集封装，当前处于内测阶段，暂不开放购买"}</dd></div>
+              <div><dt>交付保障</dt><dd>{runnable ? "在线工作台实时运行并保存结果" : isFree ? "免费打开在线体验或源码，不用购买，也不扣积分" : purchasable ? "官方已验真完整交付包：支付积分后系统立即自动秒发完整脚本、源码与配置文档" : "该方案涉及人工 1v1 定制或硬件/大体积数据集封装，当前处于内测阶段，暂不开放购买"}</dd></div>
             </dl>
           </details>
         </section>
@@ -151,7 +151,7 @@ export default async function MarketDetail({ params }: MarketDetailProps) {
       <aside className={styles.decision} aria-label={td("decisionTitle")}>
         <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
           {purchasable ? (
-            <span className="rounded-full bg-emerald-500/15 px-3 py-1 font-semibold text-emerald-700 dark:text-emerald-300">{runnable ? "🚀 在线工作台" : isFree ? "🌐 开源展示" : "⚡ 支付即秒发完整包"}</span>
+            <span className="rounded-full bg-emerald-500/15 px-3 py-1 font-semibold text-emerald-700 dark:text-emerald-300">{runnable ? "🚀 在线工作台" : isFree ? (listing.githubUrl ? "🌐 开源展示" : "🔗 免费体验") : "⚡ 支付即秒发完整包"}</span>
           ) : (
             <span className="rounded-full bg-amber-500/15 px-3 py-1 font-semibold text-amber-700 dark:text-amber-300">🔒 内测中 · 仅开放预览</span>
           )}

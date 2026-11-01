@@ -216,7 +216,7 @@ export default async function ProjectsPage({
                 </a>
               </h2>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                帮电商商家全自动搞定未付款催付、物流异常提醒、签收好评返现邀约与老客复购召回，内置全店买家 360° 价值分层与黄金接听时段洞察。
+                帮电商商家自动做未付款催付、物流异常提醒、签收后邀请评价和老客复购回访，内置全店买家 360° 价值分层与黄金接听时段洞察。
               </p>
             </div>
           </div>
