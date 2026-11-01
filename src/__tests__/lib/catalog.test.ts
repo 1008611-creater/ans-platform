@@ -24,7 +24,7 @@ describe("public project catalog", () => {
     }
   });
   it("narrows categories and topics, searches normalized text, returns real empty states", () => {
-    expect(filterCatalogProjects({ category: "career", subcategory: "resume" }, (p) => p.slug).map((p) => p.slug)).toEqual(["reactive-resume", "magic-resume"]);
+    expect(filterCatalogProjects({ category: "career", subcategory: "resume" }, (p) => p.slug).map((p) => p.slug)).toEqual(["reactive-resume", "magic-resume", "kami"]);
     const aigc = filterCatalogProjects({ category: "aigc" }, (p) => p.slug);
     expect(aigc.length).toBeGreaterThanOrEqual(3); expect(aigc.every(p => p.category === "aigc")).toBe(true);
     expect(aigc.map(p => p.slug)).toContain("infinite-canvas");
@@ -33,7 +33,7 @@ describe("public project catalog", () => {
     expect(filterCatalogProjects({ query: "no-such-project" }, (p) => p.slug)).toEqual([]);
   });
   it("combines source and readiness with category and search", () => {
-    expect(filterCatalogProjects({ category: "career", source: "github", readiness: "reference" }, (p) => p.slug).map((p) => p.slug)).toEqual(["reactive-resume", "magic-resume", "vcard-portfolio", "react-interview"]);
+    expect(filterCatalogProjects({ category: "career", source: "github", readiness: "reference" }, (p) => p.slug).map((p) => p.slug)).toEqual(["reactive-resume", "magic-resume", "vcard-portfolio", "react-interview", "kami", "gitfut"]);
     const official = filterCatalogProjects({ source: "official", readiness: "reference" }, (p) => p.slug);
     expect(official.length).toBeGreaterThan(0); expect(official.every(p => p.source === "official" && !p.workflowId)).toBe(true);
     expect(filterCatalogProjects({ source: "github", readiness: "ready" }, (p) => p.slug)).toEqual([]);

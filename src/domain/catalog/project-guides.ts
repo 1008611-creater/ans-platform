@@ -1274,5 +1274,1856 @@ export const PROJECT_GUIDES: readonly ProjectGuide[] = [
       ]
     },
     "experienceUrl": "https://seanwong17.github.io/Future-Style-Periodic-Table/"
+  },
+  {
+    "slug": "hyperframes",
+    "sourceUrl": "https://github.com/heygen-com/hyperframes",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · heygen-com/hyperframes",
+        "href": "https://github.com/heygen-com/hyperframes"
+      },
+      {
+        "label": "Official site",
+        "href": "https://hyperframes.heygen.com"
+      }
+    ],
+    "zh": {
+      "audience": "想用代码做视频、有编程 Agent 的人",
+      "difficulty": "入门 · 会用 Agent 就能开始",
+      "access": "官网 Studio 在线体验；本地用 CLI 或 Agent 技能",
+      "cost": "Apache-2.0；渲染不需要模型，Agent 用量另计",
+      "result": "用 HTML 写出来的 MP4 视频",
+      "steps": [
+        {
+          "title": "先看效果",
+          "body": "打开官网，看 Showcase 和 Playground 里的样例。",
+          "href": "https://hyperframes.heygen.com"
+        },
+        {
+          "title": "给 Agent 装技能",
+          "body": "在视频项目目录运行 npx hyperframes skills update，或者 npx hyperframes init my-video 手动开始。"
+        },
+        {
+          "title": "预览并导出",
+          "body": "npx hyperframes preview 在浏览器里预览，满意后 npx hyperframes render 导出 MP4。"
+        }
+      ],
+      "cautions": [
+        "视频里用到的图片、视频和音乐要有使用授权。"
+      ]
+    },
+    "en": {
+      "audience": "People with a coding agent who want to make videos in code",
+      "difficulty": "Beginner · if you can use an agent you can start",
+      "access": "Studio online; CLI or agent skills locally",
+      "cost": "Apache-2.0; rendering needs no model, agent usage costs extra",
+      "result": "An MP4 video written in HTML",
+      "steps": [
+        {
+          "title": "See examples",
+          "body": "Open the site and browse Showcase and Playground.",
+          "href": "https://hyperframes.heygen.com"
+        },
+        {
+          "title": "Install the skills",
+          "body": "In your video folder run npx hyperframes skills update, or start by hand with npx hyperframes init my-video."
+        },
+        {
+          "title": "Preview and export",
+          "body": "npx hyperframes preview in the browser, then npx hyperframes render to export MP4."
+        }
+      ],
+      "cautions": [
+        "Make sure you have rights to the images, clips and music you use."
+      ]
+    },
+    "experienceUrl": "https://hyperframes.heygen.com"
+  },
+  {
+    "slug": "hallmark",
+    "sourceUrl": "https://github.com/Nutlope/hallmark",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · Nutlope/hallmark",
+        "href": "https://github.com/Nutlope/hallmark"
+      },
+      {
+        "label": "Theme gallery",
+        "href": "https://www.usehallmark.com/"
+      }
+    ],
+    "zh": {
+      "audience": "想做个人主页、作品集或活动页的人",
+      "difficulty": "入门 · 需要 Node.js 和编程 Agent",
+      "access": "官网看主题；本地装成 Agent 技能",
+      "cost": "MIT；Agent 用量另计",
+      "result": "一个有设计感的独立 HTML 页面",
+      "steps": [
+        {
+          "title": "挑主题",
+          "body": "在官网浏览 50 套主题，找一两套喜欢的。",
+          "href": "https://www.usehallmark.com/"
+        },
+        {
+          "title": "装技能",
+          "body": "运行 npx skills add nutlope/hallmark -g，浏览器检查还要装 Chrome 和 puppeteer-core。"
+        },
+        {
+          "title": "做页面",
+          "body": "告诉 Agent 页面给谁看、要访客做什么，提供真实照片和数字，从三套候选主题里挑一套。"
+        }
+      ],
+      "cautions": [
+        "它不会替你编数字和照片，素材要自己准备。"
+      ]
+    },
+    "en": {
+      "audience": "People building a personal site, portfolio or event page",
+      "difficulty": "Beginner · needs Node.js and a coding agent",
+      "access": "Browse themes online; install as an agent skill",
+      "cost": "MIT; agent usage costs extra",
+      "result": "A self-contained HTML page that looks designed",
+      "steps": [
+        {
+          "title": "Pick a theme",
+          "body": "Browse the 50 themes on the site.",
+          "href": "https://www.usehallmark.com/"
+        },
+        {
+          "title": "Install the skill",
+          "body": "Run npx skills add nutlope/hallmark -g; browser checks also need Chrome and puppeteer-core."
+        },
+        {
+          "title": "Build the page",
+          "body": "Tell your agent who the page is for and what visitors should do, give it real photos and numbers, and pick one of three themes."
+        }
+      ],
+      "cautions": [
+        "It will not invent numbers or photos; bring your own material."
+      ]
+    },
+    "experienceUrl": "https://www.usehallmark.com/"
+  },
+  {
+    "slug": "anatomy",
+    "sourceUrl": "https://github.com/wheresryan22/anatomy",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · wheresryan22/anatomy",
+        "href": "https://github.com/wheresryan22/anatomy"
+      },
+      {
+        "label": "Gallery",
+        "href": "https://skills.wheresryan.sh/anatomy"
+      }
+    ],
+    "zh": {
+      "audience": "要做课程汇报、想把抽象概念讲清楚的人",
+      "difficulty": "入门 · 一条命令装好",
+      "access": "在线图库看样例；本地装成 Agent 技能",
+      "cost": "MIT；不需要 API Key，Agent 用量另计",
+      "result": "一张能交互的机械解释图",
+      "steps": [
+        {
+          "title": "看图库",
+          "body": "打开在线图库，拖一拖火箭发动机、水波槽这些样例。",
+          "href": "https://skills.wheresryan.sh/anatomy"
+        },
+        {
+          "title": "装技能",
+          "body": "运行 npx skills add wheresryan22/anatomy -g，选你用的 Agent。"
+        },
+        {
+          "title": "讲你的概念",
+          "body": "在 Agent 里输入 /anatomy 加一个课上学过的概念，说明要不要能交互。"
+        }
+      ],
+      "cautions": []
+    },
+    "en": {
+      "audience": "People preparing course presentations who need to explain abstract ideas",
+      "difficulty": "Beginner · one command to install",
+      "access": "Gallery online; install as an agent skill",
+      "cost": "MIT; no API key, agent usage costs extra",
+      "result": "An interactive mechanical explainer",
+      "steps": [
+        {
+          "title": "Browse the gallery",
+          "body": "Open the gallery and play with the rocket engine and ripple tank examples.",
+          "href": "https://skills.wheresryan.sh/anatomy"
+        },
+        {
+          "title": "Install the skill",
+          "body": "Run npx skills add wheresryan22/anatomy -g and choose your agent."
+        },
+        {
+          "title": "Explain your concept",
+          "body": "Type /anatomy plus a concept from your courses and say whether it should be interactive."
+        }
+      ],
+      "cautions": []
+    },
+    "experienceUrl": "https://skills.wheresryan.sh/anatomy"
+  },
+  {
+    "slug": "kami",
+    "sourceUrl": "https://github.com/tw93/Kami",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · tw93/Kami",
+        "href": "https://github.com/tw93/Kami"
+      },
+      {
+        "label": "Official site",
+        "href": "https://kami.tw93.fun"
+      }
+    ],
+    "zh": {
+      "audience": "要写简历、做一页纸介绍或报告的人",
+      "difficulty": "入门 · 一条命令装好",
+      "access": "官网看样张；本地装成 Agent 技能",
+      "cost": "MIT；Agent 用量另计",
+      "result": "排好版的 PDF、PNG 或可编辑 PPT",
+      "steps": [
+        {
+          "title": "看样张",
+          "body": "在官网看简历、一页纸、信件等样张。",
+          "href": "https://kami.tw93.fun"
+        },
+        {
+          "title": "装技能",
+          "body": "运行 npx skills add tw93/kami -a claude-code codex cursor -g -y。Windows 要在 WSL 里用。"
+        },
+        {
+          "title": "做文档",
+          "body": "在 Agent 里输入 /kami，说清用哪种模板、放哪些内容；缺中文字体时运行 ensure-fonts.sh。"
+        }
+      ],
+      "cautions": [
+        "Windows 原生环境不支持，要用 WSL。"
+      ]
+    },
+    "en": {
+      "audience": "People writing resumes, one-pagers or reports",
+      "difficulty": "Beginner · one command to install",
+      "access": "Samples online; install as an agent skill",
+      "cost": "MIT; agent usage costs extra",
+      "result": "Laid-out PDF, PNG or editable PPT",
+      "steps": [
+        {
+          "title": "See samples",
+          "body": "Look at the resume, one-pager and letter samples.",
+          "href": "https://kami.tw93.fun"
+        },
+        {
+          "title": "Install the skill",
+          "body": "Run npx skills add tw93/kami -a claude-code codex cursor -g -y. On Windows use WSL."
+        },
+        {
+          "title": "Make a document",
+          "body": "Type /kami in your agent with the template and content; run ensure-fonts.sh if CJK fonts are missing."
+        }
+      ],
+      "cautions": [
+        "Native Windows is not supported; use WSL."
+      ]
+    },
+    "experienceUrl": "https://kami.tw93.fun"
+  },
+  {
+    "slug": "gitfut",
+    "sourceUrl": "https://github.com/Younesfdj/gitfut",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · Younesfdj/gitfut",
+        "href": "https://github.com/Younesfdj/gitfut"
+      },
+      {
+        "label": "Live site",
+        "href": "https://gitfut.com/"
+      }
+    ],
+    "zh": {
+      "audience": "想做一张能晒的数据卡片、给个人主页加点料的人",
+      "difficulty": "进阶 · 改数据来源要会 Next.js",
+      "access": "在线直接生成；本地跑开源版",
+      "cost": "MIT；不需要模型",
+      "result": "会随数据更新的球星卡和球探报告",
+      "steps": [
+        {
+          "title": "看自己的卡",
+          "body": "打开官网输入 GitHub 用户名。",
+          "href": "https://gitfut.com/"
+        },
+        {
+          "title": "本地跑起来",
+          "body": "git clone https://github.com/Younesfdj/gitfut，进入目录 npm install，按 CONTRIBUTING.md 配好 GITHUB_TOKEN 后 npm run dev。"
+        },
+        {
+          "title": "换成你的数据",
+          "body": "把六项属性的数据来源换成刷题、运动或别的数据，卡片样式沿用。"
+        }
+      ],
+      "cautions": [
+        "GitHub Token 只给读权限，不要提交进仓库。"
+      ]
+    },
+    "en": {
+      "audience": "People who want a shareable stats card for their profile",
+      "difficulty": "Intermediate · changing data sources needs Next.js",
+      "access": "Generate online; run the open-source version locally",
+      "cost": "MIT; no model needed",
+      "result": "A live-updating player card and scout report",
+      "steps": [
+        {
+          "title": "See your card",
+          "body": "Open the site and enter a GitHub username.",
+          "href": "https://gitfut.com/"
+        },
+        {
+          "title": "Run it locally",
+          "body": "git clone https://github.com/Younesfdj/gitfut, npm install, set GITHUB_TOKEN as in CONTRIBUTING.md, then npm run dev."
+        },
+        {
+          "title": "Use your own data",
+          "body": "Point the six attributes at practice, workout or other data and keep the card style."
+        }
+      ],
+      "cautions": [
+        "Give the GitHub token read-only access and never commit it."
+      ]
+    },
+    "experienceUrl": "https://gitfut.com/"
+  },
+  {
+    "slug": "ian-xiaohei-illustrations",
+    "sourceUrl": "https://github.com/helloianneo/ian-xiaohei-illustrations",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · helloianneo/ian-xiaohei-illustrations",
+        "href": "https://github.com/helloianneo/ian-xiaohei-illustrations"
+      }
+    ],
+    "zh": {
+      "audience": "写公众号、博客，想给文章配图的人",
+      "difficulty": "入门 · 复制一个文件夹就装好",
+      "access": "装进 Codex 使用",
+      "cost": "MIT；生图模型用量另计",
+      "result": "一组白底手绘的文章配图",
+      "steps": [
+        {
+          "title": "装技能",
+          "body": "git clone 仓库，把 ian-xiaohei-illustrations 目录复制到 ~/.codex/skills/。"
+        },
+        {
+          "title": "先做规划",
+          "body": "在 Codex 里让它先不生图，分析文章哪里值得配图，给出 4–8 张图的规划。"
+        },
+        {
+          "title": "再生图",
+          "body": "规划满意后再生成 PNG，想换风格就把小黑换成自己的角色。"
+        }
+      ],
+      "cautions": [
+        "样例图只用来校准风格，不要照抄构图。"
+      ]
+    },
+    "en": {
+      "audience": "People who write articles or blogs and need illustrations",
+      "difficulty": "Beginner · copy one folder to install",
+      "access": "Use inside Codex",
+      "cost": "MIT; image-model usage costs extra",
+      "result": "A set of hand-drawn article illustrations",
+      "steps": [
+        {
+          "title": "Install the skill",
+          "body": "Clone the repository and copy the ian-xiaohei-illustrations folder into ~/.codex/skills/."
+        },
+        {
+          "title": "Plan first",
+          "body": "Ask Codex not to generate yet and to plan 4–8 illustrations for your article."
+        },
+        {
+          "title": "Then generate",
+          "body": "Once the plan is right, generate the PNGs; swap Xiaohei for your own character to change the style."
+        }
+      ],
+      "cautions": [
+        "The samples calibrate style only; do not copy their compositions."
+      ]
+    }
+  },
+  {
+    "slug": "effective-html",
+    "sourceUrl": "https://github.com/plannotator/effective-html",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · plannotator/effective-html",
+        "href": "https://github.com/plannotator/effective-html"
+      },
+      {
+        "label": "Guide",
+        "href": "https://www.effectivehtml.com/"
+      }
+    ],
+    "zh": {
+      "audience": "要给课程项目、比赛作品画原型或做汇报页的人",
+      "difficulty": "入门 · 一条命令装好",
+      "access": "在线看指南；本地装成 Agent 技能",
+      "cost": "MIT；Agent 用量另计",
+      "result": "一个能直接打开的 HTML 原型或说明页",
+      "steps": [
+        {
+          "title": "看指南",
+          "body": "打开 Effective HTML 指南，了解八个技能各做什么。",
+          "href": "https://www.effectivehtml.com/"
+        },
+        {
+          "title": "装技能",
+          "body": "运行 npx skills add plannotator/effective-html，也可以不装，直接把仓库给 Agent 当参考。"
+        },
+        {
+          "title": "做一个原型",
+          "body": "选 html-wireframe、html-prototype 或 one-pager，说清页面和内容，用浏览器打开生成的 HTML。"
+        }
+      ],
+      "cautions": []
+    },
+    "en": {
+      "audience": "People prototyping course or competition projects",
+      "difficulty": "Beginner · one command to install",
+      "access": "Guide online; install as an agent skill",
+      "cost": "MIT; agent usage costs extra",
+      "result": "An HTML prototype or explainer you can open directly",
+      "steps": [
+        {
+          "title": "Read the guide",
+          "body": "Open the Effective HTML guide to see what the eight skills do.",
+          "href": "https://www.effectivehtml.com/"
+        },
+        {
+          "title": "Install the skills",
+          "body": "Run npx skills add plannotator/effective-html, or just give the repository to your agent as reference."
+        },
+        {
+          "title": "Build a prototype",
+          "body": "Pick html-wireframe, html-prototype or one-pager, describe the pages, and open the HTML in your browser."
+        }
+      ],
+      "cautions": []
+    },
+    "experienceUrl": "https://www.effectivehtml.com/"
+  },
+  {
+    "slug": "manimgx",
+    "sourceUrl": "https://github.com/academa-labs/manimgx",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · academa-labs/manimgx",
+        "href": "https://github.com/academa-labs/manimgx"
+      },
+      {
+        "label": "Documentation",
+        "href": "https://manimgx.academa.ai"
+      }
+    ],
+    "zh": {
+      "audience": "想做数学、物理讲解视频的人",
+      "difficulty": "进阶 · 要会一点 Python",
+      "access": "本地 pip 安装；也可以让 Agent 按官网说明装",
+      "cost": "MIT；渲染不需要模型",
+      "result": "1080p60 的数学动画视频",
+      "steps": [
+        {
+          "title": "看文档和样例",
+          "body": "打开官网看 Quickstart 和 Examples。",
+          "href": "https://manimgx.academa.ai"
+        },
+        {
+          "title": "安装",
+          "body": "Python 3.13 以上运行 pip install manimgx，字体和视频编码已包含。"
+        },
+        {
+          "title": "写一个场景",
+          "body": "照 Quickstart 写 scene.py，manimgx render scene.py 得到 MP4。"
+        }
+      ],
+      "cautions": [
+        "需要 Python 3.13 或更高版本。"
+      ]
+    },
+    "en": {
+      "audience": "People making math or physics explainer videos",
+      "difficulty": "Intermediate · some Python needed",
+      "access": "pip install locally, or let an agent follow the site's instructions",
+      "cost": "MIT; rendering needs no model",
+      "result": "A 1080p60 math animation",
+      "steps": [
+        {
+          "title": "Read the docs",
+          "body": "Open the Quickstart and Examples on the site.",
+          "href": "https://manimgx.academa.ai"
+        },
+        {
+          "title": "Install",
+          "body": "With Python 3.13+ run pip install manimgx; fonts and encoding are included."
+        },
+        {
+          "title": "Write a scene",
+          "body": "Follow the Quickstart to write scene.py, then manimgx render scene.py."
+        }
+      ],
+      "cautions": [
+        "Requires Python 3.13 or later."
+      ]
+    },
+    "experienceUrl": "https://manimgx.academa.ai"
+  },
+  {
+    "slug": "god-agent-town",
+    "sourceUrl": "https://github.com/XiaoLuoLYG/GOD",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · XiaoLuoLYG/GOD",
+        "href": "https://github.com/XiaoLuoLYG/GOD"
+      },
+      {
+        "label": "Public site",
+        "href": "https://xiaoluolyg.github.io/GOD/"
+      }
+    ],
+    "zh": {
+      "audience": "对多智能体、AI 小镇感兴趣的人",
+      "difficulty": "进阶 · 本地跑要配模型 API",
+      "access": "浏览器看回放；本地一键启动",
+      "cost": "Apache-2.0；本地运行按模型调用计费",
+      "result": "能回放、能干预的 AI 小镇",
+      "steps": [
+        {
+          "title": "看回放",
+          "body": "打开公开站点，不用安装和 API Key。",
+          "href": "https://xiaoluolyg.github.io/GOD/"
+        },
+        {
+          "title": "本地启动",
+          "body": "git clone https://github.com/XiaoLuoLYG/GOD.git，进入目录运行 ./scripts/god.sh start，按向导填模型信息。"
+        },
+        {
+          "title": "换居民和地图",
+          "body": "把居民换成你的同学或角色，写好性格和关系，再换一张地图。"
+        }
+      ],
+      "cautions": [
+        "原项目说明它用来观察语言模型智能体，不代表真实社会。"
+      ]
+    },
+    "en": {
+      "audience": "People curious about multi-agent towns",
+      "difficulty": "Intermediate · local runs need a model API",
+      "access": "Replays in the browser; one-command local start",
+      "cost": "Apache-2.0; local runs pay for model calls",
+      "result": "A replayable, steerable AI town",
+      "steps": [
+        {
+          "title": "Watch replays",
+          "body": "Open the public site; no install or API key.",
+          "href": "https://xiaoluolyg.github.io/GOD/"
+        },
+        {
+          "title": "Start locally",
+          "body": "git clone https://github.com/XiaoLuoLYG/GOD.git, run ./scripts/god.sh start and fill in your model."
+        },
+        {
+          "title": "Swap residents and map",
+          "body": "Turn residents into your classmates or characters, write their traits and relationships, and change the map."
+        }
+      ],
+      "cautions": [
+        "The project inspects language-agent societies and does not claim social realism."
+      ]
+    },
+    "experienceUrl": "https://xiaoluolyg.github.io/GOD/"
+  },
+  {
+    "slug": "ai-engineering-from-scratch",
+    "sourceUrl": "https://github.com/rohitg00/ai-engineering-from-scratch",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · rohitg00/ai-engineering-from-scratch",
+        "href": "https://github.com/rohitg00/ai-engineering-from-scratch"
+      },
+      {
+        "label": "Course site",
+        "href": "https://aiengineeringfromscratch.com"
+      }
+    ],
+    "zh": {
+      "audience": "想系统学 AI 工程、准备相关实习的人",
+      "difficulty": "进阶 · 要会 Python",
+      "access": "网站在线学；也可以克隆到本地跑",
+      "cost": "MIT；部分课程要 GPU 或模型 API",
+      "result": "跟着课程写出的代码和实验结果",
+      "steps": [
+        {
+          "title": "在线开始",
+          "body": "打开课程网站，从开发环境那一课开始。",
+          "href": "https://aiengineeringfromscratch.com"
+        },
+        {
+          "title": "克隆到本地",
+          "body": "git clone https://github.com/rohitg00/ai-engineering-from-scratch.git，运行 verify.py --route beginner 检查环境。"
+        },
+        {
+          "title": "选一条路线",
+          "body": "挑一条学习路线和一个项目挑战，把结果整理成作品集。"
+        }
+      ],
+      "cautions": [
+        "部分课程需要 GPU 或付费模型 API。"
+      ]
+    },
+    "en": {
+      "audience": "People learning AI engineering or preparing for internships",
+      "difficulty": "Intermediate · Python required",
+      "access": "Learn online or run locally",
+      "cost": "MIT; some lessons need a GPU or model API",
+      "result": "Course code and experiment results",
+      "steps": [
+        {
+          "title": "Start online",
+          "body": "Open the course site and begin with the dev environment lesson.",
+          "href": "https://aiengineeringfromscratch.com"
+        },
+        {
+          "title": "Clone locally",
+          "body": "git clone https://github.com/rohitg00/ai-engineering-from-scratch.git and run verify.py --route beginner."
+        },
+        {
+          "title": "Pick a route",
+          "body": "Choose a learning route and a project challenge, and collect the results as a portfolio."
+        }
+      ],
+      "cautions": [
+        "Some lessons need a GPU or a paid model API."
+      ]
+    },
+    "experienceUrl": "https://aiengineeringfromscratch.com"
+  },
+  {
+    "slug": "text-to-cad",
+    "sourceUrl": "https://github.com/earthtojake/text-to-cad",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · earthtojake/text-to-cad",
+        "href": "https://github.com/earthtojake/text-to-cad"
+      },
+      {
+        "label": "Official site",
+        "href": "https://www.texttocad.dev"
+      }
+    ],
+    "zh": {
+      "audience": "做课程设计、比赛样机、想 3D 打印的人",
+      "difficulty": "入门 · 一条命令装好",
+      "access": "本地装进 Agent 使用",
+      "cost": "MIT；Agent 用量另计，打印和加工另计",
+      "result": "能打印或加工的 3D 模型文件",
+      "steps": [
+        {
+          "title": "看官网",
+          "body": "打开官网看示例模型。",
+          "href": "https://www.texttocad.dev"
+        },
+        {
+          "title": "安装",
+          "body": "macOS / Linux 运行 curl -fsSL https://texttocad.dev/install.sh | sh，Windows 用官网的 PowerShell 命令。"
+        },
+        {
+          "title": "做一个零件",
+          "body": "告诉 Agent 零件、尺寸和加工方式，在 CAD 预览里检查后导出文件。"
+        }
+      ],
+      "cautions": []
+    },
+    "en": {
+      "audience": "People doing design courses, competition prototypes or 3D printing",
+      "difficulty": "Beginner · one command to install",
+      "access": "Install into your agent",
+      "cost": "MIT; agent usage, printing and machining cost extra",
+      "result": "Printable or machinable 3D files",
+      "steps": [
+        {
+          "title": "Visit the site",
+          "body": "See example models on the site.",
+          "href": "https://www.texttocad.dev"
+        },
+        {
+          "title": "Install",
+          "body": "On macOS / Linux run curl -fsSL https://texttocad.dev/install.sh | sh; Windows uses the PowerShell command on the site."
+        },
+        {
+          "title": "Make a part",
+          "body": "Tell your agent the part, size and fabrication method, check it in the viewer and export."
+        }
+      ],
+      "cautions": []
+    },
+    "experienceUrl": "https://www.texttocad.dev"
+  },
+  {
+    "slug": "tiny-world-builder",
+    "sourceUrl": "https://github.com/jasonkneen/tiny-world-builder",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · jasonkneen/tiny-world-builder",
+        "href": "https://github.com/jasonkneen/tiny-world-builder"
+      },
+      {
+        "label": "Live site",
+        "href": "https://tinyworld.build"
+      }
+    ],
+    "zh": {
+      "audience": "想做一个可玩网页作品的人",
+      "difficulty": "入门 · 在线就能玩",
+      "access": "在线直接用；本地 npm run dev",
+      "cost": "AGPL-3.0；不需要模型",
+      "result": "能编辑、能飞进去看的 3D 体素世界",
+      "steps": [
+        {
+          "title": "在线玩",
+          "body": "打开在线版搭一块地试试。",
+          "href": "https://tinyworld.build"
+        },
+        {
+          "title": "本地跑起来",
+          "body": "git clone https://github.com/jasonkneen/tiny-world-builder.git，进入目录 npm run dev，打开 http://localhost:3000/tiny-world-builder。"
+        },
+        {
+          "title": "换成你的主题",
+          "body": "加一组自己的道具和配色，搭出校园或家乡。"
+        }
+      ],
+      "cautions": [
+        "AGPL-3.0：改版公开部署时也要开源。"
+      ]
+    },
+    "en": {
+      "audience": "People who want a playable web project",
+      "difficulty": "Beginner · playable online",
+      "access": "Use online; npm run dev locally",
+      "cost": "AGPL-3.0; no model needed",
+      "result": "An editable 3D voxel world you can fly through",
+      "steps": [
+        {
+          "title": "Play online",
+          "body": "Open the live site and build a patch of land.",
+          "href": "https://tinyworld.build"
+        },
+        {
+          "title": "Run locally",
+          "body": "git clone https://github.com/jasonkneen/tiny-world-builder.git, npm run dev, open http://localhost:3000/tiny-world-builder."
+        },
+        {
+          "title": "Make it yours",
+          "body": "Add your own props and colours to build your campus or hometown."
+        }
+      ],
+      "cautions": [
+        "AGPL-3.0: a publicly deployed remix must also be open source."
+      ]
+    },
+    "experienceUrl": "https://tinyworld.build"
+  },
+  {
+    "slug": "open-design",
+    "sourceUrl": "https://github.com/nexu-io/open-design",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · nexu-io/open-design",
+        "href": "https://github.com/nexu-io/open-design"
+      },
+      {
+        "label": "Official site",
+        "href": "https://open-design.ai"
+      }
+    ],
+    "zh": {
+      "audience": "要给项目出界面设计稿的人",
+      "difficulty": "进阶 · 自己部署要 Docker 或 Node",
+      "access": "云端版；或本地 Docker 部署",
+      "cost": "Apache-2.0；云端版收费，模型用量另计",
+      "result": "按设计规范生成的界面原型",
+      "steps": [
+        {
+          "title": "看官网",
+          "body": "打开官网了解云端版和下载版。",
+          "href": "https://open-design.ai"
+        },
+        {
+          "title": "本地部署",
+          "body": "git clone https://github.com/nexu-io/open-design.git，cd open-design/deploy && docker compose up -d。"
+        },
+        {
+          "title": "出一套原型",
+          "body": "写清楚项目和页面，定好颜色和字体，让它生成原型。"
+        }
+      ],
+      "cautions": [
+        "云端版收费；开源版自己部署免费，但模型调用要付费。"
+      ]
+    },
+    "en": {
+      "audience": "People who need interface designs for a project",
+      "difficulty": "Intermediate · self-hosting needs Docker or Node",
+      "access": "Cloud version, or self-host with Docker",
+      "cost": "Apache-2.0; cloud is paid, model usage extra",
+      "result": "Interface prototypes that follow a design system",
+      "steps": [
+        {
+          "title": "Visit the site",
+          "body": "Read about the cloud and desktop versions.",
+          "href": "https://open-design.ai"
+        },
+        {
+          "title": "Self-host",
+          "body": "git clone https://github.com/nexu-io/open-design.git, then cd open-design/deploy && docker compose up -d."
+        },
+        {
+          "title": "Make prototypes",
+          "body": "Describe the project and screens, set colours and type, and generate."
+        }
+      ],
+      "cautions": [
+        "The cloud version is paid; self-hosting is free but model calls cost money."
+      ]
+    },
+    "experienceUrl": "https://open-design.ai"
+  },
+  {
+    "slug": "impeccable",
+    "sourceUrl": "https://github.com/pbakaus/impeccable",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · pbakaus/impeccable",
+        "href": "https://github.com/pbakaus/impeccable"
+      },
+      {
+        "label": "Docs",
+        "href": "https://impeccable.style/docs"
+      }
+    ],
+    "zh": {
+      "audience": "做了网页、想改得更有设计感的人",
+      "difficulty": "入门 · 一条命令装好",
+      "access": "本地装进项目和 Agent",
+      "cost": "Apache-2.0；检查规则不需要模型",
+      "result": "改过一版的界面和问题清单",
+      "steps": [
+        {
+          "title": "看前后对比",
+          "body": "打开官网看同一份需求用和不用的对比。",
+          "href": "https://impeccable.style"
+        },
+        {
+          "title": "装进项目",
+          "body": "在项目根目录运行 npx impeccable install，重启 Agent 后运行 /impeccable init。"
+        },
+        {
+          "title": "检查并修改",
+          "body": "npx impeccable detect src/ 扫一遍，再用 /impeccable critique、polish 改。"
+        }
+      ],
+      "cautions": []
+    },
+    "en": {
+      "audience": "People who built a site and want it to look designed",
+      "difficulty": "Beginner · one command to install",
+      "access": "Install into your project and agent",
+      "cost": "Apache-2.0; the detector needs no model",
+      "result": "A revised interface and an issue list",
+      "steps": [
+        {
+          "title": "See before and after",
+          "body": "Open the site to compare the same brief with and without it.",
+          "href": "https://impeccable.style"
+        },
+        {
+          "title": "Install",
+          "body": "Run npx impeccable install in your project root, reload your agent, run /impeccable init."
+        },
+        {
+          "title": "Check and fix",
+          "body": "Scan with npx impeccable detect src/, then use /impeccable critique and polish."
+        }
+      ],
+      "cautions": []
+    },
+    "experienceUrl": "https://impeccable.style"
+  },
+  {
+    "slug": "openmontage",
+    "sourceUrl": "https://github.com/calesthio/OpenMontage",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · calesthio/OpenMontage",
+        "href": "https://github.com/calesthio/OpenMontage"
+      },
+      {
+        "label": "Official site",
+        "href": "https://www.openmontage.video/"
+      }
+    ],
+    "zh": {
+      "audience": "要做宣传片、汇报视频的人",
+      "difficulty": "进阶 · 要配 Python 环境",
+      "access": "本地安装，在 Agent 里使用",
+      "cost": "AGPL-3.0；接入付费生成服务另计",
+      "result": "一支剪好的视频",
+      "steps": [
+        {
+          "title": "看官网",
+          "body": "打开官网看样片和支持的服务。",
+          "href": "https://www.openmontage.video/"
+        },
+        {
+          "title": "安装",
+          "body": "git clone https://github.com/calesthio/OpenMontage.git，进入目录运行 make setup。"
+        },
+        {
+          "title": "做一支视频",
+          "body": "在 .env 填需要的 API Key（只用免费素材也行），在 Agent 里描述你要的视频。"
+        }
+      ],
+      "cautions": [
+        "AGPL-3.0：改版公开部署时也要开源。",
+        "用到的素材要符合各素材库的授权条款。"
+      ]
+    },
+    "en": {
+      "audience": "People making promos or presentation videos",
+      "difficulty": "Intermediate · needs a Python setup",
+      "access": "Install locally and use through your agent",
+      "cost": "AGPL-3.0; paid generation services cost extra",
+      "result": "An edited video",
+      "steps": [
+        {
+          "title": "Visit the site",
+          "body": "See sample videos and supported services.",
+          "href": "https://www.openmontage.video/"
+        },
+        {
+          "title": "Install",
+          "body": "git clone https://github.com/calesthio/OpenMontage.git and run make setup."
+        },
+        {
+          "title": "Make a video",
+          "body": "Add the API keys you need to .env (free footage alone works) and describe the video to your agent."
+        }
+      ],
+      "cautions": [
+        "AGPL-3.0: a publicly deployed remix must also be open source.",
+        "Follow each stock library's licence for the footage you use."
+      ]
+    },
+    "experienceUrl": "https://www.openmontage.video/"
+  },
+  {
+    "slug": "how-to-live-better",
+    "sourceUrl": "https://github.com/eternity4719/HowToLiveBetter",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · eternity4719/HowToLiveBetter",
+        "href": "https://github.com/eternity4719/HowToLiveBetter"
+      },
+      {
+        "label": "Online search page",
+        "href": "https://eternity4719.github.io/HowToLiveBetter/"
+      }
+    ],
+    "zh": {
+      "audience": "想写一本自己的指南或手册的人",
+      "difficulty": "入门 · 写内容为主",
+      "access": "在线检索；本地预览",
+      "cost": "正文 CC BY 4.0；不需要模型",
+      "result": "能检索的指南网站和电子书",
+      "steps": [
+        {
+          "title": "在线看",
+          "body": "打开在线检索页，搜几条感兴趣的建议。",
+          "href": "https://eternity4719.github.io/HowToLiveBetter/"
+        },
+        {
+          "title": "本地预览",
+          "body": "git clone https://github.com/eternity4719/HowToLiveBetter.git，进入目录 python -m http.server 8000。"
+        },
+        {
+          "title": "写你的版本",
+          "body": "沿用它的条目格式和证据分级，写一本新生手册或专业入门指南。"
+        }
+      ],
+      "cautions": [
+        "内容可能过时或有错，法律、医疗问题以当地部门和专业人士为准。",
+        "转载改编要写明出处。"
+      ]
+    },
+    "en": {
+      "audience": "People who want to write their own guide or handbook",
+      "difficulty": "Beginner · mostly writing",
+      "access": "Search online; preview locally",
+      "cost": "Text CC BY 4.0; no model needed",
+      "result": "A searchable guide site and e-book",
+      "steps": [
+        {
+          "title": "Read online",
+          "body": "Open the search page and look up a few entries.",
+          "href": "https://eternity4719.github.io/HowToLiveBetter/"
+        },
+        {
+          "title": "Preview locally",
+          "body": "git clone https://github.com/eternity4719/HowToLiveBetter.git, then python -m http.server 8000."
+        },
+        {
+          "title": "Write your version",
+          "body": "Reuse the entry format and evidence grades for a freshman handbook or subject primer."
+        }
+      ],
+      "cautions": [
+        "Content may be outdated or wrong; follow local authorities and professionals on legal and medical matters.",
+        "Attribute the source when you adapt it."
+      ]
+    },
+    "experienceUrl": "https://eternity4719.github.io/HowToLiveBetter/"
+  },
+  {
+    "slug": "ai-agent-book",
+    "sourceUrl": "https://github.com/bojieli/ai-agent-book",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · bojieli/ai-agent-book",
+        "href": "https://github.com/bojieli/ai-agent-book"
+      },
+      {
+        "label": "Read online",
+        "href": "https://bojieli.github.io/ai-agent-book/astro/"
+      }
+    ],
+    "zh": {
+      "audience": "想搞懂 Agent 原理、自己做一个 Agent 的人",
+      "difficulty": "进阶 · 跑实验要 Python 和模型 API",
+      "access": "在线阅读；本地跑实验",
+      "cost": "Apache-2.0；实验按模型调用计费",
+      "result": "读完能跑通的实验和自己的 Agent",
+      "steps": [
+        {
+          "title": "在线读",
+          "body": "打开在线版，先读第一章。",
+          "href": "https://bojieli.github.io/ai-agent-book/astro/"
+        },
+        {
+          "title": "跑第一个实验",
+          "body": "git clone https://github.com/bojieli/ai-agent-book.git，uv sync --locked --extra ch1 后运行 chapter1/context/main.py。"
+        },
+        {
+          "title": "改成你的场景",
+          "body": "挑一个实验，改成课程答疑之类自己关心的场景。"
+        }
+      ],
+      "cautions": [
+        "大部分实验要配置模型 API Key，会产生费用。"
+      ]
+    },
+    "en": {
+      "audience": "People who want to understand agents and build one",
+      "difficulty": "Intermediate · experiments need Python and a model API",
+      "access": "Read online; run experiments locally",
+      "cost": "Apache-2.0; experiments pay for model calls",
+      "result": "Working experiments and your own agent",
+      "steps": [
+        {
+          "title": "Read online",
+          "body": "Open the online edition and start with chapter 1.",
+          "href": "https://bojieli.github.io/ai-agent-book/astro/"
+        },
+        {
+          "title": "Run the first experiment",
+          "body": "git clone https://github.com/bojieli/ai-agent-book.git, uv sync --locked --extra ch1, then run chapter1/context/main.py."
+        },
+        {
+          "title": "Adapt it",
+          "body": "Take one experiment and turn it into a scenario you care about, such as course Q&A."
+        }
+      ],
+      "cautions": [
+        "Most experiments need a model API key and cost money."
+      ]
+    },
+    "experienceUrl": "https://bojieli.github.io/ai-agent-book/astro/"
+  },
+  {
+    "slug": "train-llm-from-scratch",
+    "sourceUrl": "https://github.com/FareedKhan-dev/train-llm-from-scratch",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · FareedKhan-dev/train-llm-from-scratch",
+        "href": "https://github.com/FareedKhan-dev/train-llm-from-scratch"
+      },
+      {
+        "label": "Documentation",
+        "href": "https://fareedkhan-dev.github.io/train-llm-from-scratch/"
+      }
+    ],
+    "zh": {
+      "audience": "想亲手训练一个语言模型的人",
+      "difficulty": "进阶 · 要会 Python",
+      "access": "本地运行，笔记本 CPU 就能开始",
+      "cost": "MIT；不需要外部模型，大模型要 GPU",
+      "result": "一个自己训练的小语言模型",
+      "steps": [
+        {
+          "title": "看文档",
+          "body": "打开文档站，先读笔记本 CPU 那一节。",
+          "href": "https://fareedkhan-dev.github.io/train-llm-from-scratch/"
+        },
+        {
+          "title": "训练小模型",
+          "body": "git clone 后 pip install -e .，运行 prepare_tiny_data.py，再 train_transformer.py --preset tiny --arch modern，约 5 分钟。"
+        },
+        {
+          "title": "换成你的语料",
+          "body": "把 TinyStories 换成诗歌、笔记或某位作家的文章，再训练一次。"
+        }
+      ],
+      "cautions": [
+        "大模型版本需要 GPU。"
+      ]
+    },
+    "en": {
+      "audience": "People who want to train a language model by hand",
+      "difficulty": "Intermediate · Python required",
+      "access": "Run locally; a laptop CPU is enough to start",
+      "cost": "MIT; no external model, larger runs need a GPU",
+      "result": "A small language model you trained",
+      "steps": [
+        {
+          "title": "Read the docs",
+          "body": "Open the docs and start with the laptop CPU section.",
+          "href": "https://fareedkhan-dev.github.io/train-llm-from-scratch/"
+        },
+        {
+          "title": "Train a tiny model",
+          "body": "Clone, pip install -e ., run prepare_tiny_data.py, then train_transformer.py --preset tiny --arch modern (about 5 minutes)."
+        },
+        {
+          "title": "Use your own corpus",
+          "body": "Replace TinyStories with poems, notes or an author's essays and train again."
+        }
+      ],
+      "cautions": [
+        "Larger models need a GPU."
+      ]
+    },
+    "experienceUrl": "https://fareedkhan-dev.github.io/train-llm-from-scratch/"
+  },
+  {
+    "slug": "echo-loop",
+    "sourceUrl": "https://github.com/echo-loop/Echo-Loop",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · echo-loop/Echo-Loop",
+        "href": "https://github.com/echo-loop/Echo-Loop"
+      },
+      {
+        "label": "Official site",
+        "href": "https://www.echo-loop.top"
+      }
+    ],
+    "zh": {
+      "audience": "在练英语听说、想做学习类 App 的人",
+      "difficulty": "进阶 · 改代码要 Flutter",
+      "access": "下载 App 直接用；本地 Flutter 运行",
+      "cost": "AGPL-3.0；部分 AI 功能要付费会员",
+      "result": "一个英语听说训练 App",
+      "steps": [
+        {
+          "title": "下载体验",
+          "body": "从官网下载 App，导入一段音频练一轮。",
+          "href": "https://www.echo-loop.top"
+        },
+        {
+          "title": "本地运行",
+          "body": "git clone https://github.com/echo-loop/Echo-Loop.git，进入目录 flutter pub get，再 flutter run。"
+        },
+        {
+          "title": "改训练流程",
+          "body": "换成你的练习材料，调整训练步骤和复习间隔。"
+        }
+      ],
+      "cautions": [
+        "AGPL-3.0：改版公开发布时也要开源。",
+        "部分 AI 功能调用大模型，需要付费。"
+      ]
+    },
+    "en": {
+      "audience": "People practising English or building a learning app",
+      "difficulty": "Intermediate · changes need Flutter",
+      "access": "Download the app; run locally with Flutter",
+      "cost": "AGPL-3.0; some AI features need a paid membership",
+      "result": "An English listening and speaking app",
+      "steps": [
+        {
+          "title": "Try the app",
+          "body": "Download it from the site and practise one round with your audio.",
+          "href": "https://www.echo-loop.top"
+        },
+        {
+          "title": "Run locally",
+          "body": "git clone https://github.com/echo-loop/Echo-Loop.git, flutter pub get, then flutter run."
+        },
+        {
+          "title": "Change the flow",
+          "body": "Use your own material and adjust the steps and review intervals."
+        }
+      ],
+      "cautions": [
+        "AGPL-3.0: a publicly released remix must also be open source.",
+        "Some AI features call paid model services."
+      ]
+    },
+    "experienceUrl": "https://www.echo-loop.top"
+  },
+  {
+    "slug": "shiguang-schedule",
+    "sourceUrl": "https://github.com/ShiGuangSchedule/shiguangschedule",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · ShiGuangSchedule/shiguangschedule",
+        "href": "https://github.com/ShiGuangSchedule/shiguangschedule"
+      },
+      {
+        "label": "Releases",
+        "href": "https://github.com/ShiGuangSchedule/shiguangschedule/releases"
+      }
+    ],
+    "zh": {
+      "audience": "想要一个好用课表、或想给学校写适配的人",
+      "difficulty": "入门 · 下载即用；写适配要会一点脚本",
+      "access": "下载安装包使用",
+      "cost": "Apache-2.0；不需要模型",
+      "result": "能一键导入教务课表的课程表 App",
+      "steps": [
+        {
+          "title": "下载安装",
+          "body": "在仓库 Releases 下载对应平台的安装包。",
+          "href": "https://github.com/ShiGuangSchedule/shiguangschedule/releases"
+        },
+        {
+          "title": "打开开发者功能",
+          "body": "在「更多」页面连点应用图标 5 次。"
+        },
+        {
+          "title": "给学校写适配",
+          "body": "参考项目的开源适配仓库，给自己学校写一个教务导入适配。"
+        }
+      ],
+      "cautions": [
+        "电脑版目前还在实验阶段。"
+      ]
+    },
+    "en": {
+      "audience": "Students who want a good timetable or to write an adapter for their school",
+      "difficulty": "Beginner · download and use; adapters need some scripting",
+      "access": "Download a build",
+      "cost": "Apache-2.0; no model needed",
+      "result": "A timetable app that imports from your academic system",
+      "steps": [
+        {
+          "title": "Install",
+          "body": "Download a build for your platform from Releases.",
+          "href": "https://github.com/ShiGuangSchedule/shiguangschedule/releases"
+        },
+        {
+          "title": "Enable developer features",
+          "body": "Tap the app icon 5 times on the More page."
+        },
+        {
+          "title": "Write an adapter",
+          "body": "Use the project's open adapter repository to write one for your school."
+        }
+      ],
+      "cautions": [
+        "The desktop version is still experimental."
+      ]
+    }
+  },
+  {
+    "slug": "models-dev",
+    "sourceUrl": "https://github.com/anomalyco/models.dev",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · anomalyco/models.dev",
+        "href": "https://github.com/anomalyco/models.dev"
+      },
+      {
+        "label": "Live site",
+        "href": "https://models.dev"
+      }
+    ],
+    "zh": {
+      "audience": "想做一个速查站、整理一类数据的人",
+      "difficulty": "入门 · 需要 Bun",
+      "access": "在线查；本地跑开源版",
+      "cost": "MIT；不需要模型",
+      "result": "能搜索的速查网站和数据接口",
+      "steps": [
+        {
+          "title": "在线查",
+          "body": "打开 models.dev 查几个模型的价格和上下文。",
+          "href": "https://models.dev"
+        },
+        {
+          "title": "本地跑起来",
+          "body": "git clone https://github.com/anomalyco/models.dev.git，bun install 后在 packages/web 里 bun run dev。"
+        },
+        {
+          "title": "换成你的数据",
+          "body": "沿用「一个条目一个文件」的组织方式，换成竞赛、院校或奖学金数据。"
+        }
+      ],
+      "cautions": []
+    },
+    "en": {
+      "audience": "People who want to build a lookup site for one kind of data",
+      "difficulty": "Beginner · needs Bun",
+      "access": "Look up online; run the open-source version locally",
+      "cost": "MIT; no model needed",
+      "result": "A searchable lookup site and data API",
+      "steps": [
+        {
+          "title": "Look it up",
+          "body": "Open models.dev and check a few models' prices and context.",
+          "href": "https://models.dev"
+        },
+        {
+          "title": "Run locally",
+          "body": "git clone https://github.com/anomalyco/models.dev.git, bun install, then bun run dev in packages/web."
+        },
+        {
+          "title": "Use your data",
+          "body": "Keep the one-file-per-entry layout and swap in competitions, programmes or scholarships."
+        }
+      ],
+      "cautions": []
+    },
+    "experienceUrl": "https://models.dev"
+  },
+  {
+    "slug": "chinese-poetry-api",
+    "sourceUrl": "https://github.com/palemoky/chinese-poetry-api",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · palemoky/chinese-poetry-api",
+        "href": "https://github.com/palemoky/chinese-poetry-api"
+      },
+      {
+        "label": "Live site",
+        "href": "https://poetry.palemoky.com"
+      }
+    ],
+    "zh": {
+      "audience": "想做一个数据接口、练后端的人",
+      "difficulty": "入门 · 一条 Docker 命令",
+      "access": "在线用；本地 Docker 部署",
+      "cost": "GPL-3.0；不需要模型",
+      "result": "能搜索的诗词接口服务",
+      "steps": [
+        {
+          "title": "在线用",
+          "body": "打开在线版搜几首诗。",
+          "href": "https://poetry.palemoky.com"
+        },
+        {
+          "title": "本地部署",
+          "body": "docker run -d -p 1279:1279 palemoky/chinese-poetry-api:latest，再 curl http://localhost:1279/api/v1/stats 看数据。"
+        },
+        {
+          "title": "换成你的数据",
+          "body": "克隆仓库，把诗词库换成你的术语或题库，make process-data && make run-server。"
+        }
+      ],
+      "cautions": []
+    },
+    "en": {
+      "audience": "People building a data API or practising backend work",
+      "difficulty": "Beginner · one Docker command",
+      "access": "Use online; self-host with Docker",
+      "cost": "GPL-3.0; no model needed",
+      "result": "A searchable poetry API service",
+      "steps": [
+        {
+          "title": "Use it online",
+          "body": "Open the live site and search a few poems.",
+          "href": "https://poetry.palemoky.com"
+        },
+        {
+          "title": "Self-host",
+          "body": "docker run -d -p 1279:1279 palemoky/chinese-poetry-api:latest, then curl http://localhost:1279/api/v1/stats."
+        },
+        {
+          "title": "Use your data",
+          "body": "Clone the repository, swap in your terms or questions, then make process-data && make run-server."
+        }
+      ],
+      "cautions": []
+    },
+    "experienceUrl": "https://poetry.palemoky.com"
+  },
+  {
+    "slug": "dashi-ppt-skill",
+    "sourceUrl": "https://github.com/chuspeeism/dashi-ppt-skill",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · chuspeeism/dashi-ppt-skill",
+        "href": "https://github.com/chuspeeism/dashi-ppt-skill"
+      }
+    ],
+    "zh": {
+      "audience": "要做答辩、路演、课堂汇报 PPT 的人",
+      "difficulty": "入门 · 一条命令装好",
+      "access": "本地装成 Agent 技能",
+      "cost": "AGPL-3.0；Agent 用量另计",
+      "result": "可编辑的 PPTX 或 PDF",
+      "steps": [
+        {
+          "title": "安装",
+          "body": "运行 npx dashi-ppt-skill@latest，国内网络加 --registry=https://registry.npmmirror.com。"
+        },
+        {
+          "title": "生成 PPT",
+          "body": "把文档交给 Agent，选一套主题生成。"
+        },
+        {
+          "title": "改完导出",
+          "body": "在浏览器里改不满意的页，再导出 PPTX 或 PDF。"
+        }
+      ],
+      "cautions": [
+        "AGPL-3.0：改版公开发布时也要开源。"
+      ]
+    },
+    "en": {
+      "audience": "People preparing defences, pitches or class presentations",
+      "difficulty": "Beginner · one command to install",
+      "access": "Install as an agent skill",
+      "cost": "AGPL-3.0; agent usage costs extra",
+      "result": "Editable PPTX or PDF",
+      "steps": [
+        {
+          "title": "Install",
+          "body": "Run npx dashi-ppt-skill@latest (in mainland China add --registry=https://registry.npmmirror.com)."
+        },
+        {
+          "title": "Generate slides",
+          "body": "Give your document to the agent and pick a theme."
+        },
+        {
+          "title": "Edit and export",
+          "body": "Fix slides in the browser, then export PPTX or PDF."
+        }
+      ],
+      "cautions": [
+        "AGPL-3.0: a publicly released remix must also be open source."
+      ]
+    }
+  },
+  {
+    "slug": "figures4papers",
+    "sourceUrl": "https://github.com/ChenLiu-1996/figures4papers",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · ChenLiu-1996/figures4papers",
+        "href": "https://github.com/ChenLiu-1996/figures4papers"
+      }
+    ],
+    "zh": {
+      "audience": "写论文、课程报告需要画图的人",
+      "difficulty": "入门 · 会运行 Python 脚本即可",
+      "access": "本地运行脚本",
+      "cost": "CC BY-NC 4.0：仅限非商用",
+      "result": "风格统一的论文配图",
+      "steps": [
+        {
+          "title": "下载脚本",
+          "body": "git clone https://github.com/ChenLiu-1996/figures4papers.git。"
+        },
+        {
+          "title": "找最像的图",
+          "body": "在仓库里找到和你要画的图最像的脚本。"
+        },
+        {
+          "title": "换数据出图",
+          "body": "换上自己的数据和配色，运行脚本出图。"
+        }
+      ],
+      "cautions": [
+        "CC BY-NC 4.0：仅限非商用。",
+        "用在论文里时，按学术规范引用相关论文。"
+      ]
+    },
+    "en": {
+      "audience": "People writing papers or course reports",
+      "difficulty": "Beginner · just run Python scripts",
+      "access": "Run scripts locally",
+      "cost": "CC BY-NC 4.0: non-commercial only",
+      "result": "Consistent paper-quality figures",
+      "steps": [
+        {
+          "title": "Get the scripts",
+          "body": "git clone https://github.com/ChenLiu-1996/figures4papers.git."
+        },
+        {
+          "title": "Find the closest figure",
+          "body": "Pick the script closest to the figure you need."
+        },
+        {
+          "title": "Swap in your data",
+          "body": "Use your data and colours and run the script."
+        }
+      ],
+      "cautions": [
+        "CC BY-NC 4.0: non-commercial only.",
+        "Cite the related papers where academically appropriate."
+      ]
+    }
+  },
+  {
+    "slug": "flint-chart",
+    "sourceUrl": "https://github.com/microsoft/flint-chart",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · microsoft/flint-chart",
+        "href": "https://github.com/microsoft/flint-chart"
+      },
+      {
+        "label": "Project site",
+        "href": "https://microsoft.github.io/flint-chart/"
+      }
+    ],
+    "zh": {
+      "audience": "要做数据图表、课程统计的人",
+      "difficulty": "入门 · 装 MCP 或 npm 包",
+      "access": "在线图库和编辑器；本地装 MCP 或 npm 包",
+      "cost": "MIT；Agent 用量另计",
+      "result": "可交互的图表",
+      "steps": [
+        {
+          "title": "看图库",
+          "body": "打开项目站，看图库，在编辑器里改一张图。",
+          "href": "https://microsoft.github.io/flint-chart/"
+        },
+        {
+          "title": "接到 Agent",
+          "body": "按官网说明装好 MCP 服务器。"
+        },
+        {
+          "title": "画你的数据",
+          "body": "把一份自己的数据交给 Agent，说清要几张图、什么类型。"
+        }
+      ],
+      "cautions": []
+    },
+    "en": {
+      "audience": "People charting data or course statistics",
+      "difficulty": "Beginner · install the MCP server or npm package",
+      "access": "Gallery and editor online; MCP or npm locally",
+      "cost": "MIT; agent usage costs extra",
+      "result": "Interactive charts",
+      "steps": [
+        {
+          "title": "Browse the gallery",
+          "body": "Open the project site and edit a chart in the editor.",
+          "href": "https://microsoft.github.io/flint-chart/"
+        },
+        {
+          "title": "Connect your agent",
+          "body": "Install the MCP server as described on the site."
+        },
+        {
+          "title": "Chart your data",
+          "body": "Give your agent your data and say how many charts and which types."
+        }
+      ],
+      "cautions": []
+    },
+    "experienceUrl": "https://microsoft.github.io/flint-chart/"
+  },
+  {
+    "slug": "numbat",
+    "sourceUrl": "https://github.com/sharkdp/numbat",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · sharkdp/numbat",
+        "href": "https://github.com/sharkdp/numbat"
+      },
+      {
+        "label": "Try online",
+        "href": "https://numbat.dev"
+      }
+    ],
+    "zh": {
+      "audience": "理工科学生、常算带单位题目的人",
+      "difficulty": "入门 · 在线就能用",
+      "access": "在线直接用；本地 cargo 安装",
+      "cost": "MIT / Apache-2.0；不需要模型",
+      "result": "能自动换算单位的计算器",
+      "steps": [
+        {
+          "title": "在线试",
+          "body": "打开 numbat.dev，输入 3 km/h -> m/s 试试。",
+          "href": "https://numbat.dev"
+        },
+        {
+          "title": "学基本写法",
+          "body": "照官网 Tutorial 学单位、变量和函数的写法。"
+        },
+        {
+          "title": "做你的计算集",
+          "body": "写一组专业课常用计算，或者 cargo install -f --path numbat-cli 装到本地。"
+        }
+      ],
+      "cautions": []
+    },
+    "en": {
+      "audience": "Science and engineering students who calculate with units",
+      "difficulty": "Beginner · works online",
+      "access": "Use online; install locally with cargo",
+      "cost": "MIT / Apache-2.0; no model needed",
+      "result": "A calculator that converts units",
+      "steps": [
+        {
+          "title": "Try online",
+          "body": "Open numbat.dev and type 3 km/h -> m/s.",
+          "href": "https://numbat.dev"
+        },
+        {
+          "title": "Learn the basics",
+          "body": "Follow the Tutorial for units, variables and functions."
+        },
+        {
+          "title": "Build your set",
+          "body": "Write common course calculations, or install locally with cargo install -f --path numbat-cli."
+        }
+      ],
+      "cautions": []
+    },
+    "experienceUrl": "https://numbat.dev"
+  },
+  {
+    "slug": "asciline",
+    "sourceUrl": "https://github.com/YusufB5/ASCILINE",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · YusufB5/ASCILINE",
+        "href": "https://github.com/YusufB5/ASCILINE"
+      },
+      {
+        "label": "Official site",
+        "href": "https://asciline.dev"
+      }
+    ],
+    "zh": {
+      "audience": "想做创意视频、玩视觉效果的人",
+      "difficulty": "入门 · 会装 Python 包即可",
+      "access": "本地运行",
+      "cost": "服务端 AGPL-3.0、播放器 MIT；不需要模型",
+      "result": "浏览器里播放的字符画视频",
+      "steps": [
+        {
+          "title": "看官网",
+          "body": "打开官网看字符画效果。",
+          "href": "https://asciline.dev"
+        },
+        {
+          "title": "安装",
+          "body": "git clone https://github.com/YusufB5/ASCILINE.git，进入目录 pip install .。"
+        },
+        {
+          "title": "转你的视频",
+          "body": "python stream_server.py video.mp4 --cols 240，用浏览器打开终端里的地址。"
+        }
+      ],
+      "cautions": [
+        "改服务端并公开部署时要开源（AGPL-3.0）。"
+      ]
+    },
+    "en": {
+      "audience": "People making creative video or visual effects",
+      "difficulty": "Beginner · just install a Python package",
+      "access": "Run locally",
+      "cost": "Server AGPL-3.0, player MIT; no model needed",
+      "result": "An ASCII-art video in the browser",
+      "steps": [
+        {
+          "title": "Visit the site",
+          "body": "See the ASCII effect on the site.",
+          "href": "https://asciline.dev"
+        },
+        {
+          "title": "Install",
+          "body": "git clone https://github.com/YusufB5/ASCILINE.git, then pip install .."
+        },
+        {
+          "title": "Convert your video",
+          "body": "python stream_server.py video.mp4 --cols 240 and open the address shown."
+        }
+      ],
+      "cautions": [
+        "A publicly deployed server remix must be open source (AGPL-3.0)."
+      ]
+    },
+    "experienceUrl": "https://asciline.dev"
+  },
+  {
+    "slug": "book-to-skill",
+    "sourceUrl": "https://github.com/virgiliojr94/book-to-skill",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · virgiliojr94/book-to-skill",
+        "href": "https://github.com/virgiliojr94/book-to-skill"
+      }
+    ],
+    "zh": {
+      "audience": "要复习、想把教材变成随身助手的人",
+      "difficulty": "入门 · 一条命令装好",
+      "access": "本地装成 Agent 技能",
+      "cost": "MIT；Agent 用量另计",
+      "result": "Agent 能随时查阅的技能包",
+      "steps": [
+        {
+          "title": "安装",
+          "body": "运行 npx skills add virgiliojr94/book-to-skill。"
+        },
+        {
+          "title": "喂资料",
+          "body": "在 Agent 里运行 /book-to-skill 加教材、讲义的文件或文件夹路径。"
+        },
+        {
+          "title": "开始提问",
+          "body": "生成后直接向 Agent 提问，让它注明出自哪一章。"
+        }
+      ],
+      "cautions": [
+        "只处理你有权使用的资料。"
+      ]
+    },
+    "en": {
+      "audience": "Students who want their textbooks as an on-call assistant",
+      "difficulty": "Beginner · one command to install",
+      "access": "Install as an agent skill",
+      "cost": "MIT; agent usage costs extra",
+      "result": "A skill your agent can consult",
+      "steps": [
+        {
+          "title": "Install",
+          "body": "Run npx skills add virgiliojr94/book-to-skill."
+        },
+        {
+          "title": "Feed it sources",
+          "body": "Run /book-to-skill with the path to your textbook or notes."
+        },
+        {
+          "title": "Ask questions",
+          "body": "Ask your agent and have it cite chapters."
+        }
+      ],
+      "cautions": [
+        "Only process material you have the right to use."
+      ]
+    }
+  },
+  {
+    "slug": "gittype",
+    "sourceUrl": "https://github.com/unhappychoice/gittype",
+    "checkedAt": "2026-10-31",
+    "evidence": [
+      {
+        "label": "GitHub · unhappychoice/gittype",
+        "href": "https://github.com/unhappychoice/gittype"
+      }
+    ],
+    "zh": {
+      "audience": "写代码、想练打字速度的人",
+      "difficulty": "入门 · 一条命令装好",
+      "access": "本地终端运行",
+      "cost": "MIT；不需要模型",
+      "result": "终端里的打字游戏",
+      "steps": [
+        {
+          "title": "安装",
+          "body": "运行 cargo install gittype。"
+        },
+        {
+          "title": "进入项目",
+          "body": "cd 到你自己的一个代码项目。"
+        },
+        {
+          "title": "开始练",
+          "body": "运行 gittype，想换练习内容就改成单词或术语。"
+        }
+      ],
+      "cautions": []
+    },
+    "en": {
+      "audience": "Programmers who want to type faster",
+      "difficulty": "Beginner · one command to install",
+      "access": "Run in your terminal",
+      "cost": "MIT; no model needed",
+      "result": "A terminal typing game",
+      "steps": [
+        {
+          "title": "Install",
+          "body": "Run cargo install gittype."
+        },
+        {
+          "title": "Open a project",
+          "body": "cd into one of your own code projects."
+        },
+        {
+          "title": "Start typing",
+          "body": "Run gittype; swap the content for words or terms if you like."
+        }
+      ],
+      "cautions": []
+    }
   }
+
 ];
