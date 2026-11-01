@@ -47,10 +47,9 @@ export function useBadgeDodge(root: RefObject<HTMLElement | null>, enabled: bool
   useEffect(() => {
     const node = root.current;
     if (!enabled || !node || typeof document.elementsFromPoint !== "function") return;
-    let frame = 0, lift = 0;
+    let frame = 0;
     const apply = (next: number | "hide") => {
-      lift = next === "hide" ? 0 : next;
-      node.style.setProperty("--ans-dino-dodge", `${lift}px`);
+      node.style.setProperty("--ans-dino-dodge", `${next === "hide" ? 0 : next}px`);
       if (next === "hide") node.dataset.dodge = "hide"; else delete node.dataset.dodge;
     };
     const measure = () => {
@@ -59,7 +58,9 @@ export function useBadgeDodge(root: RefObject<HTMLElement | null>, enabled: bool
       if (!trigger) return;
       const rect = trigger.getBoundingClientRect();
       if (!rect.width) return;
-      const home = { top: rect.top + lift, bottom: rect.bottom + lift, left: rect.left, right: rect.right };
+      // 按此刻实际的位移反推原位：上移动画进行到一半时也算得准。
+      const shift = Number.parseFloat(getComputedStyle(node).translate.split(" ")[1] ?? "0") || 0;
+      const home = { top: rect.top - shift, bottom: rect.bottom - shift, left: rect.left, right: rect.right };
       const control = controlUnder(home, node);
       apply(control ? dodgeFor(home, control.getBoundingClientRect()) : 0);
     };
