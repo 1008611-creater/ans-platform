@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
@@ -35,7 +34,6 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ callbackUrl = "/" }: LoginFormProps) {
-  const router = useRouter();
   const t = useTranslations("auth");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,6 +47,7 @@ export function LoginForm({ callbackUrl = "/" }: LoginFormProps) {
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
+    let succeeded = false;
 
     try {
       const result = await signIn("credentials", {
@@ -65,12 +64,13 @@ export function LoginForm({ callbackUrl = "/" }: LoginFormProps) {
 
       analyticsAuth.login("credentials");
       toast.success(t("loginSuccess"));
-      router.push(callbackUrl);
-      router.refresh();
+      // 整页跳转：router.push 后紧跟 refresh 会被刷新当前页打断，停在登录页
+      succeeded = true;
+      window.location.assign(callbackUrl);
     } catch {
       toast.error(t("invalidCredentials"));
     } finally {
-      setIsLoading(false);
+      if (!succeeded) setIsLoading(false);
     }
   }
 

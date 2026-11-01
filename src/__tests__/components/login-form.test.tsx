@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { signIn } from "next-auth/react";
 import { describe, expect, it, vi } from "vitest";
 import { LoginForm } from "@/components/auth/login-form";
 
@@ -31,5 +32,18 @@ describe("登录密码控件", () => {
     view.unmount();
     render(<LoginForm />);
     expect(screen.getByLabelText("密码")).toHaveAttribute("type", "password");
+  });
+
+  it("登录成功后整页跳到目标页，按钮保持加载", async () => {
+    vi.mocked(signIn).mockResolvedValue({ ok: true, error: undefined, status: 200, url: null, code: undefined });
+    const assign = vi.fn();
+    vi.stubGlobal("location", { ...window.location, assign });
+    render(<LoginForm callbackUrl="/community" />);
+    fireEvent.change(screen.getByLabelText("邮箱"), { target: { value: "a@b.com" } });
+    fireEvent.change(screen.getByLabelText("密码"), { target: { value: "secret123" } });
+    fireEvent.click(screen.getByRole("button", { name: "登录" }));
+    await waitFor(() => expect(assign).toHaveBeenCalledWith("/community"));
+    expect(screen.getByRole("button", { name: "登录" })).toBeDisabled();
+    vi.unstubAllGlobals();
   });
 });

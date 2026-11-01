@@ -1,10 +1,12 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getConfig } from "@/lib/config";
 import { getConfiguredProviderIds, getProviderMetadata } from "@/lib/auth/provider-metadata";
 import { AuthContent } from "@/components/auth/auth-content";
 import { safeCallbackUrl } from "@/lib/auth/safe-callback-url";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Login",
@@ -18,6 +20,9 @@ interface LoginPageProps {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const callbackUrl = safeCallbackUrl(params.callbackUrl);
+  // 已登录再打开登录页，直接去目标页，别让人对着一张填好的表单发愣
+  const session = await auth();
+  if (session?.user) redirect(callbackUrl);
   const resetSuccess = params.reset === "success";
   const [t, locale] = await Promise.all([getTranslations("auth"), getLocale()]);
   const isEn = locale.startsWith("en");
