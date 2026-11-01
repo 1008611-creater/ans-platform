@@ -27,6 +27,11 @@ export interface CodexTask {
   trace: string[];
   summary: string;
   links?: CodexTaskLink[];
+  /**
+   * 没有真正调用模型、只在本地生成了草稿：guest = 未登录（接口 401），offline = 没连上服务。
+   * 这类任务不画执行步骤，避免看起来像跑过一遍。
+   */
+  local?: "guest" | "offline";
   artifactType: "html" | "markdown" | "python";
   artifactFile: string;
   artifactCode: string;

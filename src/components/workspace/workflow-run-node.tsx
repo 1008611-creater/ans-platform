@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { getWorkflow, readableStep, type WorkflowId } from "./workflow-registry";
 
@@ -19,6 +19,7 @@ interface RunNodeProps {
 export function WorkflowRunNode({ workflow, params, status, trace, statusLabel }: RunNodeProps) {
   const manifest = getWorkflow(workflow);
   const [open, setOpen] = useState<number | null>(null);
+  const baseId = useId();
   const running = status === "running";
   const stopped = status === "stopped";
   const stages = manifest.stages;
@@ -60,6 +61,7 @@ export function WorkflowRunNode({ workflow, params, status, trace, statusLabel }
                 type="button"
                 disabled={!done || !detail}
                 aria-expanded={done && detail ? expanded : undefined}
+                aria-controls={done && detail ? `${baseId}-step-${idx}` : undefined}
                 onClick={() => setOpen(prev => (prev === idx ? null : idx))}
                 className={`flex min-h-[30px] w-full items-center gap-2.5 text-left transition-colors ${
                   done || current ? "text-foreground" : "text-muted-foreground"
@@ -76,10 +78,10 @@ export function WorkflowRunNode({ workflow, params, status, trace, statusLabel }
                 )}
                 <span className="min-w-0 flex-1">{label}</span>
                 {done && detail && (
-                  <ChevronDown className={`size-3.5 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`} aria-hidden="true" />
+                  <ChevronDown className={`ans-spring-pop size-3.5 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`} aria-hidden="true" />
                 )}
               </button>
-              <div className="ans-collapse" data-open={Boolean(expanded && (detail || current))}>
+              <div id={`${baseId}-step-${idx}`} className="ans-collapse" data-open={Boolean(expanded && (detail || current))}>
                 <div inert={!expanded}>
                   <p className="pb-1.5 pl-6 text-xs leading-5 text-muted-foreground [text-wrap:pretty]">
                     {current ? manifest.sub : detail}

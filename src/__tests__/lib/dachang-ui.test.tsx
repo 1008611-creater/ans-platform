@@ -61,6 +61,16 @@ describe("分栏", () => {
     fireEvent.doubleClick(handle);
     expect(handle.getAttribute("aria-valuenow")).toBe("50");
   });
+
+  it("keeps the right pane mounted when closed, so the preview is not rebuilt", () => {
+    const onOpenChange = vi.fn();
+    const { rerender } = render(<ResizableSplit label="分隔" reopenLabel="展开" open left={<p>chat</p>} right={<iframe title="preview" />} onOpenChange={onOpenChange} />);
+    const frame = screen.getByTitle("preview");
+    rerender(<ResizableSplit label="分隔" reopenLabel="展开" open={false} left={<p>chat</p>} right={<iframe title="preview" />} onOpenChange={onOpenChange} />);
+    expect(screen.getByTitle("preview")).toBe(frame);
+    expect(frame.closest("[inert]")).toBeTruthy();
+    expect(screen.queryByLabelText("展开")).toBeNull();
+  });
 });
 
 describe("流式打字", () => {

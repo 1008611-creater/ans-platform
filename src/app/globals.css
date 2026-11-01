@@ -1143,6 +1143,20 @@
   .ans-wb-grip:hover::after, .ans-wb-grip[data-dragging="true"]::after { background: var(--hairline-strong, var(--hairline)); }
   /* 首屏建议逐条浮入：下移 6px、透明，每条错开 25ms，150ms 到位 */
   .ans-wb-rise { animation: ans-wb-rise 150ms cubic-bezier(.23, 1, .32, 1) both; }
+  /* 浮层小菜单（「+」工具、三步上手）：常驻 DOM，靠 data-open 淡入并从锚点微微放大，不推挤页面 */
+  .ans-menu { border-radius: 14px; background: var(--card); box-shadow: inset 0 0 0 0.5px var(--hairline), 0 12px 32px -12px rgb(26 26 25 / 22%); opacity: 0; transform: translateY(4px) scale(.97); pointer-events: none; transition: opacity 140ms var(--ease-out-cubic), transform var(--spring-drag-duration) var(--spring-drag); }
+  .ans-menu[data-open="true"] { opacity: 1; transform: none; pointer-events: auto; }
+  .ans-menu.origin-top-left, .ans-menu.origin-top-right { transform: translateY(-4px) scale(.97); }
+  .ans-menu[data-open="true"].origin-top-left, .ans-menu[data-open="true"].origin-top-right { transform: none; }
+  .dark .ans-menu { background: var(--surface-raised, var(--card)); box-shadow: inset 0 0 0 0.5px var(--hairline), 0 12px 32px -12px rgb(11 11 10 / 60%); }
+  /* 外圆角 14 = 内圆角 10 + 内边距 4 */
+  .ans-menu-item { display: flex; width: 100%; min-height: 36px; align-items: center; gap: 8px; border-radius: 10px; padding: 6px 10px; font-size: 14px; line-height: 20px; text-align: start; transition: background-color 120ms; }
+  .ans-menu-item:hover { background: var(--muted); color: var(--foreground); }
+  /* 手指操作时可点区域至少 44px */
+  @media (pointer: coarse) {
+    .ans-wb-icon { min-height: 44px; min-width: 44px; }
+    .ans-menu-item { min-height: 44px; }
+  }
 }
 @keyframes ans-wb-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 .ans-wb-serif { font-family: "Songti SC", "Noto Serif SC", "Source Han Serif SC", serif; }
@@ -1195,14 +1209,25 @@ details.ans-details::details-content > * { min-height: 0; overflow: hidden; }
 
 /* 拖拽吸附：过阻尼弹簧，零回弹 */
 .ans-spring-drag { transition-timing-function: var(--spring-drag); transition-duration: var(--spring-drag-duration); }
+/* 点按反馈（「+」旋转、展开箭头）：欠阻尼弹簧，微弹 */
+.ans-spring-pop { transition-timing-function: var(--spring-pop); transition-duration: var(--spring-pop-duration); }
+/* 换文案时轻轻淡入，不一帧硬切 */
+@keyframes ans-fade-swap { from { opacity: 0; transform: translateY(2px); } }
+.ans-fade-swap { animation: ans-fade-swap 180ms var(--ease-out-cubic) both; }
+/* 抽屉（Sheet）：打开用过阻尼弹簧滑入，关闭快一点淡出滑走 */
+[data-slot="sheet-content"][data-state="open"] { --tw-duration: var(--spring-drag-duration); --tw-ease: var(--spring-drag); }
+[data-slot="sheet-content"][data-state="closed"] { --tw-duration: 220ms; --tw-ease: var(--ease-out-cubic); }
+[data-slot="sheet-overlay"][data-state="open"] { --tw-duration: 200ms; }
+[data-slot="sheet-overlay"][data-state="closed"] { --tw-duration: 180ms; }
 
 /* 反馈自熄：对勾 2.5s 后淡出 */
 @keyframes ans-fade-out { to { opacity: 0; } }
 .ans-feedback-leaving { animation: ans-fade-out 180ms var(--ease-out-cubic) both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .ans-stream-char, .ans-pop, .ans-feedback-leaving { animation: none; }
-  .ans-collapse, details.ans-details::details-content, .ans-spring-drag { transition: none; }
+  .ans-stream-char, .ans-pop, .ans-feedback-leaving, .ans-fade-swap { animation: none; }
+  .ans-collapse, details.ans-details::details-content, .ans-spring-drag, .ans-spring-pop, .ans-menu { transition: none; }
+  [data-slot="sheet-content"], [data-slot="sheet-overlay"] { animation: none !important; }
 }
 
 /* 手机端 App 壳层：data-app-shell 由服务端按 UA（安卓壳）或客户端按 standalone（iOS 主屏）标记。

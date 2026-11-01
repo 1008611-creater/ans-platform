@@ -19,8 +19,10 @@ const USER_SCROLL_KEYS = new Set(["ArrowUp", "PageUp", "Home", "ArrowDown", "Pag
  * - 用户一滚动（滚轮、触摸、键盘、拖滚动条）立刻停止跟随，回到 40px 内才恢复；
  * - 离底部超过 120px 时 `showJump` 为 true。
  * 返回的 `follow` 是可写的 ref，发送消息时可以强制恢复跟随。
+ * `enabled` 为 false 时（比如空状态首页）不贴底，并回到顶部（调用方此时不显示「跳至最新」）；切换时重新挂监听，
+ * 因为容器里的子节点会整块换掉。
  */
-export function useFollowBottom(ref: RefObject<HTMLElement | null>) {
+export function useFollowBottom(ref: RefObject<HTMLElement | null>, enabled = true) {
   const follow = useRef(true);
   const userIntentAt = useRef(0);
   const [showJump, setShowJump] = useState(false);
@@ -41,6 +43,12 @@ export function useFollowBottom(ref: RefObject<HTMLElement | null>) {
 
   useEffect(() => {
     const node = ref.current; if (!node) return;
+    if (!enabled) {
+      follow.current = false;
+      node.scrollTop = 0;
+      return;
+    }
+    follow.current = true;
     const markIntent = () => { userIntentAt.current = performance.now(); };
     const onWheel = (event: WheelEvent) => { markIntent(); if (event.deltaY < 0) follow.current = false; };
     const onTouch = () => { markIntent(); follow.current = false; };
@@ -61,7 +69,7 @@ export function useFollowBottom(ref: RefObject<HTMLElement | null>) {
       node.removeEventListener("scroll", measure);
       observer?.disconnect();
     };
-  }, [ref, measure, stick]);
+  }, [ref, measure, stick, enabled]);
 
   const jumpToLatest = useCallback(() => {
     const node = ref.current; if (!node) return;
