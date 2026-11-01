@@ -1464,6 +1464,11 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
 .ans-companion-grabber { display: none; }
 @media (max-width: 767px) {
   .ans-companion-v2 { inset-inline-end: 16px; bottom: calc(4rem + 16px + env(safe-area-inset-bottom)); }
+  /* 二级页没有 Tab 栏，圆章贴近安全区底边 */
+  [data-site-frame]:not([data-tab-root]) .ans-companion-v2:not([data-open=true]) { bottom: calc(16px + env(safe-area-inset-bottom)); }
+  /* 滚动时压住页面按钮就往上让开，让不开就隐去（use-badge-dodge.ts） */
+  .ans-companion-v2:not([data-open=true]) { translate: 0 calc(-1 * var(--ans-dino-dodge, 0px)); transition: translate var(--spring-drag-duration) var(--spring-drag), opacity 150ms; }
+  .ans-companion-v2[data-dodge=hide]:not([data-open=true]) { opacity: 0; pointer-events: none; }
   .ans-companion-v2:not([data-open=true]) .ans-dino-trigger { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: var(--card) !important; box-shadow: inset 0 0 0 0.5px var(--hairline) !important; }
   .ans-companion-v2:not([data-open=true]) .ans-dino-trigger:hover { transform: none; }
   .ans-companion-v2:not([data-open=true]) :is(.ans-dino-avatar, .ans-dino-pixel-stage) { width: 44px; height: 44px; }

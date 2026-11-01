@@ -23,6 +23,7 @@ import { DEFAULT_COMPANION_MODEL, getAvailableRunModel, type RunModelKey } from 
 import { usePausedRunModels } from "@/components/providers/run-model-pricing";
 import { useCompanionSize } from "./use-companion-size";
 import { useCompanionSheet } from "./use-companion-sheet";
+import { useBadgeDodge } from "./use-badge-dodge";
 import { getFormSnapshot, subscribeMascotStore, writeForm } from "@/lib/mascot/client-store";
 import { CompanionQuestPin, CompanionSanctuaryBar } from "./companion-sanctuary-bar";
 import { MascotStageDeck } from "./mascot-stage-deck";
@@ -67,6 +68,8 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   const titleId = useId(), taskId = useId(), composer = useRef<HTMLTextAreaElement>(null);
   const ime = useImeEnterGuard();
   const sheet = useCompanionSheet(open, () => setOpen(false));
+  const badge = useRef<HTMLDivElement>(null);
+  useBadgeDodge(badge, sheet.enabled && !open, pathname);
   /** 用户最近一次主动滚动的时间；只有用户滚动才会让列表停止跟随，程序滚动不算。 */
   const userScrollAt = useRef(0);
   /** 会话恢复时已有的消息不播放逐字动画，只有之后新到的回复才播。 */
@@ -304,7 +307,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   return <>
     {sheet.active && createPortal(<div className="ans-companion-scrim" aria-hidden="true" />, document.body)}
     <CompanionQuestPin dialogOpen={open} onTriggerSpeech={text => setSpeech({ id: ++sequence.current, text })} />
-    <div className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
+    <div ref={badge} className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
     <Popover open={open} onOpenChange={nextOpen => {
       // 只拦"打开"：关闭（Escape / 点外部）必须放行。
       if (nextOpen && !sheet.enabled && typeof WebGLRenderingContext !== "undefined" && mascotForm !== "2d") {
