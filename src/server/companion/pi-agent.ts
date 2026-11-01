@@ -212,12 +212,12 @@ detailEn: "Check-in, claw tokens and quest rewards",
       trace: [`[1/1] agent.play_claw_arcade · 执行中止 (${code})`],
 traceEn: [`[1/1] agent.play_claw_arcade · aborted (${code})`],
       replyZh: isLowPoints
-        ? `⚠️ 免费抓娃娃币已用完，且账户积分不足 ${ARCADE_TOKEN_COST_POINTS} 积分。可以先点上方「📅 签到」或去福利页完成破冰问卷 (+50分)！`
+        ? `⚠️ 免费抓娃娃币已用完，且账户积分不足 ${ARCADE_TOKEN_COST_POINTS} 积分。可以先点上方「📅 签到」攒积分。`
         : `⚠️ 抓娃娃执行暂不可用（${code}），请前往算力游乐场操作。`,
       replyEn: isLowPoints
-        ? `⚠️ No free tokens left and balance is under 10 pts. Claim daily check-in (+5 pts) or onboarding (+50 pts) first!`
+        ? `⚠️ No free tokens left and balance is under 10 pts. Check in (+5 pts) first.`
         : `⚠️ Claw machine unavailable (${code}).`,
-      links: [{ href: "/workspace/benefits", title: "去领免费算力与抓娃娃币", detail: "新人可领 100~150 积分", icon: "credits" }],
+      links: [{ href: "/workspace/benefits", title: "去领免费算力与抓娃娃币", detail: "问卷领 $5 DeepSeek 额度，签到攒积分", icon: "credits" }],
     };
   }
 }
@@ -494,7 +494,7 @@ traceEn: [`[1/1] agent.redeem_market_item · no match for "${asked || "the reque
       replyEn: `⚠️ Redeeming "${title}" requires ${pricePoints} pts (current balance: ${currentBal} pts). Click Check-in (+5pt) or Claw Pull first!`,
       balancePoints: currentBal,
       links: [
-        { href: "/workspace/benefits", title: "去福利中心领 100~150 积分", detail: "破冰问卷 +50分 / 每日签到 +5分", icon: "credits" },
+        { href: "/workspace/benefits", title: "去福利中心攒积分", detail: "每日签到 +5 分", icon: "credits" },
       ],
     };
   }

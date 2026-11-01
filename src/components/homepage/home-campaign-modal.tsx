@@ -54,8 +54,8 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
           />
           <span>
             {isEn
-              ? "Activity Guide · Claim 100–150 Pts"
-              : "算力活动指南 · 领 100~150 积分"}
+              ? "New member perks · $5 DeepSeek credit"
+              : "新人福利 · 问卷领 $5 DeepSeek 额度"}
           </span>
         </button>
       </div>
@@ -103,13 +103,13 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
                       {isEn ? "📖 ANS ONBOARDING GUIDE" : "📖 新手引导"}
                     </span>
                     <span className="rounded-full border border-amber-500/40 bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-300">
-                      {isEn ? "10 Points = ¥1.00 CNY = $0.10 USD Quota" : "10 积分 = ¥1 元算力额度"}
+                      {isEn ? "10 pts = ¥1" : "10 积分 = ¥1"}
                     </span>
                   </div>
                   <div className="text-lg font-black tracking-tight text-foreground sm:text-xl">
                     {isEn
-                      ? "Claim 100–150 Free Points · Play 3D Claw Machine · Spend in Market"
-                      : "免费领 100~150 积分 · 体验 3D 抓娃娃 · 在工作台与市场直接使用"}
+                      ? "$5 DeepSeek credit · Earn points with check-ins and the claw machine"
+                      : "问卷领 $5 DeepSeek 额度 · 签到抓娃娃攒积分"}
                   </div>
                 </div>
 
@@ -135,14 +135,14 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
                       {isEn ? "STEP 1" : "第 1 步"}
                     </span>
                     <span className="text-xs font-black text-emerald-700 dark:text-emerald-300">
-                      {isEn ? "+100–150 Pts" : "+100~150 分"}
+                      {isEn ? "$5 credit + daily points" : "$5 额度 + 每日积分"}
                     </span>
                   </div>
                   <div className="mt-2.5 text-base font-black text-foreground">
-                    {isEn ? "🎁 Claim Free Points" : "🎁 领免费算力积分"}
+                    {isEn ? "🎁 New member perks" : "🎁 领新人福利"}
                   </div>
                   <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                    {isEn ? "Sign up + 30s survey (+60 Pts), daily check-ins (+40–90 Pts)." : "注册填 30 秒问卷（+60分）、每日打卡与农客松专项（+40~90分）。"}
+                    {isEn ? "Finish the 30-second survey for $5 of DeepSeek credit, valid 30 days. Check in and do quests for points." : "填 30 秒问卷领 $5 DeepSeek 额度，30 天内有效。每天签到、做任务再攒积分。"}
                   </p>
                 </div>
 
@@ -171,7 +171,7 @@ export function HomeCampaignModal({ locale = "zh" }: { locale?: string }) {
                     {isEn ? "🕹️ 3D Claw Machine" : "🕹️ 3D 抓娃娃与转盘"}
                   </div>
                   <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                    {isEn ? "100% win rate per grab (10–1,000 Pts)." : "每次下爪必得 10~1000 积分，支持免登录试玩手感。"}
+                    {isEn ? "Every grab wins a prize, up to a free-points limit. Try it without signing in." : "每次下爪都有奖，免费积分累计有上限。不登录也能先试玩。"}
                   </p>
                 </div>
 

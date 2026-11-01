@@ -34,7 +34,7 @@ export default async function CollectionPage() {
         tag: isEn ? "Free Compute Points" : "免费算力积分",
         cover: "/catalog/gitglow-v1/ans-3d-showcase.svg",
         href: "/workspace/benefits",
-        desc: isEn ? "Complete the 30s survey for 50 points and use the 3D claw machine to claim 10–1,000 points." : "完成 30 秒问卷领 50 积分，操纵 3D 机械臂每次必得 10~1000 积分并解锁小恐龙装扮。",
+        desc: isEn ? "Finish the 30-second survey for $5 of DeepSeek credit, then play the 3D claw machine to earn points." : "填 30 秒问卷领 $5 DeepSeek 额度，玩 3D 抓娃娃攒积分，还能解锁小恐龙装扮。",
       },
       {
         title: isEn ? "CAUAI Infinite Canvas · Multimodal AIGC Studio" : "CAUAI 无限画布 · 多模态视觉与视频工作台",

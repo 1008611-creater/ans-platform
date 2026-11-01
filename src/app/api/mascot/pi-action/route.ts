@@ -23,7 +23,7 @@ export async function POST(request: Request) {
           error: "UNAUTHORIZED",
           replyZh: "🔒 请先登录 ANS 账号，Agent 即可帮你完成签到、抓娃娃、逛市场和创建参赛项目。",
           replyEn: "🔒 Please sign in first so Agent can execute actions for you!",
-          links: [{ href: "/login", title: "立即登录 / 注册", detail: "注册即送 10 积分 + 破冰问卷 50 积分", icon: "credits" }],
+          links: [{ href: "/login", title: "立即登录 / 注册", detail: "注册后填问卷领 $5 DeepSeek 额度", icon: "credits" }],
         },
         { status: 401 },
       );

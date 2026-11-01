@@ -17,7 +17,7 @@
   "cancelNote": "Cancellation before provider submission refunds points. After submission, the result will still be saved and charges need review.",
   "connectionFailed": "Task updates are temporarily unavailable. They will refresh automatically.",
   "requestFailed": "Submission was not confirmed. Check the task list; clicking again checks the original request.",
-  "insufficient": "Insufficient ANS compute points. Claim 100–150 free pts in Compute Benefits (/workspace/benefits) or redeem a voucher in Credits Center.",
+  "insufficient": "Insufficient ANS compute points. Earn free points in Compute Benefits (/workspace/benefits) or redeem a voucher in Credits Center.",
   "priceChanged": "The price changed. Refresh and confirm again.",
   "progress": "Generation progress",
   "apply": "Use this model",
