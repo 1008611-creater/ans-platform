@@ -32,11 +32,13 @@ export function SiteFrame({ children, header, footer, mobileNavigation, companio
   if (pathname.startsWith("/embed") || pathname.startsWith("/kids") || pathname.startsWith("/vibe-hub")) return children;
   // Pushed screens give the bottom of the viewport to their own content and actions.
   const tabRoot = isTabRootPath(pathname);
+  // 工作台占满一屏、自己管滚动，页脚会把整页撑出几十像素，滚一下顶栏就压住工作台第一行
+  const fullScreen = pathname === "/workspace" || pathname.startsWith("/workspace/");
   return <div data-site-frame data-tab-root={tabRoot ? "" : undefined} className={cn("relative min-h-screen flex flex-col xl:pb-0", tabRoot ? "pb-[calc(4rem+env(safe-area-inset-bottom))]" : "pb-[env(safe-area-inset-bottom)]")}>
     <a href="#main-content" className="sr-only fixed start-4 top-2 z-[60] rounded-lg bg-background p-3 font-medium text-foreground focus:not-sr-only focus-visible:outline-2 focus-visible:outline-primary">{skipLabel}</a>
     {header}
     <main id="main-content" tabIndex={-1} className="flex-1 scroll-mt-16">{children}</main>
-    {footer}
+    {!fullScreen && footer}
     {tabRoot && mobileNavigation}
     {companion}
   </div>;

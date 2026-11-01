@@ -53,7 +53,7 @@ export function useCompanionSheet(open: boolean, close: () => void) {
   useEffect(() => {
     if (!active) return;
     const style = root();
-    style.setProperty("--ans-sheet-h", snap === "full" ? "80dvh" : "60dvh");
+    style.setProperty("--ans-sheet-h", snap === "full" ? "86dvh" : "70dvh");
     return () => { style.removeProperty("--ans-sheet-h"); };
   }, [active, snap]);
   useEffect(() => {

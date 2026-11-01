@@ -2,7 +2,8 @@
   position: relative; display: flex; flex-direction: column; overflow: hidden; padding: 0;
   width: min(56vw, 1040px); height: min(84dvh, 900px); max-width: calc(100vw - 162px);
   max-height: var(--radix-popover-content-available-height); min-height: 0; border-radius: 22px;
-  background: var(--background); color: var(--foreground); border: 0.5px solid var(--hairline);
+  /* 浮层比底下的页面高一层：用 popover 面，暗色下不会比页面还暗 */
+  background: var(--popover, var(--card)); color: var(--foreground); border: 0.5px solid var(--hairline);
   box-shadow: 0 16px 64px oklch(.18 .035 290 / .16); z-index: 55; animation-duration: 180ms !important;
 }
 .ans-companion-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px; border-bottom: 0.5px solid var(--hairline); flex-shrink: 0; }
@@ -23,6 +24,9 @@
 .ans-companion-mode > span { margin-inline-start: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--muted-foreground); }
 .ans-companion-signin { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 16px; background: var(--muted); font-size: 12px; color: var(--primary); }
 .ans-companion-signin svg { width: 14px; height: 14px; flex-shrink: 0; }
+/* 暗色下主色字压在灰底上只有 2.2:1，改用正文色，箭头保留主色提示可点 */
+.dark .ans-companion-signin { color: var(--foreground); }
+.dark .ans-companion-signin svg { color: var(--primary); }
 .ans-companion-reading { position: relative; display: flex; min-height: 0; flex: 1; }
 .ans-companion-body { overflow-y: auto; overscroll-behavior: contain; min-height: 0; flex: 1; scrollbar-width: thin; overflow-anchor: none; }
 .ans-companion-conversation { padding: 20px 24px; min-height: 96px; }
@@ -82,7 +86,7 @@
 /* 聚焦：外层容器双环咬合，里面的 textarea 不再自己画环 */
 .ans-companion-composer > div:focus-within { box-shadow: inset 0 0 0 0.5px var(--hairline), var(--focus-ring); }
 .ans-companion-composer textarea:focus-visible { box-shadow: none; }
-.ans-companion-composer textarea { min-width: 0; flex: 1; resize: none; min-height: 30px; max-height: 120px; background: transparent; padding: 4px 5px; line-height: 1.6; font-size: 14px; outline: none; overflow-y: auto; }
+.ans-companion-composer textarea { field-sizing: content; min-width: 0; flex: 1; resize: none; min-height: 30px; max-height: 120px; background: transparent; padding: 4px 5px; line-height: 1.6; font-size: 14px; outline: none; overflow-y: auto; }
 .ans-companion-composer textarea::placeholder { color: var(--muted-foreground); }
 .ans-companion-composer > div > button:not(.ans-companion-model-trigger) { width: 34px; height: 34px; display: grid; place-items: center; flex-shrink: 0; border-radius: 7px; background: var(--primary); color: var(--primary-foreground); cursor: pointer; transition: opacity 150ms; }
 .ans-companion-composer > div > button:not(.ans-companion-model-trigger):disabled { opacity: .28; }
@@ -187,10 +191,12 @@ body[data-scroll-locked] .ans-dino-guide.ans-companion-v2:not([data-open=true]),
 body[data-scroll-locked] #ans-dino-live-bubble { display: none !important; }
 /* 宽屏工作台打开右侧面板时，气泡不盖住预览和 diff */
 body.ans-workbench-split #ans-dino-live-bubble { display: none !important; }
-/* 窄屏工作台：输入框固定在底部，悬浮兔兔龙和气泡让位（顶栏有 Agent 入口） */
-@media (max-width: 899px) {
-  body.ans-workbench-open .ans-dino-guide.ans-companion-v2:not([data-open=true]),
-  body.ans-workbench-open #ans-dino-live-bubble { display: none !important; }
+/* 工作台：首页有自己的兔兔龙、顶栏有 Agent 入口；悬浮兔兔龙和气泡让位，不压输入框、预览和 diff */
+body.ans-workbench-open .ans-dino-guide.ans-companion-v2:not([data-open=true]),
+body.ans-workbench-open #ans-dino-live-bubble { display: none !important; }
+/* 手机上 Agent 是底部抽屉，打开后兔兔龙本体不再浮在遮罩和抽屉上面 */
+@media (max-width: 640px) {
+  .ans-companion-v2[data-open=true] .ans-dino-trigger { opacity: 0; pointer-events: none; }
 }
 @media (max-width: 640px) {
   .ans-companion-v2 { inset-inline-end: 10px; bottom: calc(66px + env(safe-area-inset-bottom)); }

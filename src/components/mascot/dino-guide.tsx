@@ -135,7 +135,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     scrollObserver.current?.disconnect(); scrollObserver.current = null; list.current = node;
     if (!node) return;
     const state = scrollState.current[mode];
-    node.scrollTop = state.follow && node.querySelector(".ans-companion-message") ? node.scrollHeight : state.top;
+    node.scrollTop = !node.querySelector(".ans-companion-message") ? 0 : state.follow ? node.scrollHeight : state.top;
     if (typeof ResizeObserver !== "undefined") {
       const observer = new ResizeObserver(onContentResize);
       for (const child of Array.from(node.children)) observer.observe(child);
@@ -159,7 +159,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   useLayoutEffect(() => {
     if (!open || !list.current) return;
     const state = scrollState.current[mode], node = list.current;
-    node.scrollTop = state.follow && node.querySelector(".ans-companion-message") ? node.scrollHeight : state.top;
+    node.scrollTop = !node.querySelector(".ans-companion-message") ? 0 : state.follow ? node.scrollHeight : state.top;
     setShowLatest(!state.follow); setUnread(false);
   }, [open, mode]);
   useLayoutEffect(() => {
@@ -329,7 +329,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
         }
       }}><DinoAvatar actor={actor} voicePolicy={voiceOffer} phase={avatarPhase} open={open} speech={speech} onVoiceStatus={setVoiceStatus} /><span className="ans-dino-pip" aria-hidden="true" /></button></PopoverTrigger>
       <PopoverAnchor virtualRef={panelSize.anchor} />
-      <PopoverContent style={panelSize.style} id="ans-companion-panel" role="dialog" aria-labelledby={titleId} side="top" align="end" sideOffset={0} collisionPadding={12} className="ans-companion-panel" data-sheet={sheet.enabled || undefined} data-snap={sheet.enabled ? sheet.snap : undefined} onInteractOutside={event => {
+      <PopoverContent style={panelSize.style} id="ans-companion-panel" role="dialog" aria-labelledby={titleId} side="top" align="end" sideOffset={0} collisionPadding={12} className="ans-companion-panel" aria-modal={sheet.enabled || undefined} data-sheet={sheet.enabled || undefined} data-snap={sheet.enabled ? sheet.snap : undefined} onInteractOutside={event => {
         // 抽屉里有输入框：点遮罩或底层页面都不收起，只能用关闭按钮、下滑或返回键。
         if (sheet.enabled) event.preventDefault();
       }} onOpenAutoFocus={event => {

@@ -99,15 +99,6 @@ const HOVER_MOOD_IDS = ["hover0", "hover1", "hover2", "hover3", "hover4"] as con
 const CLICK_MOOD_IDS = ["click0", "click1", "click2", "click3", "click4", "click5"] as const;
 const WHIP_MOOD_IDS = ["whip0", "whip1", "whip2", "whip3", "whip4", "whip5", "whip6", "whip7"] as const;
 const MACRO_MOOD_IDS = ["macro0", "macro1", "macro2", "macro3"] as const;
-const IDLE_MOOD_IDS = [
-  "happy_smile",
-  "starry_excited",
-  "curious_tilt",
-  "cozy_chill",
-  "sleepy_stretch",
-  "focused_think",
-  "aha_spark",
-] as const;
 
 function findMoodPreset(id: string): ShowcaseMoodPreset {
   return SHOWCASE_MOOD_PRESETS[id] ?? SHOWCASE_MOOD_PRESETS.happy_smile;
@@ -354,16 +345,39 @@ export function CompanionQuestPin({
           ui("bar.hudSpNameEqCountEquipped", { name: pickCatalogText(sp, "name", isZh), eqCount: eqCount }),
         );
         dispatchDinoInteract({ action: "mood", mood: preset });
-      } else {
-        const id = IDLE_MOOD_IDS[moodIdxRef.current % IDLE_MOOD_IDS.length];
-        const preset = findMoodPreset(id);
-        setActiveMood(preset);
-        setCustomSubText(null);
-        dispatchDinoInteract({ action: "mood", mood: preset });
       }
     }, 4200);
     return () => window.clearInterval(timer);
   }, [alertMode, macroActive, isZh, ui]);
+
+  // 气泡展开后 7 秒没人理就收回成小圆点。单独计时：上面的轮换计时器依赖项每次渲染都变，等不到点
+  useEffect(() => {
+    if (alertMode || macroActive) return;
+    const timer = window.setInterval(() => {
+      if (performance.now() - lastUserInteractRef.current > 7000) setAlertMode(true);
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [alertMode, macroActive]);
+
+  // 气泡展开时：Esc 或点气泡和兔兔龙以外的地方，收回成小圆点
+  useEffect(() => {
+    if (alertMode || macroActive) return;
+    const collapse = () => setAlertMode(true);
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") collapse();
+    };
+    const onPointer = (event: PointerEvent) => {
+      const target = event.target as Element | null;
+      if (target?.closest?.("#ans-dino-live-bubble, .ans-dino-guide")) return;
+      collapse();
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointer, true);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointer, true);
+    };
+  }, [alertMode, macroActive]);
 
   useEffect(() => {
     if (!pinBannerQuest) return;
