@@ -13,27 +13,11 @@ import { Button } from "@/components/ui/button";
 const OFFICIAL_WORKFLOW_CARDS = [
   {
     slug: "resume-website",
-    title: "AI 双语简历独立站工作台",
-    summary: "填写经历或上传旧简历，实时预览并一键导出单文件 HTML 简历站。",
+    title: "简历与作品集网站",
+    summary: "用自己的经历和项目制作 3D 个人网站，支持模型、贴纸、镜头编排和文件导出。",
     cover: "/catalog/ans-pro-v1/magic-resume.webp",
     badge: "🚀 在线即跑 · 免费排版",
     href: "/market/resume-website",
-  },
-  {
-    slug: "toonflow",
-    title: "Toonflow AI 漫剧分镜工作流",
-    summary: "输入故事梗概，自动拆解角色设定、分镜画面提示词与台词脚本。",
-    cover: "/catalog/ans-pro-v1/infinite-canvas.webp",
-    badge: "🚀 在线即跑 · 漫剧分镜",
-    href: "/workflows/toonflow",
-  },
-  {
-    slug: "hypit",
-    title: "Hypit 社媒爆款选题与脚本引擎",
-    summary: "针对小红书/B站/X 提炼高点击标题、黄金前3秒钩子与正文结构。",
-    cover: "/catalog/ans-pro-v1/code2prompt.webp",
-    badge: "🚀 在线即跑 · 增长文案",
-    href: "/workflows/hypit",
   },
   {
     slug: "easel",
