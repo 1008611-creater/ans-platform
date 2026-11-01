@@ -220,7 +220,7 @@ function startInspector() {
   renderer.toneMappingExposure = SETTINGS.exposure;
   renderer.debug.onShaderError = () => showError('模型着色失败。请刷新页面；若仍失败，请检查浏览器的图形支持。');
   renderer.domElement.tabIndex = 0;
-  renderer.domElement.setAttribute('aria-label', '小恐龙模型，可用鼠标或触摸旋转缩放，也可使用右侧视角按钮');
+  renderer.domElement.setAttribute('aria-label', '兔兔龙模型，可用鼠标或触摸旋转缩放，也可使用右侧视角按钮');
   stage.append(renderer.domElement);
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = false;

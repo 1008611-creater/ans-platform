@@ -79,11 +79,11 @@ export default async function BenefitsPage() {
 
         <details
           id="ans-dragon-sanctuary-showcase"
-          aria-label="3D 小恐龙展台与养成舱"
+          aria-label="3D 兔兔龙展台与养成舱"
           className="group rounded-3xl border border-border bg-card p-5 shadow-xs"
         >
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-foreground">
-            <span>🥚 {isEn ? "3D Dino Appearance & Wardrobe Pod" : "小恐龙外观与换装设置"}</span>
+            <span>🥚 {isEn ? "3D Dino Appearance & Wardrobe Pod" : "兔兔龙外观与换装设置"}</span>
             <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground group-open:hidden">
               ↓
             </span>

@@ -41,19 +41,19 @@ export const FOUNDER_PROJECT_GUIDES: readonly ProjectGuide[] = [{
   sourceUrl: "https://ans.cauai.fun/showcase/ans-3d/index.html",
   checkedAt: "2026-10-19",
   evidence: [
-    { label: "小恐龙 3D 互动展厅 / Live 3D Showcase", href: "https://ans.cauai.fun/showcase/ans-3d/index.html" },
+    { label: "兔兔龙 3D 互动展厅 / Live 3D Showcase", href: "https://ans.cauai.fun/showcase/ans-3d/index.html" },
     { label: "公开个人作品集 / Public Portfolio", href: "https://resume.cauai.fun/" },
   ],
   zh: {
-    audience: "想体验 ANS 产品全景导览，或希望在 3D 网站中加入小恐龙吉祥物微距互动、奇迹暖暖 3D 换装与鼠标交互的创作者。",
+    audience: "想体验 ANS 产品全景导览，或希望在 3D 网站中加入兔兔龙吉祥物微距互动、奇迹暖暖 3D 换装与鼠标交互的创作者。",
     difficulty: "打开网页即可直接用鼠标滚轮、悬停与点击交互体验。",
     access: "ANS 站内原生托管展示页，直接同源复用站内 3D 吉祥物模型。",
     cost: "浏览与 3D 实时交互完全免费，不消耗算力积分。",
-    result: "在一个沉浸式 3D 舞台中居中呈现 ANS 小恐龙吉祥物，随页面滚动切换章节视角，支持超微距眨眼脸红表情、3D 衣橱换装与鼠标摸头/投喂互动。",
+    result: "在一个沉浸式 3D 舞台中居中呈现 ANS 兔兔龙吉祥物，随页面滚动切换章节视角，支持超微距眨眼脸红表情、3D 衣橱换装与鼠标摸头/投喂互动。",
     steps: [
       { title: "滚动滚轮体验 3D 章节导览", body: "向下滚动页面，配合 3D 运镜依次浏览项目广场、简历工作室、Hub 社区与赛事活动四大核心章节。", href: "https://ans.cauai.fun/showcase/ans-3d/index.html" },
-      { title: "触发摄像机超微距表情互动", body: "小恐龙居中在 3D 舞台中央，正对镜头眨眼、脸红并发出碎碎念颜文字，可随时切换衣橱配饰。" },
-      { title: "摸头与投喂互动", body: "小恐龙支持目光跟随、脸红表情与蹦跳、转头等互动反应。" },
+      { title: "触发摄像机超微距表情互动", body: "兔兔龙居中在 3D 舞台中央，正对镜头眨眼、脸红并发出碎碎念颜文字，可随时切换衣橱配饰。" },
+      { title: "摸头与投喂互动", body: "兔兔龙支持目光跟随、脸红表情与蹦跳、转头等互动反应。" },
       { title: "浏览 ANS 产品入口", body: "点击章节中的链接或底部项目卡片，可进入 ANS 主站、项目广场、Hub 和 3D 个人网站工作室。", href: "https://ans.cauai.fun/market/resume-website" },
     ],
     cautions: ["复用 3D 个人网站工作流建站时，请将页面文案与作品链接替换为自己的真实素材。", "页面包含实时 3D 渲染，体验取决于设备性能；可使用暂停动效与静态入口，页面也会尊重系统的减弱动态效果偏好。"],
@@ -78,7 +78,7 @@ export const FOUNDER_PROJECT_GUIDES: readonly ProjectGuide[] = [{
   checkedAt: "2026-10-14",
   evidence: [
     { label: "公开作品集 / Public portfolio", href: "https://resume.cauai.fun/" },
-    { label: "ANS 小恐龙 3D 互动展厅 / ANS 3D Showcase", href: "https://ans.cauai.fun/showcase/ans-3d/index.html" },
+    { label: "ANS 兔兔龙 3D 互动展厅 / ANS 3D Showcase", href: "https://ans.cauai.fun/showcase/ans-3d/index.html" },
     { label: "视频作品档案 / Video archive", href: "https://resume.cauai.fun/portfolio/" },
   ],
   zh: {

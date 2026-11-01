@@ -52,11 +52,11 @@ export const REAL_CATALOG_PROJECTS = [
     "sourceUrl": "https://ans.cauai.fun/showcase/ans-3d/index.html",
     "content": {
       "zh": {
-        "title": "ANS × 小恐龙 3D 互动展示",
-        "summary": "ANS 吉祥物小恐龙 3D 展厅：支持滚轮伴飞运镜、超微距贴脸表情、奇迹暖暖 3D 换装与鼠标悬停/点击碎碎念交互。",
+        "title": "ANS × 兔兔龙 3D 互动展示",
+        "summary": "ANS 吉祥物兔兔龙 3D 展厅：支持滚轮伴飞运镜、超微距贴脸表情、奇迹暖暖 3D 换装与鼠标悬停/点击碎碎念交互。",
         "sample": "ans.cauai.fun/showcase/ans-3d/index.html",
-        "output": "小恐龙 3D 实时交互展厅、多章节滚轮运镜与线上产品亮点导览",
-        "inputs": "鼠标滚轮控制章节与视角，鼠标悬停或点击小恐龙触发摸头、换装与碎碎念互动",
+        "output": "兔兔龙 3D 实时交互展厅、多章节滚轮运镜与线上产品亮点导览",
+        "inputs": "鼠标滚轮控制章节与视角，鼠标悬停或点击兔兔龙触发摸头、换装与碎碎念互动",
         "decisions": "基于 WebGL 实时渲染舞台叠加吉祥物骨骼动画、GLSL 表情着色器与微距镜头调度",
         "model": "浏览与互动无需消耗 AI 算力。",
         "prompt": "在 3D 个人网站工作流中替换个人文案与 3D 资产。",
@@ -78,7 +78,7 @@ export const REAL_CATALOG_PROJECTS = [
     },
     "outerCoverUrl": "/catalog/ans-pro-v1/ans-3d-showcase.webp",
     "coverUrl": "/catalog/gitglow-v1/ans-3d-showcase.svg",
-    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面 · ANS 小恐龙"
+    "coverNote": "权威主风格（瑞士科技杂志轻3D屏幕风）× GitGlow 双封面 · ANS 兔兔龙"
   },
   {
     "slug": "liu-resume",
@@ -207,7 +207,7 @@ export const REAL_CATALOG_PROJECTS = [
     },
     "outerCoverUrl": "/catalog/ans-pro-v1/infinite-canvas.webp",
     "coverUrl": "/catalog/gitglow-v1/infinite-canvas.webp",
-    "coverNote": "ANS 漫画墨线解释图（独立开发者+小恐龙）× GitGlow 双封面"
+    "coverNote": "ANS 漫画墨线解释图（独立开发者+兔兔龙）× GitGlow 双封面"
   },
   {
     "slug": "ai-video-services",

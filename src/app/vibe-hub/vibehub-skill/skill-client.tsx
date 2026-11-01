@@ -408,7 +408,7 @@ export default function Skill({ initialScenario }: { initialScenario?: string })
 
         <div className="ans-brief-scenarios" role="group" aria-label={lang === "en" ? "Switch demo project" : "切换示范项目"}>
           {([
-            { id: "ans-3d-showcase", label: lang === "en" ? "🦖 Demo 1: ANS 3D Dino Showcase" : "🦖 示例 1：ANS × 小恐龙 3D 互动展厅" },
+            { id: "ans-3d-showcase", label: lang === "en" ? "🦖 Demo 1: ANS 3D Dino Showcase" : "🦖 示例 1：ANS × 兔兔龙 3D 互动展厅" },
             { id: "infinite-canvas", label: lang === "en" ? "🎨 Demo 2: CAUAI Infinite Canvas" : "🎨 示例 2：CAUAI 无限画布多模态工作台" },
             { id: "liu-resume", label: lang === "en" ? "📄 Demo 3: Interactive Portfolio Site" : "📄 示例 3：个人交互式简历主页" },
           ] as const).map(item => (

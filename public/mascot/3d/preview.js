@@ -396,7 +396,7 @@ function start() {
   renderer.toneMappingExposure = 0.98;
   renderer.debug.onShaderError = () => fail('模型着色未成功，请刷新预览重试。');
   renderer.domElement.tabIndex = 0;
-  renderer.domElement.setAttribute('aria-label', '小恐龙三维模型：拖动旋转，滚轮缩放。键盘方向键旋转，加减号缩放。');
+  renderer.domElement.setAttribute('aria-label', '兔兔龙三维模型：拖动旋转，滚轮缩放。键盘方向键旋转，加减号缩放。');
   stage.append(renderer.domElement);
   controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(0, 0.52, 0);
