@@ -10,6 +10,7 @@ import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Insets;
 import android.net.Uri;
@@ -25,6 +26,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.webkit.CookieManager;
 import android.webkit.MimeTypeMap;
 import android.webkit.RenderProcessGoneDetail;
@@ -55,6 +57,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * ANS 手机端外壳：一个全屏 WebView 加载 ans.cauai.fun。
@@ -64,12 +68,21 @@ import java.util.Set;
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
     private static final int STORAGE_PERMISSION_REQUEST = 1002;
-    private static final int NAVY = Color.parseColor("#09142F");
+    // 和网页 --background 一致；网页加载后以页面实际底色为准。
+    private static final int LIGHT_SURFACE = Color.parseColor("#F5F5F3");
+    private static final int DARK_SURFACE = Color.parseColor("#0B0B0A");
+    private static final Pattern RGB = Pattern.compile("rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)(?:,\\s*([\\d.]+))?\\)");
+    private static final String READ_BACKGROUND = "(function(){var b=document.body&&getComputedStyle(document.body).backgroundColor;"
+            + "if(!b||b==='rgba(0, 0, 0, 0)'||b==='transparent')b=getComputedStyle(document.documentElement).backgroundColor;return b;})()";
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
+    private FrameLayout root;
     private WebView webView;
     private View offlineView;
+    private TextView offlineTitle;
+    private TextView offlineBody;
+    private int surface;
     private boolean mainFrameFailed;
     private long lastBackPressAt;
 
@@ -82,14 +95,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(NAVY);
+        root = new FrameLayout(this);
         if (Build.VERSION.SDK_INT >= 35) {
             applyEdgeToEdgeInsets(root);
         }
 
         webView = new WebView(this);
-        webView.setBackgroundColor(NAVY);
         configureWebView(webView);
         root.addView(webView, matchParent());
 
@@ -98,6 +109,7 @@ public class MainActivity extends Activity {
         root.addView(offlineView, matchParent());
 
         setContentView(root);
+        applySurface(systemIsDark() ? DARK_SURFACE : LIGHT_SURFACE);
 
         if (savedInstanceState == null || webView.restoreState(savedInstanceState) == null) {
             webView.loadUrl(BuildConfig.HOME_URL);
@@ -156,7 +168,14 @@ public class MainActivity extends Activity {
             CookieManager.getInstance().flush();
             if (!mainFrameFailed) {
                 offlineView.setVisibility(View.GONE);
+                syncSurfaceWithPage();
             }
+        }
+
+        @Override
+        public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
+            // 站内跳转（pushState）不会触发 onPageFinished，换页后再读一次底色。
+            mainHandler.postDelayed(MainActivity.this::syncSurfaceWithPage, 300);
         }
 
         @Override
@@ -428,21 +447,20 @@ public class MainActivity extends Activity {
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setGravity(Gravity.CENTER);
-        layout.setBackgroundColor(NAVY);
         layout.setClickable(true);
         int pad = dp(32);
         layout.setPadding(pad, pad, pad, pad);
 
         TextView title = new TextView(this);
+        offlineTitle = title;
         title.setText(R.string.offline_title);
-        title.setTextColor(Color.WHITE);
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         title.setGravity(Gravity.CENTER);
         layout.addView(title);
 
         TextView body = new TextView(this);
+        offlineBody = body;
         body.setText(R.string.offline_body);
-        body.setTextColor(Color.parseColor("#B8C2D9"));
         body.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         body.setGravity(Gravity.CENTER);
         body.setPadding(0, dp(8), 0, dp(24));
@@ -461,6 +479,63 @@ public class MainActivity extends Activity {
         });
         layout.addView(retry);
         return layout;
+    }
+
+    // ---- 底色与状态栏 ---------------------------------------------------
+
+    private boolean systemIsDark() {
+        return (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    /** 读网页实际底色（站内可以单独切深浅色，不一定跟系统一致），同步给外壳。 */
+    private void syncSurfaceWithPage() {
+        if (webView == null || mainFrameFailed) return;
+        webView.evaluateJavascript(READ_BACKGROUND, value -> {
+            Integer color = parseCssColor(value);
+            if (color != null) applySurface(color);
+        });
+    }
+
+    static Integer parseCssColor(String value) {
+        if (value == null) return null;
+        Matcher m = RGB.matcher(value);
+        if (!m.find()) return null;
+        if (m.group(4) != null && Float.parseFloat(m.group(4)) < 0.5f) return null;
+        return Color.rgb(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3)));
+    }
+
+    static boolean isLight(int color) {
+        double luminance = (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255;
+        return luminance > 0.5;
+    }
+
+    @SuppressWarnings("deprecation")
+    private void applySurface(int color) {
+        if (color == surface && root.getBackground() != null) return;
+        surface = color;
+        boolean light = isLight(color);
+        root.setBackgroundColor(color);
+        webView.setBackgroundColor(color);
+        offlineView.setBackgroundColor(color);
+        offlineTitle.setTextColor(light ? Color.parseColor("#1A1A19") : Color.parseColor("#EDEDEB"));
+        offlineBody.setTextColor(light ? Color.parseColor("#6B6B68") : Color.parseColor("#A3A3A0"));
+        // Android 15 起系统栏透明，露出的是 root 底色；更早的版本要单独设颜色。
+        if (Build.VERSION.SDK_INT < 35) {
+            getWindow().setStatusBarColor(color);
+            getWindow().setNavigationBarColor(color);
+        }
+        if (Build.VERSION.SDK_INT >= 30) {
+            WindowInsetsController controller = getWindow().getInsetsController();
+            if (controller != null) {
+                int mask = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
+                controller.setSystemBarsAppearance(light ? mask : 0, mask);
+            }
+        } else if (Build.VERSION.SDK_INT >= 23) {
+            View decor = getWindow().getDecorView();
+            int flags = decor.getSystemUiVisibility() & ~(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+            if (light) flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | (Build.VERSION.SDK_INT >= 26 ? View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR : 0);
+            decor.setSystemUiVisibility(flags);
+        }
     }
 
     // ---- 版本提示 -------------------------------------------------------
@@ -541,6 +616,8 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         webView.onResume();
+        // 系统或站内切过深浅色，回到 App 时对一下底色。
+        syncSurfaceWithPage();
     }
 
     @Override

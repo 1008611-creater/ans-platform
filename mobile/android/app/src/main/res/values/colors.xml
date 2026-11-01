@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 只给应用图标底色用。 -->
     <color name="ans_navy">#09142F</color>
+    <!-- 外壳底色跟网页一致：浅色 #f5f5f3，暗色见 values-night。 -->
+    <color name="ans_surface">#F5F5F3</color>
 </resources>
