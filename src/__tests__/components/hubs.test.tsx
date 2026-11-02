@@ -54,13 +54,14 @@ it("omits project cards after a publication read fails and does not expose inter
   expect(screen.getByRole("status")).toHaveTextContent("catalogUnavailable");
   expect(screen.queryAllByTestId("real-project-cover")).toHaveLength(0);
   expect(document.body.textContent).not.toContain("private database connection");
-  expect(screen.getByRole("link", { name: "resources.hypit.title" })).toHaveAttribute("href", "/workflows/hypit");
+  expect(screen.queryByRole("link", { name: /workflows\/(hypit|toonflow)/ })).toBeNull();
+  expect(document.querySelector('a[href="/workflows/hypit"], a[href="/workflows/toonflow"]')).toBeNull();
 });
 it("renders exact published-project counts without adding a withdrawn reference", async () => {
   const hub = getHub("aigc")!;
   const published = CATALOG_PROJECTS.filter(project => project.slug !== "comfyui");
   render(await HubDirectory({ hubs: [hub], published, publishedRecipeIds: [] }));
-  expect(screen.getByText(`summary.projects:${hub.projectSlugs.length - 1}summary.separatorsummary.resources:2`)).toBeInTheDocument();
+  expect(screen.getByText(`summary.projects:${hub.projectSlugs.length - 1}`)).toBeInTheDocument();
 });
 it("rejects an invented university route", async () => {
   await expect(HubDetailPage({ params: Promise.resolve({ slug: "made-up-university" }) })).rejects.toThrow("NOT_FOUND");

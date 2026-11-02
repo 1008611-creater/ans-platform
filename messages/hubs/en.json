@@ -97,14 +97,6 @@
     "vibehub": {
       "title": "Open VibeHub",
       "description": "Browse existing courses, concepts, learning paths, practices and skill methods."
-    },
-    "aigc": {
-      "title": "AIGC Workspace",
-      "description": "Create stories and videos. Review models and pricing before use."
-    },
-    "hypit": {
-      "title": "Hypit creation workspace",
-      "description": "See official demos and the workspace entry. Actual tools depend on account permissions shown on the page."
     }
   },
   "recipes": {
