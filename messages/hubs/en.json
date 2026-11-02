@@ -42,12 +42,14 @@
   "projectsTitle": "Projects and open-source references",
   "projectsNote": "Want to learn or deploy a project? Open it for instructions. External services have their own accounts and pricing. Open-source references must be used according to their documentation.",
   "noProjects": "No related projects yet.",
+  "emptyHub": "This Hub has nothing in it yet.",
   "recipeCost": "Confirmed execution costs {points} points. See the preparation page for editing and saving.",
   "prepareWorkflow": "Prepare my project",
-  "counts": {
-    "workflows": "Runnable",
-    "projects": "Projects",
-    "resources": "Entries"
+  "summary": {
+    "workflows": "{count, plural, one {# ready-to-use workflow} other {# ready-to-use workflows}}",
+    "projects": "{count, plural, one {# reference project} other {# reference projects}}",
+    "resources": "{count, plural, one {# tool} other {# tools}}",
+    "separator": ", "
   },
   "types": {
     "university": "University Hub",

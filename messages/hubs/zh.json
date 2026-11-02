@@ -42,12 +42,14 @@
   "projectsTitle": "项目与开源参考",
   "projectsNote": "想看做法或自己部署？打开项目查看。外部工具的账号和费用以原站为准，开源参考需按项目说明自行使用。",
   "noProjects": "还没有关联项目。",
+  "emptyHub": "这个 Hub 还没有内容。",
   "recipeCost": "确认运行消耗 {points} 积分。",
   "prepareWorkflow": "准备我的项目",
-  "counts": {
-    "workflows": "可运行",
-    "projects": "项目",
-    "resources": "入口"
+  "summary": {
+    "workflows": "{count} 个能直接用的工作流",
+    "projects": "{count} 个参考项目",
+    "resources": "{count} 个工具入口",
+    "separator": "，"
   },
   "types": {
     "university": "高校 Hub",

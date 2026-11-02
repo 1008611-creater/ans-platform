@@ -27,6 +27,15 @@ export function hubProjects(hub: HubDefinition, published: readonly CatalogProje
   const bySlug = new Map(published.map(project => [project.slug, project]));
   return hub.projectSlugs.flatMap(slug => { const project = bySlug.get(slug); return project ? [project] : []; });
 }
+/**
+ * A Hub whose only content is one entry is a detour: send visitors straight to
+ * that entry. Member workflows can still be attached later; once a Hub has any,
+ * pass their count and its own page comes back.
+ */
+export function hubShortcut(hub: HubDefinition, memberWorkflowCount: number | null | undefined): string | null {
+  if (memberWorkflowCount || hub.projectSlugs.length || hub.workflowRecipeIds.length || hub.resources.length !== 1) return null;
+  return hub.resources[0].href;
+}
 export function getWorkflowHubMembership(workflowId: CatalogWorkflowId): HubSlug[] {
   return HUBS.filter(hub => hub.workflowRecipeIds.includes(workflowId)).map(hub => hub.slug);
 }

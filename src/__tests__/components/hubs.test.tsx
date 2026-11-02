@@ -3,6 +3,7 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { HubDirectory } from "@/components/hubs/hub-directory";
 import HubDetailPage from "@/app/hubs/[slug]/page";
 import { HUBS, getHub } from "@/domain/hubs/registry";
+import { resetHubReadCache } from "@/server/hubs/public-reads";
 import { CATALOG_PROJECTS } from "@/domain/catalog/projects";
 
 const mocks = vi.hoisted(() => ({ members: vi.fn(), list: vi.fn(), platform: vi.fn(), market: vi.fn() }));
@@ -13,26 +14,35 @@ vi.mock("@/server/marketplace/workflows", () => ({ publishedRecipeMarketPath: mo
 vi.mock("@/server/integrations/metered-cost", () => ({ unifiedModelBilling: () => process.env.ANS_UNIFIED_POINTS_ENABLED === "1" }));
 vi.mock("@/server/catalog/service", () => ({ listPublishedCatalog: mocks.list }));
 vi.mock("next/image", () => ({ default: ({ alt }: { alt: string }) => <span data-testid="real-project-cover">{alt}</span> }));
-vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NOT_FOUND"); } }));
+vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NOT_FOUND"); }, redirect: (href: string) => { throw new Error(`REDIRECT:${href}`); } }));
 vi.mock("next-intl/server", () => ({ getLocale: async () => "zh", getTranslations: async () => (key: string, values?: Record<string, string | number>) => values ? `${key}:${Object.values(values).join(",")}` : key }));
-beforeEach(() => { mocks.members.mockReset(); mocks.members.mockResolvedValue({items:[],total:0,nextCursor:null}); vi.unstubAllEnvs(); mocks.platform.mockReset(); mocks.platform.mockResolvedValue(null); mocks.market.mockReset(); mocks.market.mockResolvedValue(null); mocks.list.mockReset(); mocks.list.mockResolvedValue(CATALOG_PROJECTS); });
+beforeEach(() => { resetHubReadCache(); mocks.members.mockReset(); mocks.members.mockResolvedValue({items:[],total:0,nextCursor:null}); vi.unstubAllEnvs(); mocks.platform.mockReset(); mocks.platform.mockResolvedValue(null); mocks.market.mockReset(); mocks.market.mockResolvedValue(null); mocks.list.mockReset(); mocks.list.mockResolvedValue(CATALOG_PROJECTS); });
 afterEach(cleanup);
 
-it("keeps unknown project counts unknown while showing real Hub links", async () => {
+it("leaves unknown counts out and links single-entry Hubs straight to their entry", async () => {
   render(await HubDirectory({ hubs: HUBS, published: null, publishedRecipeIds: [] }));
-  expect(screen.getAllByText("unavailable")).toHaveLength(4);
-  expect(screen.getAllByRole("link").map(link => link.getAttribute("href"))).toEqual(["/hubs/cauhub", "/hubs/vibehub", "/hubs/aigc", "/hubs/full-stack"]);
+  expect(screen.queryByText(/unavailable|summary\.projects/)).toBeNull();
+  expect(screen.getAllByRole("link").map(link => link.getAttribute("href"))).toEqual(["/competitions/agrihackathon", "/vibe-hub", "/hubs/aigc", "/hubs/full-stack"]);
 });
-it("keeps CAU explicit and does not claim generic runnable projects", async () => {
+it("sends a Hub whose only content is one entry straight to that entry", async () => {
+  await expect(HubDetailPage({ params: Promise.resolve({ slug: "cauhub" }) })).rejects.toThrow("REDIRECT:/competitions/agrihackathon");
+  await expect(HubDetailPage({ params: Promise.resolve({ slug: "vibehub" }) })).rejects.toThrow("REDIRECT:/vibe-hub");
+  expect(mocks.list).not.toHaveBeenCalled();
+  expect(mocks.platform).not.toHaveBeenCalled();
+});
+it("keeps a single-entry Hub page once it has member workflows, without empty sections", async () => {
+  mocks.members.mockResolvedValue({ items: [{ id: "member-1" }], total: 1, nextCursor: null });
   render(await HubDetailPage({ params: Promise.resolve({ slug: "cauhub" }) }));
-  expect(screen.getByText("noOfficialWorkflows")).toBeVisible();
-  expect(screen.getByText("noProjects")).toBeVisible();
+  expect(screen.getByText("items.cauhub.description")).toBeVisible();
+  expect(screen.queryByText("noOfficialWorkflows")).toBeNull();
+  expect(screen.queryByText("noProjects")).toBeNull();
   expect(screen.getByRole("link", { name: "resources.agrihackathon.title" })).toHaveAttribute("href", "/competitions/agrihackathon");
   expect(screen.queryByRole("link", { name: /prepareWorkflow/ })).toBeNull();
 });
 it("omits executable claims and generic preparation when the real registration is absent", async () => {
   render(await HubDetailPage({ params: Promise.resolve({ slug: "full-stack" }) }));
-  expect(screen.getByText("noOfficialWorkflows")).toBeVisible();
+  expect(screen.queryByText("noOfficialWorkflows")).toBeNull();
+  expect(screen.queryByRole("heading", { name: "officialWorkflowsTitle" })).toBeNull();
   expect(screen.queryByRole("link", { name: "prepareWorkflow" })).toBeNull();
   expect(screen.queryByRole("link", { name: "openWorkflow" })).toBeNull();
   expect(mocks.list).toHaveBeenCalledExactlyOnceWith();
@@ -50,8 +60,7 @@ it("renders exact published-project counts without adding a withdrawn reference"
   const hub = getHub("aigc")!;
   const published = CATALOG_PROJECTS.filter(project => project.slug !== "comfyui");
   render(await HubDirectory({ hubs: [hub], published, publishedRecipeIds: [] }));
-  const projects = screen.getByText("counts.projects").parentElement!;
-  expect(within(projects).getByText(String(hub.projectSlugs.length - 1))).toBeInTheDocument();
+  expect(screen.getByText(`summary.projects:${hub.projectSlugs.length - 1}summary.separatorsummary.resources:2`)).toBeInTheDocument();
 });
 it("rejects an invented university route", async () => {
   await expect(HubDetailPage({ params: Promise.resolve({ slug: "made-up-university" }) })).rejects.toThrow("NOT_FOUND");
@@ -74,7 +83,8 @@ it("does not claim a withdrawn market card exists or add a generic recipe to CAU
   render(await HubDetailPage({ params: Promise.resolve({ slug: "full-stack" }) }));
   expect(screen.queryByRole("link", { name: "openWorkflow" })).toBeNull();
   expect(screen.queryByRole("link", { name: "viewMarketCard" })).toBeNull();
-  cleanup(); mocks.platform.mockClear();
+  cleanup(); mocks.platform.mockClear(); resetHubReadCache();
+  mocks.members.mockResolvedValue({ items: [{ id: "member-1" }], total: 1, nextCursor: null });
   render(await HubDetailPage({ params: Promise.resolve({ slug: "cauhub" }) }));
   expect(mocks.platform).not.toHaveBeenCalled();
   expect(screen.queryByRole("link", { name: "openWorkflow" })).toBeNull();
@@ -103,15 +113,16 @@ it("keeps attested recipe information and references without an execution shortc
 });
 it("shows failed recipe counts as unknown only for Hubs which actually configure them", async () => {
   render(await HubDirectory({ hubs: HUBS, published: [], publishedRecipeIds: null }));
-  expect(screen.getAllByText("unavailable")).toHaveLength(1);
-  const full = screen.getByRole("link", { name: "items.full-stack.name" }).closest("article")!;
-  expect(within(full).getByText("unavailable")).toBeVisible();
+  expect(screen.queryByText(/summary\.workflows/)).toBeNull();
+  expect(screen.queryByText(/^0$/)).toBeNull();
 });
 
 it("adds approved member counts and never converts failed availability to zero", async () => {
  render(await HubDirectory({hubs:HUBS,published:[],publishedRecipeIds:[],memberCounts:{cauhub:3,vibehub:0,aigc:null,"full-stack":2}}));
- const cau=screen.getByRole("link",{name:"items.cauhub.name"}).closest("article")!;
- expect(within(cau).getByText("3")).toBeVisible();
+ const cau=screen.getByRole("link",{name:"items.cauhub.name"});
+ expect(cau).toHaveAttribute("href","/hubs/cauhub");
+ expect(within(cau.closest("article")!).getByText("summary.workflows:3summary.separatorsummary.resources:1")).toBeVisible();
  const aigc=screen.getByRole("link",{name:"items.aigc.name"}).closest("article")!;
- expect(within(aigc).getByText("unavailable")).toBeVisible();
+ expect(within(aigc).queryByText(/summary\.workflows/)).toBeNull();
+ expect(screen.getByRole("link",{name:"items.vibehub.name"})).toHaveAttribute("href","/vibe-hub");
 });
