@@ -202,13 +202,13 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     window.dispatchEvent(new CustomEvent("ans:dino-activate"));
     window.dispatchEvent(new CustomEvent("ans:enter-dino-macro"));
   }
-  function onTriggerClick() {
+  function onTriggerClick(now: number) {
     if (pressFired.current) { pressFired.current = false; return; }
     setMenuOpen(false);
     // 已经在互动舞台里：点兔兔龙是逗它玩，交给舞台处理
     if (document.body.classList.contains("ans-dino-interactive-mode")) { window.dispatchEvent(new CustomEvent("ans:dino-stage-click")); return; }
     // 第一下立刻开关 Agent，不为了等连点而延迟；连点到第三下再收起面板、进舞台
-    const now = performance.now(), state = clicks.current;
+    const state = clicks.current;
     state.count = now - state.last <= RAPID_CLICK_MS ? state.count + 1 : 1;
     state.last = now;
     if (state.count >= STAGE_CLICKS) { enterStage(); return; }
@@ -395,7 +395,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
       }} onClick={event => {
         // 自己决定开关：Radix 的切换会让单击和连点抢同一下点击
         event.preventDefault();
-        onTriggerClick();
+        onTriggerClick(event.timeStamp);
       }}><DinoAvatar actor={actor} voicePolicy={voiceOffer} phase={avatarPhase} open={open} speech={speech} onVoiceStatus={setVoiceStatus} /><span className="ans-dino-pip" aria-hidden="true" /></button></PopoverTrigger>
       <span id={triggerHintId} className="sr-only">{ui("dinoTriggerHint")}</span>
       {menuOpen && <DinoQuickMenu
