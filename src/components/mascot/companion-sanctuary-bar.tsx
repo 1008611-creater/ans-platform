@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -116,9 +116,15 @@ const BLIND_BOX_COIN_RANGE = {
 
 export function CompanionQuestPin({
   dialogOpen = false,
+  bubbles = true,
+  extras,
   onTriggerSpeech,
 }: {
   dialogOpen?: boolean;
+  /** 用户在快捷设置里关了气泡提示，就不再冒气泡和「!」 */
+  bubbles?: boolean;
+  /** 从 Agent 面板搬过来的其余功能，只在互动舞台里出现 */
+  extras?: ReactNode;
   onTriggerSpeech?: (text: string) => void;
 }) {
   const locale = useLocale();
@@ -132,6 +138,9 @@ export function CompanionQuestPin({
   const [alertDimmed, setAlertDimmed] = useState(false);
   const [activeMood, setActiveMood] = useState<ShowcaseMoodPreset>(() => SHOWCASE_MOOD_PRESETS.happy_smile);
   const [customSubText, setCustomSubText] = useState<string | null>(null);
+  /** 点一下气泡就收起，等兔兔龙下一次开口再出来 */
+  const [bubbleDismissed, setBubbleDismissed] = useState(false);
+  useEffect(() => { setBubbleDismissed(false); }, [activeMood, customSubText]);
   const [macroActive, setMacroActive] = useState(false);
   const [sanctuaryModal, setSanctuaryModal] = useState<"none" | "wardrobe" | "adopt">("none");
   const [wardrobeSlot, setWardrobeSlot] = useState<WardrobeSlot>("headwear");
@@ -870,7 +879,7 @@ export function CompanionQuestPin({
       )}
 
       {/* 1:1 Resume Website Speech & Alert Bubble (#ans-dino-live-bubble) */}
-      {!dialogOpen && sanctuaryModal === "none" && (
+      {bubbles && !bubbleDismissed && !dialogOpen && sanctuaryModal === "none" && (
         <button
           type="button"
           id="ans-dino-live-bubble"
@@ -878,16 +887,15 @@ export function CompanionQuestPin({
           data-bubble-state={alertMode ? "alert" : "expanded"}
           data-idle-dim={alertDimmed ? "true" : "false"}
           className={`is-visible border-0 bg-transparent p-0 text-start ${alertMode ? "is-alert" : ""} ${alertMode && alertDimmed ? "is-alert-dimmed" : ""}`}
-          aria-label={ui("bar.hudHoverToInteractClick")}
-          onPointerEnter={() => triggerHoverReaction(true)}
-          onPointerLeave={() => triggerHoverReaction(false)}
+          aria-label={ui("dismissBubble")}
           onClick={e => {
             e.stopPropagation();
-            triggerStageClick();
+            lastUserInteractRef.current = performance.now();
+            setBubbleDismissed(true);
           }}
         >
           {alertMode ? (
-            <div className="dino-alert-pin" title={ui("bar.hudHoverToInteractClick")}>
+            <div className="dino-alert-pin">
               <span className="dino-alert-bang">!</span>
               <span className="dino-alert-ring" />
               <span className="dino-alert-ring2" />
@@ -1026,6 +1034,20 @@ export function CompanionQuestPin({
           </button>
         </div>
       </div>
+
+      {extras && (
+        <aside
+          id="ans-dino-stage-extras"
+          aria-label={ui("stageMore")}
+          className={macroActive && sanctuaryModal === "none" ? "is-active" : ""}
+          aria-hidden={!(macroActive && sanctuaryModal === "none")}
+          inert={!(macroActive && sanctuaryModal === "none") ? true : undefined}
+          onClick={e => e.stopPropagation()}
+        >
+          <h2>{ui("stageMore")}</h2>
+          {extras}
+        </aside>
+      )}
 
       {/* 1:1 Right-Aligned 3D Nikki Wardrobe Drawer (#ans-sanctuary-wardrobe-modal) with Left-Center 3D Podium */}
       <div

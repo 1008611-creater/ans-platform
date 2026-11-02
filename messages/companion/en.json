@@ -27,7 +27,7 @@
   "defaultsRestored": "Defaults restored",
   "preferencesSaveAutomatically": "Preferences save automatically",
   "resetDefaults": "Reset defaults",
-  "whatWouldYouLikeToMakeTell": "Enter your request directly, or click a quick action above.",
+  "whatWouldYouLikeToMakeTell": "Tell Agent what you want to make. It can point the way or do it for you.",
   "byYOURSIDE": "ANS Agent",
   "openSiteSettings": "Open site settings",
   "currentTask": "Current task",
@@ -73,7 +73,7 @@
   "reply7": "Give your idea a concrete goal. Start small and record the first step on the project page.",
   "reply8": "Want to generate web code, create an AI video, or start a competition project? Send a command or switch to Work Mode.",
   "reply9": "You can ask me to claim daily check-in points, scaffold a project, search market tools, or switch to Work Mode.",
-  "agentGreeting": "Enter your request directly, or click a quick action above.",
+  "agentGreeting": "Tell Agent what you want to make. It can point the way or do it for you.",
   "agentSpokenReady": "Result is ready in the conversation window.",
   "newConversation": "Start a new conversation",
   "conversationMode": "Conversation mode",
@@ -380,5 +380,12 @@
     "defaultTrainer": "Future ANS creator"
   },
   "guideWorkMode": "🛠️ Work Mode ↗",
-  "agentModelUnavailable": "Unavailable"
+  "agentModelUnavailable": "Unavailable",
+  "dinoQuickMenu": "Dino quick settings",
+  "speechBubbles": "Speech bubbles",
+  "enterStage": "Open the play stage",
+  "dismissBubble": "Dismiss bubble",
+  "stageMore": "More",
+  "dinoTriggerHint": "Click to open Agent. Click three times quickly for the play stage. Long-press or right-click for quick settings.",
+  "speechBubblesHint": "Click a bubble to dismiss it. Turn off to stop bubbles."
 }

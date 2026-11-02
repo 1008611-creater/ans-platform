@@ -7,7 +7,7 @@ import { createPortal } from "react-dom";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { ArrowUp, ArrowDown, ArrowUpRight, Square, X, Settings, Volume2, VolumeX, Sparkles, FolderPlus, Clapperboard, Coins, Users, Compass, BookOpen, RotateCcw, Maximize2, MoveUpLeft } from "lucide-react";
+import { ArrowUp, ArrowDown, ArrowUpRight, Square, X, Sparkles, FolderPlus, Clapperboard, Coins, Users, Compass, BookOpen, RotateCcw, Maximize2, MoveUpLeft } from "lucide-react";
 import { DinoAvatar, type SpeechRequest } from "./dino-avatar";
 import { useDinoTask } from "./dino-task-context";
 import { guideReply, pageActions, pagePrompts, type GuideAction } from "./guide-actions";
@@ -27,6 +27,7 @@ import { useBadgeDodge } from "./use-badge-dodge";
 import { getFormSnapshot, subscribeMascotStore, writeForm } from "@/lib/mascot/client-store";
 import { CompanionQuestPin, CompanionSanctuaryBar } from "./companion-sanctuary-bar";
 import { MascotStageDeck } from "./mascot-stage-deck";
+import { DinoQuickMenu } from "./dino-quick-menu";
 import { DinoSoulToolbar } from "./dino-soul-plugins";
 import { buildSoulTurnAugmentation } from "@/domain/mascot/soul-plugins";
 import { getSoulPluginsSnapshot, settleSoulTurn } from "@/lib/mascot/soul-store";
@@ -37,6 +38,8 @@ import "./companion.css";
 const CompanionReply = lazy(() => import("./companion-reply").then(module => ({ default: module.CompanionReply })));
 const icons = { project: FolderPlus, video: Clapperboard, credits: Coins, team: Users, discover: Compass, learn: BookOpen };
 type Mode = "guide" | "agent";
+/** 连点这么多下（每下间隔不超过 RAPID_CLICK_MS）进互动舞台；更少就打开 Agent 对话。 */
+const STAGE_CLICKS = 3, RAPID_CLICK_MS = 280, LONG_PRESS_MS = 550, LONG_PRESS_SLOP_PX = 10;
 type Thread = { draft: string; messages: CompanionMessage[]; recommendations: GuideAction[] | null };
 const freshThread = (): Thread => ({ draft: "", messages: [], recommendations: null });
 export function DinoGuide() {
@@ -65,7 +68,7 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
   const [speech, setSpeech] = useState<SpeechRequest | null>(null), [voiceStatus, setVoiceStatus] = useState("idle");
   const sequence = useRef(0), welcomed = useRef(false), focusTarget = useRef<string | null>(null), returnFocusId = useRef<string | null>(null), list = useRef<HTMLDivElement>(null), lastAgentInput = useRef("");
   const scrollState = useRef<Record<Mode, { top: number; follow: boolean; lastId: number | undefined }>>({ agent: { top: 0, follow: true, lastId: undefined }, guide: { top: 0, follow: true, lastId: undefined } });
-  const titleId = useId(), taskId = useId(), composer = useRef<HTMLTextAreaElement>(null);
+  const titleId = useId(), taskId = useId(), triggerHintId = useId(), composer = useRef<HTMLTextAreaElement>(null);
   const ime = useImeEnterGuard();
   const sheet = useCompanionSheet(open, () => setOpen(false));
   const badge = useRef<HTMLDivElement>(null);
@@ -188,15 +191,34 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     const host = window as unknown as Record<symbol, { dispose?: () => void } | undefined>;
     host[Symbol.for("ans.mascot.companion.v1")]?.dispose?.();
   }, []);
-  // 真浏览器里点击小恐龙本体是"进入近景舞台"（见下方 onClick），面板只能由站内事件打开；
-  // 因此按钮的无障碍名称必须跟着这个行为走，而不是永远说"叫小恐龙帮我找方向"。
-  // 用 state（而不是直接读全局）是为了避免 SSR 与首帧客户端渲染的名称不一致导致 hydration 警告。
-  const [stageClickOwnsTrigger, setStageClickOwnsTrigger] = useState(false);
-  useEffect(() => {
-    setStageClickOwnsTrigger(typeof WebGLRenderingContext !== "undefined");
-  }, []);
+  // 单击打开 Agent；快速连点进互动舞台；长按（或右键）弹快捷设置。
+  const [menuOpen, setMenuOpen] = useState(false);
+  const clicks = useRef({ count: 0, last: Number.NEGATIVE_INFINITY });
+  const press = useRef<{ timer: number; x: number; y: number } | null>(null), pressFired = useRef(false);
+  useEffect(() => () => { if (press.current) window.clearTimeout(press.current.timer); }, []);
+  function enterStage() {
+    clicks.current.count = 0;
+    setMenuOpen(false);
+    window.dispatchEvent(new CustomEvent("ans:dino-activate"));
+    window.dispatchEvent(new CustomEvent("ans:enter-dino-macro"));
+  }
+  function onTriggerClick() {
+    if (pressFired.current) { pressFired.current = false; return; }
+    setMenuOpen(false);
+    // 已经在互动舞台里：点兔兔龙是逗它玩，交给舞台处理
+    if (document.body.classList.contains("ans-dino-interactive-mode")) { window.dispatchEvent(new CustomEvent("ans:dino-stage-click")); return; }
+    // 第一下立刻开关 Agent，不为了等连点而延迟；连点到第三下再收起面板、进舞台
+    const now = performance.now(), state = clicks.current;
+    state.count = now - state.last <= RAPID_CLICK_MS ? state.count + 1 : 1;
+    state.last = now;
+    if (state.count >= STAGE_CLICKS) { enterStage(); return; }
+    if (state.count === 1) changeOpen(!open);
+  }
+  function cancelPress() { if (press.current) { window.clearTimeout(press.current.timer); press.current = null; } }
+  function openMenu() { cancelPress(); clicks.current.count = 0; setMenuOpen(true); }
   function changeOpen(value: boolean) {
     if (value) {
+      setMenuOpen(false);
       document.body.classList.remove("ans-dino-interactive-mode", "ans-sanctuary-open");
       panelSize.prepare();
     } else {
@@ -217,6 +239,8 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
         updateThread(mode, current => ({ ...current, draft: incomingDraft }));
       }
       setRequestedTab(targetTab);
+      // 快捷指令、衣橱等都搬进了互动舞台，只有聊天留在面板里
+      if (targetTab !== "none") { enterStage(); return; }
       changeOpen(true);
       window.dispatchEvent(new CustomEvent("ans:dino-activate"));
     }
@@ -281,7 +305,12 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     node.scrollTo({ top: node.scrollHeight, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     setShowLatest(false); setUnread(false);
   }
-  function settings() { changeOpen(false); requestAnimationFrame(openSiteSettings); }
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  function toggleForm() {
+    const next = mascotForm === "2d" ? "3d" : "2d";
+    writeForm(next);
+    if (next === "3d") window.dispatchEvent(new CustomEvent("ans:dino-activate"));
+  }
   function toggleVoice() {
     const voice = !prefs.voice; setSpeech(null); setVoiceStatus("idle"); updateSitePreferences({ voice });
     if (voice) window.dispatchEvent(new CustomEvent("ans:dino-activate"));
@@ -301,36 +330,87 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
     window.location.href = "/workspace" + (q ? `?prompt=${encodeURIComponent(q)}` : "");
   }
   const speaking = voiceStatus === "playing", loading = voiceStatus === "loading";
-  const voiceLabel = ui(prefs.voice ? "disableDinoVoice" : "enableDinoVoice");
   const voiceHint = !actor ? ui("voiceSignIn") : prefs.voice && !voiceOffer ? ui("voiceUnavailable") : !prefs.voice ? ui("voiceOff") : voiceStatus === "error" ? ui("voiceUnavailable") : loading ? ui("preparingVoice") : speaking ? ui("speaking") : ui("voiceFree");
   const avatarPhase = agent.busy ? "working" : agent.phase === "error" ? "attention" : agent.phase === "confirm" ? "confirm" : agent.phase === "complete" ? "review" : task?.phase ?? "idle";
   return <>
     {sheet.active && createPortal(<div className="ans-companion-scrim" aria-hidden="true" />, document.body)}
-    <CompanionQuestPin dialogOpen={open} onTriggerSpeech={text => setSpeech({ id: ++sequence.current, text })} />
+    <CompanionQuestPin dialogOpen={open} bubbles={prefs.bubbles} onTriggerSpeech={text => setSpeech({ id: ++sequence.current, text })} extras={<>
+      <CompanionSanctuaryBar
+        requestedTab={requestedTab}
+        currentDraft={draft}
+        onRequestedTabHandled={() => setRequestedTab(null)}
+        onSpeak={text => setSpeech({ id: ++sequence.current, text })}
+        onSwitchToWorkMode={switchToWorkMode}
+      />
+      <MascotStageDeck />
+      <DinoSoulToolbar
+        onInjectAssistantMessage={(text, speakAloud) => {
+          scrollState.current[mode].follow = true;
+          updateThread(mode, current => ({
+            ...current,
+            messages: [...current.messages, { id: ++sequence.current, role: "guide" as const, text }].slice(-40),
+          }));
+          if (speakAloud || prefs.voice) {
+            setSpeech({ id: ++sequence.current, text });
+          }
+        }}
+        onSendUserSticker={sticker => {
+          scrollState.current[mode].follow = true;
+          const userLine = `${sticker.kaomoji} 【${sticker.title}】`;
+          const dinoLine = `收到你的斗图「${sticker.badge}」！兔兔龙也回你一张：(✧ω✧)✨ 贴贴充能～`;
+          updateThread(mode, current => ({
+            ...current,
+            messages: [
+              ...current.messages,
+              { id: ++sequence.current, role: "user" as const, text: userLine },
+              { id: ++sequence.current, role: "guide" as const, text: dinoLine },
+            ].slice(-40),
+          }));
+          settleSoulTurn(userLine, dinoLine, "user");
+        }}
+        onSpeakText={text => setSpeech({ id: ++sequence.current, text })}
+      />
+    </>} />
     <div ref={badge} className="ans-dino-guide ans-companion-v2" data-companion-owner="react" data-open={open} data-keyboard={panelSize.keyboard} data-task-state={task?.phase ?? "idle"}>
-    <Popover open={open} onOpenChange={nextOpen => {
-      // 只拦"打开"：关闭（Escape / 点外部）必须放行。
-      if (nextOpen && !sheet.enabled && typeof WebGLRenderingContext !== "undefined" && mascotForm !== "2d") {
-        return;
-      }
-      changeOpen(nextOpen);
-    }}>
-      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : stageClickOwnsTrigger && !sheet.enabled && mascotForm !== "2d" ? "openStage" : "open")} className="ans-dino-trigger" onPointerEnter={() => {
+    <Popover open={open} onOpenChange={changeOpen}>
+      <PopoverTrigger asChild><button type="button" aria-label={t(open ? "close" : task ? "taskOpen" : "open")} aria-describedby={triggerHintId} aria-haspopup="dialog" className="ans-dino-trigger" onPointerEnter={() => {
         if (typeof WebGLRenderingContext !== "undefined" && !open && mascotForm !== "2d") {
           window.dispatchEvent(new CustomEvent("ans:dino-stage-hover", { detail: { hover: true } }));
         }
       }} onPointerLeave={() => {
+        cancelPress();
         if (typeof WebGLRenderingContext !== "undefined" && !open && mascotForm !== "2d") {
           window.dispatchEvent(new CustomEvent("ans:dino-stage-hover", { detail: { hover: false } }));
         }
+      }} onPointerDown={event => {
+        if (event.button > 0) return;
+        cancelPress();
+        pressFired.current = false;
+        press.current = { x: event.clientX, y: event.clientY, timer: window.setTimeout(() => { pressFired.current = true; openMenu(); navigator.vibrate?.(10); }, LONG_PRESS_MS) };
+      }} onPointerMove={event => {
+        if (press.current && Math.hypot(event.clientX - press.current.x, event.clientY - press.current.y) > LONG_PRESS_SLOP_PX) cancelPress();
+      }} onPointerUp={cancelPress} onPointerCancel={cancelPress} onContextMenu={event => {
+        event.preventDefault();
+        openMenu();
       }} onClick={event => {
-        // 手机上圆章直接拉出底部抽屉，不进近景舞台。
-        if (!sheet.enabled && typeof WebGLRenderingContext !== "undefined" && !open && mascotForm !== "2d") {
-          event.preventDefault();
-          event.stopPropagation();
-          window.dispatchEvent(new CustomEvent("ans:dino-stage-click"));
-        }
+        // 自己决定开关：Radix 的切换会让单击和连点抢同一下点击
+        event.preventDefault();
+        onTriggerClick();
       }}><DinoAvatar actor={actor} voicePolicy={voiceOffer} phase={avatarPhase} open={open} speech={speech} onVoiceStatus={setVoiceStatus} /><span className="ans-dino-pip" aria-hidden="true" /></button></PopoverTrigger>
+      <span id={triggerHintId} className="sr-only">{ui("dinoTriggerHint")}</span>
+      {menuOpen && <DinoQuickMenu
+        bubbles={prefs.bubbles}
+        voice={prefs.voice}
+        voiceDisabled={!actor}
+        voiceHint={voiceHint}
+        formLabel={mascotLabel}
+        onToggleBubbles={() => updateSitePreferences({ bubbles: !prefs.bubbles })}
+        onToggleVoice={toggleVoice}
+        onToggleForm={toggleForm}
+        onEnterStage={enterStage}
+        onOpenSettings={() => { setMenuOpen(false); requestAnimationFrame(openSiteSettings); }}
+        onClose={closeMenu}
+      />}
       <PopoverAnchor virtualRef={panelSize.anchor} />
       <PopoverContent style={panelSize.style} id="ans-companion-panel" role="dialog" aria-labelledby={titleId} side="top" align="end" sideOffset={0} collisionPadding={12} className="ans-companion-panel" aria-modal={sheet.enabled || undefined} data-sheet={sheet.enabled || undefined} data-snap={sheet.enabled ? sheet.snap : undefined} onInteractOutside={event => {
         // 抽屉里有输入框：点遮罩或底层页面都不收起，只能用关闭按钮、下滑或返回键。
@@ -356,16 +436,10 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
         {/* 「Agent / 工作模式」入口由小恐龙挂件 portal 到这里（点开面板后才出现） */}
         <div className="ans-companion-dock-slot" data-testid="ans-companion-dock-slot" />
         <header className="ans-companion-header">
-          <div className="ans-companion-heading"><button type="button" className="ans-companion-voice" aria-label={voiceLabel} aria-pressed={prefs.voice} title={`${voiceLabel} · ${voiceHint}`} onClick={toggleVoice} disabled={!actor}>{prefs.voice ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}</button><div><span className="ans-companion-kicker">ANS / {ui("byYOURSIDE")}</span><h2 id={titleId}>{t("name")}<span aria-hidden="true" /></h2></div></div>
+          <div className="ans-companion-heading"><div><span className="ans-companion-kicker">ANS / {ui("byYOURSIDE")}</span><h2 id={titleId}>{t("name")}<span aria-hidden="true" /></h2></div></div>
           <div className="ans-companion-controls">
             <button type="button" onClick={panelSize.reset} aria-label={ui("resetChatSize")} title={ui("resetChatSize")}><Maximize2 aria-hidden="true" /></button>
             <button type="button" disabled={agent.busy || agent.checkingReceipts || (!messages.length && !draft && !agent.quote)} aria-label={ui("newConversation")} title={ui("newConversation")} onClick={newConversation}><RotateCcw aria-hidden="true" /></button>
-            <button type="button" aria-label={mascotLabel} title={mascotLabel} data-testid="mascot-form-toggle" onClick={() => {
-              const next = mascotForm === "2d" ? "3d" : "2d";
-              writeForm(next);
-              if (next === "3d") window.dispatchEvent(new CustomEvent("ans:dino-activate"));
-            }}><span aria-hidden="true" className="text-xs font-bold tracking-tight">{mascotForm === "2d" ? "3D" : "2D"}</span></button>
-            <button type="button" aria-label={ui("openSiteSettings")} title={ui("openSiteSettings")} onClick={settings}><Settings aria-hidden="true" /></button>
             <button id="ans-companion-dismiss" type="button" aria-label={t("close")} title={t("close")} onClick={() => changeOpen(false)}><X aria-hidden="true" /></button>
           </div>
         </header>
@@ -377,41 +451,6 @@ function Companion({ actor, storageReady }: { actor: string | null; storageReady
             {ui("guideMode")}
           </button>
         </div>
-        <CompanionSanctuaryBar
-          requestedTab={requestedTab}
-          currentDraft={draft}
-          onRequestedTabHandled={() => setRequestedTab(null)}
-          onSpeak={text => setSpeech({ id: ++sequence.current, text })}
-          onSwitchToWorkMode={switchToWorkMode}
-        />
-        <MascotStageDeck />
-        <DinoSoulToolbar
-          onInjectAssistantMessage={(text, speakAloud) => {
-            scrollState.current[mode].follow = true;
-            updateThread(mode, current => ({
-              ...current,
-              messages: [...current.messages, { id: ++sequence.current, role: "guide" as const, text }].slice(-40),
-            }));
-            if (speakAloud || prefs.voice) {
-              setSpeech({ id: ++sequence.current, text });
-            }
-          }}
-          onSendUserSticker={sticker => {
-            scrollState.current[mode].follow = true;
-            const userLine = `${sticker.kaomoji} 【${sticker.title}】`;
-            const dinoLine = `收到你的斗图「${sticker.badge}」！兔兔龙也回你一张：(✧ω✧)✨ 贴贴充能～`;
-            updateThread(mode, current => ({
-              ...current,
-              messages: [
-                ...current.messages,
-                { id: ++sequence.current, role: "user" as const, text: userLine },
-                { id: ++sequence.current, role: "guide" as const, text: dinoLine },
-              ].slice(-40),
-            }));
-            settleSoulTurn(userLine, dinoLine, "user");
-          }}
-          onSpeakText={text => setSpeech({ id: ++sequence.current, text })}
-        />
         {!actor && <Link className="ans-companion-signin" href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}>{ui("agentSignIn")}<ArrowUpRight aria-hidden="true" /></Link>}
         {undo?.mode === mode && <div className="ans-companion-undo" role="status"><span>{ui("conversationCleared")}</span><button type="button" onClick={restoreConversation}>{ui("undoClear")}</button></div>}
         <div className="ans-companion-reading">

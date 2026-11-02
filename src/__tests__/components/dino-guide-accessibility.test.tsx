@@ -35,33 +35,56 @@ it.each([false, true])("names the companion dialog from its visible heading (tas
   const title = mascotMessages.mascot.name;
   const dialog = screen.getByRole("dialog", { name: title });
   expect(dialog).toHaveAttribute("aria-labelledby", within(dialog).getByRole("heading", { name: title }).id);
-  expect(within(dialog).getByRole("button", { name: companionMessages.openSiteSettings })).toBeInTheDocument();
+  // 面板只留核心：设置、语音、形态挪到长按菜单，快捷操作和玩法挪到互动舞台
+  expect(within(dialog).queryByRole("button", { name: companionMessages.openSiteSettings })).toBeNull();
+  expect(within(dialog).queryByTestId("pi-agent-quickbar")).toBeNull();
   expect(within(dialog).getByRole("navigation", { name: companionMessages.suggestedNextSteps })).toBeInTheDocument();
   expect(within(dialog).getByRole("link", { name: new RegExp(companionMessages.actionProjectTitle) })).toHaveAttribute("href", "/projects#new-project");
   expect(within(dialog).getByRole("link", { name: new RegExp(companionMessages.actionHubTitle) })).toHaveAttribute("href", "/hubs");
   expect(within(dialog).getByRole("button", { name: companionMessages.sendMessage })).toBeDisabled();
 });
 
-it("places the direct voice toggle in the header and places the model selector immediately before send", () => {
+it("keeps the model selector immediately before send and moves the voice toggle to the long-press menu", () => {
   render(<DinoGuide />);
-  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
+  const trigger = screen.getByRole("button", { name: mascotMessages.mascot.open });
+  fireEvent.click(trigger);
   const dialog = screen.getByRole("dialog", { name: mascotMessages.mascot.name });
-  const voice = within(dialog).getByRole("button", { name: companionMessages.enableDinoVoice });
-  expect(voice.closest("header")).not.toBeNull();
-  expect(voice).toHaveAttribute("aria-pressed", "false");
+  expect(within(dialog).queryByRole("button", { name: companionMessages.enableDinoVoice })).toBeNull();
   expect(within(dialog).queryByText(companionMessages.agentMetered)).not.toBeInTheDocument();
-  expect(within(dialog).queryByText(companionMessages.voiceOff)).not.toBeInTheDocument();
   const model = within(dialog).getByRole("combobox", { name: new RegExp(companionMessages.agentModelLabel) });
   expect(model.closest("footer")).toBeNull();
   expect(model.parentElement).toBe(within(dialog).getByRole("button", { name: companionMessages.sendMessage }).parentElement);
   expect(model.parentElement?.lastElementChild).toBe(within(dialog).getByRole("button", { name: companionMessages.sendMessage }));
+
+  fireEvent.contextMenu(trigger);
+  const menu = screen.getByRole("menu", { name: companionMessages.dinoQuickMenu });
+  const voice = within(menu).getByRole("menuitemcheckbox", { name: companionMessages.spokenReplies });
+  expect(voice).toHaveAttribute("aria-checked", "false");
   fireEvent.click(voice);
-  expect(within(dialog).getByRole("button", { name: companionMessages.disableDinoVoice })).toHaveAttribute("aria-pressed", "true");
+  expect(within(menu).getByRole("menuitemcheckbox", { name: companionMessages.spokenReplies })).toHaveAttribute("aria-checked", "true");
   expect(JSON.parse(localStorage.getItem(PREFERENCES_KEY)!).voice).toBe(true);
-  expect(screen.getByRole("dialog", { name: mascotMessages.mascot.name })).toBeInTheDocument();
-  fireEvent.click(within(dialog).getByRole("button", { name: companionMessages.disableDinoVoice }));
-  expect(within(dialog).getByRole("button", { name: companionMessages.enableDinoVoice })).toHaveAttribute("aria-pressed", "false");
-  expect(JSON.parse(localStorage.getItem(PREFERENCES_KEY)!).voice).toBe(false);
+  const bubbles = within(menu).getByRole("menuitemcheckbox", { name: companionMessages.speechBubbles });
+  expect(bubbles).toHaveAttribute("aria-checked", "true");
+  fireEvent.click(bubbles);
+  expect(JSON.parse(localStorage.getItem(PREFERENCES_KEY)!).bubbles).toBe(false);
+  fireEvent.keyDown(document, { key: "Escape" });
+  expect(screen.queryByRole("menu")).toBeNull();
+});
+
+it("opens the quick menu on a long press without also toggling the chat", () => {
+  vi.useFakeTimers();
+  try {
+    render(<DinoGuide />);
+    const trigger = screen.getByRole("button", { name: mascotMessages.mascot.open });
+    fireEvent.pointerDown(trigger, { button: 0, clientX: 10, clientY: 10 });
+    act(() => { vi.advanceTimersByTime(600); });
+    fireEvent.pointerUp(trigger);
+    fireEvent.click(trigger);
+    expect(screen.getByRole("menu", { name: companionMessages.dinoQuickMenu })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 it("bounds saved sizing to small screens and restores large desktop defaults", () => {
@@ -190,20 +213,24 @@ it("preserves a saved conversation while authentication loads and clears it afte
   expect(screen.getByRole("textbox")).toHaveValue("");
 });
 
-it("names the dino trigger for what a WebGL browser actually does (close-up stage), not for the chat", () => {
+it("opens Agent on a single click even with WebGL, and enters the play stage on rapid clicks", () => {
   vi.stubGlobal("WebGLRenderingContext", function WebGLRenderingContext() {});
-  const stageClicks: Event[] = [];
-  const onClick = (event: Event) => stageClicks.push(event);
-  window.addEventListener("ans:dino-stage-click", onClick);
+  const macro: Event[] = [];
+  const onMacro = (event: Event) => macro.push(event);
+  window.addEventListener("ans:enter-dino-macro", onMacro);
   try {
     render(<DinoGuide />);
-    const trigger = screen.getByRole("button", { name: mascotMessages.mascot.openStage });
-    expect(screen.queryByRole("button", { name: mascotMessages.mascot.open })).toBeNull();
+    const trigger = screen.getByRole("button", { name: mascotMessages.mascot.open });
+    expect(trigger).toHaveAccessibleDescription(companionMessages.dinoTriggerHint);
     fireEvent.click(trigger);
-    expect(stageClicks).toHaveLength(1);
+    expect(screen.getByRole("dialog", { name: mascotMessages.mascot.name })).toBeInTheDocument();
+    expect(macro).toHaveLength(0);
+    fireEvent.click(trigger);
+    fireEvent.click(trigger);
+    expect(macro).toHaveLength(1);
     expect(screen.queryByRole("dialog")).toBeNull();
   } finally {
-    window.removeEventListener("ans:dino-stage-click", onClick);
+    window.removeEventListener("ans:enter-dino-macro", onMacro);
   }
 });
 

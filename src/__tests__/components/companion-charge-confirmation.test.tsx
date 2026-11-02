@@ -25,6 +25,12 @@ vi.mock("next-intl", () => ({ useLocale: () => "zh", useTranslations: (namespace
 
 afterEach(() => { cleanup(); resetSitePreferences(); vi.unstubAllGlobals(); });
 
+// 快捷操作搬进了互动舞台：连点三下兔兔龙进去
+function openStage() {
+  const trigger = screen.getByRole("button", { name: mascotMessages.mascot.open });
+  for (let i = 0; i < 3; i++) fireEvent.click(trigger);
+  return screen.getByRole("complementary", { name: companionMessages.stageMore });
+}
 const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
 
 it("asks for confirmation before charging and resends the confirmed amount", async () => {
@@ -33,8 +39,7 @@ it("asks for confirmation before charging and resends the confirmed amount", asy
     .mockResolvedValueOnce(json({ ok: true, toolUsed: "play_claw_arcade", replyZh: "抓娃娃成功", replyEn: "won", balancePoints: 2, links: [] }));
   vi.stubGlobal("fetch", fetchMock);
   render(<DinoGuide />);
-  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
-  const dialog = screen.getByRole("dialog", { name: mascotMessages.mascot.name });
+  const dialog = openStage();
   fireEvent.click(within(dialog).getByTestId("pi-agent-action-claw"));
 
   const card = await screen.findByTestId("pi-agent-confirm");
@@ -54,8 +59,7 @@ it("never sends a paid action when the user cancels the quote", async () => {
   const fetchMock = vi.fn().mockResolvedValueOnce(json({ ok: false, error: "CONFIRM_REQUIRED", toolUsed: "redeem_market_item", replyZh: "兑换需要 5 积分", replyEn: "costs 5 pts", data: { requiresConfirmation: true, pricePoints: 5, intent: "redeem" }, links: [] }));
   vi.stubGlobal("fetch", fetchMock);
   render(<DinoGuide />);
-  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
-  const dialog = screen.getByRole("dialog", { name: mascotMessages.mascot.name });
+  const dialog = openStage();
   fireEvent.click(within(dialog).getByTestId("pi-agent-action-redeem"));
 
   const card = await screen.findByTestId("pi-agent-confirm");
@@ -70,8 +74,7 @@ it("announces the pending charge and hands focus to the result after confirming"
     .mockResolvedValueOnce(json({ ok: true, toolUsed: "play_claw_arcade", replyZh: "抓娃娃成功", replyEn: "won", balancePoints: 2, links: [] }));
   vi.stubGlobal("fetch", fetchMock);
   render(<DinoGuide />);
-  fireEvent.click(screen.getByRole("button", { name: mascotMessages.mascot.open }));
-  const dialog = screen.getByRole("dialog", { name: mascotMessages.mascot.name });
+  const dialog = openStage();
   fireEvent.click(within(dialog).getByTestId("pi-agent-action-claw"));
 
   const card = await screen.findByTestId("pi-agent-confirm");
