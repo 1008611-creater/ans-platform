@@ -3431,6 +3431,8 @@ model CommunityPost {
   relays        CommunityPost[]     @relation("CommunityRelay")
   /// 管理员置顶的时间。推荐频道最上面放最近置顶的两条，用来放每天的官方挑战帖。
   pinnedAt      DateTime?
+  /// 官方帖：管理员发的活动和公告帖，信息流和详情页带「官方」标记，置顶区排在前面。
+  officialAt    DateTime?
   /// 做同款：帖子附的项目广场项目（catalog slug），看帖的人点「做同款」从这个项目开始做。
   catalogSlug   String?             @db.VarChar(80)
   createdAt     DateTime            @default(now())

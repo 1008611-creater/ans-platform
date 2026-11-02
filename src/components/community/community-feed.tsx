@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Check, Clock, GitFork, Heart, MessageCircle, Repeat2 } from "lucide-react";
+import { BadgeCheck, Check, Clock, GitFork, Heart, MessageCircle, Repeat2 } from "lucide-react";
 import type { CommunityBoardId as CommunityBoard } from "@/contracts/community-posts";
 import { BOARD_CHANNEL, type CommunityFeedItem } from "@/server/community/feed";
 import type { CommunityPostSummary } from "@/server/community/posts";
@@ -23,6 +23,11 @@ const BOARD_TINT: Record<CommunityBoard, string> = {
   AIGC: "bg-orange-50 dark:bg-orange-950/40",
   CAMPUS: "bg-amber-50 dark:bg-amber-950/40",
 };
+
+/** 官方帖的标记：管理员发的活动和公告。 */
+export function OfficialChip({ label }: { label: string }) {
+  return <span className="inline-flex items-center gap-1 self-start rounded-full bg-foreground px-2 py-0.5 text-xs font-semibold text-background"><BadgeCheck className="h-3.5 w-3.5" aria-hidden="true" />{label}</span>;
+}
 
 const CARD = "relative flex flex-col overflow-hidden rounded-2xl border bg-card transition hover:border-foreground/30 motion-reduce:transition-none";
 // 标题链接铺满整张卡片，卡片里的按钮再单独浮在上面。
@@ -115,6 +120,7 @@ function NoteCard({ post, t, project }: { post: CommunityPostSummary; t: Labels;
       ? <img src={cover} alt="" loading="lazy" referrerPolicy="no-referrer" className="aspect-[4/5] w-full object-cover" />
       : <div className={`flex aspect-[4/3] items-end p-4 ${BOARD_TINT[post.board]}`}><p className="line-clamp-4 text-lg font-bold leading-snug">{post.title}</p></div>}
     <div className="flex flex-col gap-2 p-3">
+      {post.officialAt && <OfficialChip label={t("official")} />}
       {post.relayOf && <RelayQuote relayOf={post.relayOf} t={t} />}
       {cover && <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-pretty">{post.title}</h3>}
       <Link href={`/community/posts/${post.id}`} prefetch={false} className={`${STRETCH} line-clamp-2 block text-sm leading-snug text-foreground/80`}>{post.body}</Link>
@@ -127,6 +133,7 @@ function NoteCard({ post, t, project }: { post: CommunityPostSummary; t: Labels;
 
 function TextCard({ post, t }: { post: CommunityPostSummary; t: Labels }) {
   return <article className={`${CARD} gap-4 px-4 py-5 ${BOARD_TINT[post.board]}`}>
+    {post.officialAt && <OfficialChip label={t("official")} />}
     {post.relayOf && <RelayQuote relayOf={post.relayOf} t={t} onTint />}
     <p className="text-lg font-semibold leading-relaxed text-pretty"><Link href={`/community/posts/${post.id}`} prefetch={false} className={STRETCH}>{post.body}</Link></p>
     <RelayCount post={post} t={t} />
@@ -137,7 +144,7 @@ function TextCard({ post, t }: { post: CommunityPostSummary; t: Labels }) {
 function WorkCard({ item, t }: { item: Extract<CommunityFeedItem, { type: "work" }>; t: Labels }) {
   return <article className={CARD}>
     <div className={`relative flex aspect-square items-end p-4 ${BOARD_TINT.AIGC}`}>
-      <span className="absolute left-2.5 top-2.5 rounded-full bg-background/85 px-2 py-0.5 font-mono text-xs font-medium">v{item.version}</span>
+      <span className="absolute left-2.5 top-2.5 rounded-full bg-background/85 px-2 py-0.5 text-xs font-medium">{t("workBadge")}</span>
       <p className="line-clamp-4 text-lg font-bold leading-snug">{item.title}</p>
     </div>
     <div className="space-y-2 p-3">

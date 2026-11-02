@@ -3730,7 +3730,40 @@
     "relayCount": "{count} 人接力",
     "remix": "做同款",
     "remixOf": "附项目：{title}",
-    "pinned": "置顶"
+    "pinned": "置顶",
+    "official": "官方",
+    "workBadge": "作品",
+    "guide": {
+      "all": {
+        "title": "这里刚开张。说一句你最近在用 AI 做什么",
+        "action": "说一句"
+      },
+      "team": {
+        "title": "你缺什么人？发一条组队帖，队长会收到申请",
+        "action": "发组队帖"
+      },
+      "career": {
+        "title": "实习、面试、简历，写下你的经验或问题",
+        "action": "写一篇"
+      },
+      "research": {
+        "title": "论文、竞赛、科创项目，发一篇笔记找同路人",
+        "action": "发笔记"
+      },
+      "aigc": {
+        "title": "做了什么作品？发出来，附上项目，别人能做同款",
+        "action": "晒作品"
+      },
+      "campus": {
+        "title": "校园里缺什么、想换什么，挂一个摊位",
+        "action": "挂摊位"
+      },
+      "open": {
+        "title": "现在没人在等帮忙。你有事要人搭把手，就挂一个「求」",
+        "action": "发求助"
+      },
+      "competition": "正在报名：{title}"
+    }
   },
   "modelPlaza": {
     "title": "模型广场",
@@ -4142,7 +4175,9 @@
       "project": "附项目",
       "projectSearch": "搜项目广场里的项目",
       "projectEmpty": "没找到相关项目",
-      "removeProject": "去掉附的项目"
+      "removeProject": "去掉附的项目",
+      "loginToSubmit": "登录后发出",
+      "official": "发成官方帖"
     },
     "detail": {
       "back": "社区",
@@ -4211,7 +4246,10 @@
       "remixCta": "做同款",
       "remixCount": "{count} 人晒了同款",
       "pin": "置顶",
-      "unpin": "取消置顶"
+      "unpin": "取消置顶",
+      "official": "设为官方",
+      "unofficial": "取消官方",
+      "helpHint": "发帖人选你「帮到了」，你得 {xp} XP"
     },
     "errors": {
       "UNAUTHORIZED": "请先登录",
@@ -4244,7 +4282,7 @@
     },
     "relay": {
       "title": "接力 {count}",
-      "hint": "每个人的版本按时间排开，最早的在前",
+      "hint": "新接的在前",
       "open": "接一下",
       "dialogTitle": "接一下",
       "from": "接力自 {name}，已有 {count} 人接",
@@ -4254,7 +4292,9 @@
       "empty": "还没有人接，做第一个吧。",
       "loginToRelay": "登录后接一下",
       "rootLink": "看原帖和整串接力",
-      "index": "#{n}"
+      "index": "#{n}",
+      "success": "接上了",
+      "explain": "接一下＝接着这条往下写，你的帖子会排进这串接力。只想说句话，用下面的回复。"
     }
   },
   "communityBottle": {
@@ -4285,7 +4325,10 @@
     "mineEmpty": "还没扔过瓶子。",
     "pickedBy": "{count} 人捞到",
     "stillFloating": "还在漂",
-    "hiddenNote": "这个瓶子被举报，正在复核，别人暂时捞不到。"
+    "hiddenNote": "这个瓶子被举报，正在复核，别人暂时捞不到。",
+    "loginToThrow": "登录后扔进海里",
+    "guestNote": "先写，点扔进海里时再登录，写的字不会丢。",
+    "floatingEmpty": "海里还空着，扔第一个吧"
   },
   "communityReports": {
     "title": "社区举报复核",

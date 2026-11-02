@@ -5,7 +5,6 @@ import { auth } from "@/lib/auth";
 import { countFloatingBottles, listMyBottles, listMyPicks } from "@/server/community/bottles";
 import { AccountContentBoundary } from "@/components/auth/account-content-boundary";
 import { BottleReplyForm, PickBottleButton, ReportBottle, ThrowBottleForm } from "@/components/community/bottle-actions";
-import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -35,10 +34,14 @@ export default async function CommunityBottlesPage() {
     </header>
 
     {!userId ? (
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-5">
-        <p className="text-sm text-muted-foreground">{t("floating", { count: floating })}</p>
-        <Button asChild><Link href="/login?callbackUrl=/community/bottles">{t("loginToPlay")}</Link></Button>
-      </div>
+      <section aria-labelledby="bottle-throw" className="space-y-3 rounded-2xl border bg-card p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="bottle-throw" className="font-semibold">{t("throwTitle")}</h2>
+          <p className="text-sm text-muted-foreground ans-num">{floating > 0 ? t("floating", { count: floating }) : t("floatingEmpty")}</p>
+        </div>
+        <ThrowBottleForm guest />
+        <p className="text-xs text-muted-foreground">{t("guestNote")}</p>
+      </section>
     ) : <AccountContentBoundary actorId={userId}>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-6">
@@ -51,7 +54,7 @@ export default async function CommunityBottlesPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 id="bottle-picked" className="font-semibold">{t("pickedTitle")}</h2>
-                <p className="text-sm text-muted-foreground">{t("floating", { count: floating })}</p>
+                <p className="text-sm text-muted-foreground">{floating > 0 ? t("floating", { count: floating }) : t("floatingEmpty")}</p>
               </div>
               <PickBottleButton />
             </div>

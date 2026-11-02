@@ -12,6 +12,8 @@ const PICKS_PER_DAY = 10;
 const SEA_DAYS = 30;
 /** 漂流瓶是匿名的，没法看作者主页判断，两个人举报就先收起来等复核。 */
 const REPORTS_TO_HIDE = 2;
+/** 同一个人这么短时间里扔出一模一样的话，当作连点，回原来那个瓶子。 */
+const DUPLICATE_WINDOW_MS = 2 * 60_000;
 
 function oneDayAgo() {
   return new Date(Date.now() - DAY_MS);
@@ -22,6 +24,8 @@ export async function throwBottle(userId: string, raw: unknown) {
   if (!parsed.success) throw new CommunityError(400, "INVALID_INPUT");
   await requireActiveUser(userId);
   const today = await db.communityBottle.count({ where: { authorId: userId, createdAt: { gte: oneDayAgo() } } });
+  const duplicate = await db.communityBottle.findFirst({ where: { authorId: userId, body: parsed.data.body, createdAt: { gte: new Date(Date.now() - DUPLICATE_WINDOW_MS) } }, select: { id: true } });
+  if (duplicate) return duplicate;
   if (today >= THROWS_PER_DAY) throw new CommunityError(429, "BOTTLE_THROW_LIMIT");
   const bottle = await db.communityBottle.create({ data: { authorId: userId, body: parsed.data.body }, select: { id: true } });
   await db.auditLog.create({ data: { actorId: userId, action: "COMMUNITY_BOTTLE_THROWN", resourceType: "community_bottle", resourceId: bottle.id } });

@@ -10,13 +10,14 @@ import { getFollowRelation } from "@/server/community/follows";
 import { countRemixPosts, loadRemixProjects } from "@/server/community/remix";
 import { FollowButton } from "@/components/community/follow-button";
 import { PostCompose, type RelayTarget } from "@/components/community/post-compose";
-import { BOARD_CHIP } from "@/components/community/community-feed";
-import { ApplicationList, ApplyForm, ClosePostButton, HelpForm, LikeButton, OfferList, PinPostButton, ReplyForm, ReportPost } from "@/components/community/post-actions";
+import { BOARD_CHIP, OfficialChip } from "@/components/community/community-feed";
+import { ApplicationList, ApplyForm, ClosePostButton, HelpForm, LikeButton, OfferList, OfficialPostButton, PinPostButton, ReplyForm, ReportPost } from "@/components/community/post-actions";
 import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
 type Params = Promise<{ id: string }>;
+type SearchParams = Promise<{ relay?: string | string[]; relayed?: string | string[] }>;
 type Person = { username: string; nickname: string | null; avatar: string | null };
 
 const nameOf = (user: Person) => user.nickname || user.username;
@@ -34,8 +35,9 @@ export async function generateMetadata({ params }: { params: Params }) {
   return { title: `${post?.title || post?.body.slice(0, 30) || t("title")}` };
 }
 
-export default async function CommunityPostPage({ params }: { params: Params }) {
+export default async function CommunityPostPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const { id } = await params;
+  const query = await searchParams;
   const session = await auth();
   const viewerId = session?.user?.id ?? null;
   const post = await getCommunityPost(id, viewerId);
@@ -60,7 +62,11 @@ export default async function CommunityPostPage({ params }: { params: Params }) 
   const loginHref = `/login?callbackUrl=${encodeURIComponent(`/community/posts/${post.id}`)}`;
   // 只有笔记和一句话能被接；接力帖自己不再挂串，接它等于接原帖，所以这里引回原帖。
   const relayable = post.kind !== "STALL" && !post.relayOf && post.status !== "HIDDEN";
-  const relayTarget: RelayTarget | null = relayable && viewerId
+  // 游客也能点「接一下」先写，发出时去登录；登录回来带着 relay=1，弹窗直接打开。
+  const relayBack = `/community/posts/${post.id}?relay=1`;
+  const relayIntent = query.relay === "1";
+  const justRelayed = typeof query.relayed === "string" ? query.relayed : null;
+  const relayTarget: RelayTarget | null = relayable
     ? { id: post.id, label: post.title || post.body, authorName: nameOf(post.author), board: post.board, count: post._count.relays, cover: post.images[0] ?? null }
     : null;
 
@@ -71,6 +77,7 @@ export default async function CommunityPostPage({ params }: { params: Params }) 
         <article className="space-y-5 rounded-2xl border bg-card p-5 sm:p-7">
           {post.status === "HIDDEN" && <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-100">{t("hiddenNote")}</p>}
           <div className="flex flex-wrap items-center gap-2">
+            {post.officialAt && <OfficialChip label={page("official")} />}
             {post.kind === "STALL" && <span className="rounded-md bg-foreground px-2 py-0.5 text-xs font-bold text-background">{page(`stall.${post.stall ?? "SEEK"}`)}</span>}
             {!(isTeam && post.board === "TEAM") && <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${BOARD_CHIP[post.board]}`}>{page(`channels.${channel}`)}</span>}
             {post.active && post.expiresAt && <span className="ml-auto flex items-center gap-1 text-sm text-muted-foreground"><Clock className="h-4 w-4" aria-hidden="true" />{t(isTeam ? "deadlineTeam" : "deadlineNote", { date: date.format(post.expiresAt) })}</span>}
@@ -136,7 +143,10 @@ export default async function CommunityPostPage({ params }: { params: Params }) 
           <div className="flex flex-wrap items-center gap-3 border-t pt-4">
             {viewerId ? <LikeButton postId={post.id} liked={post.liked} count={post._count.likes} /> : <span className="text-sm text-muted-foreground">{page("likes")} {post._count.likes}</span>}
             <span className="flex-1" />
-            {session?.user?.role === "ADMIN" && post.kind !== "STALL" && post.status !== "HIDDEN" && <PinPostButton postId={post.id} pinned={Boolean(post.pinnedAt)} />}
+            {session?.user?.role === "ADMIN" && post.kind !== "STALL" && post.status !== "HIDDEN" && <>
+              <OfficialPostButton postId={post.id} official={Boolean(post.officialAt)} />
+              <PinPostButton postId={post.id} pinned={Boolean(post.pinnedAt)} />
+            </>}
             {viewerId && !post.isAuthor && <ReportPost postId={post.id} />}
           </div>
         </article>
@@ -145,19 +155,20 @@ export default async function CommunityPostPage({ params }: { params: Params }) 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
               <h2 id="relays-heading" className="text-sm font-semibold ans-num">{r("title", { count: post._count.relays })}</h2>
-              <p className="text-xs text-muted-foreground">{post._count.relays > 0 ? r("hint") : r("empty")}</p>
+              <p className="text-xs text-muted-foreground text-pretty">{r("explain")}</p>
+              {post._count.relays === 0 && <p className="text-xs text-muted-foreground">{r("empty")}</p>}
             </div>
-            {relayTarget ? <PostCompose teams={[]} competitions={[]} relay={relayTarget} /> : !viewerId && <Button asChild variant="outline"><Link href={loginHref}>{r("loginToRelay")}</Link></Button>}
+            {relayTarget && <PostCompose teams={[]} competitions={[]} relay={relayTarget} guest={!viewerId} returnTo={relayBack} defaultOpen={relayIntent && Boolean(viewerId)} />}
           </div>
           {post.relays.length > 0 && <ol className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {post.relays.map((relay, index) => <li key={relay.id}><Link href={`/community/posts/${relay.id}`} className="flex h-full flex-col overflow-hidden rounded-xl bg-muted/60 transition-colors hover:bg-muted motion-reduce:transition-none">
+            {post.relays.map((relay, index) => <li key={relay.id}><Link href={`/community/posts/${relay.id}`} aria-current={relay.id === justRelayed ? "true" : undefined} className={`flex h-full flex-col overflow-hidden rounded-xl bg-muted/60 transition-colors hover:bg-muted motion-reduce:transition-none ${relay.id === justRelayed ? "shadow-[0_0_0_2px_var(--foreground)]" : ""}`}>
               {relay.images[0]
                 ? <img src={relay.images[0]} alt="" loading="lazy" referrerPolicy="no-referrer" className="aspect-[4/3] w-full object-cover" />
                 : <span className="flex aspect-[4/3] items-end p-3 text-sm font-semibold leading-snug text-pretty"><span className="line-clamp-4">{relay.title || relay.body}</span></span>}
               <span className="flex flex-1 flex-col gap-1.5 px-3 py-2.5">
                 {relay.images[0] && relay.title && <span className="line-clamp-2 text-sm font-semibold leading-snug text-pretty">{relay.title}</span>}
                 <span className="mt-auto flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                  <span className="truncate"><span className="ans-num">{r("index", { n: index + 1 })}</span> {nameOf(relay.author)}</span>
+                  <span className="truncate"><span className="ans-num">{r("index", { n: post._count.relays - index })}</span> {nameOf(relay.author)}</span>
                   <span className="flex shrink-0 items-center gap-0.5 ans-num"><Heart className="h-3.5 w-3.5" aria-hidden="true" />{relay._count.likes}</span>
                 </span>
               </span>
