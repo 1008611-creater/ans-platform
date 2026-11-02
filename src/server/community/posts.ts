@@ -21,6 +21,8 @@ const POSTS_PER_DAY = 10;
 const REPLIES_PER_DAY = 40;
 /** 被不同的人举报到这个次数就先隐藏，等管理员复核。 */
 const REPORTS_TO_HIDE = 3;
+/** 同一个人这么短时间里发出一模一样的帖子，当作连点，回原来那条。 */
+const DUPLICATE_WINDOW_MS = 2 * 60_000;
 
 const authorSelect = { id: true, username: true, nickname: true, avatar: true } as const;
 const VISIBLE = ["OPEN", "RESOLVED"] as const;
@@ -81,6 +83,8 @@ export async function createCommunityPost(userId: string, raw: unknown) {
   if (!parsed.success) throw new CommunityError(400, "INVALID_INPUT");
   const input = parsed.data;
   await requireActiveUser(userId);
+  const duplicate = await db.communityPost.findFirst({ where: { authorId: userId, kind: input.kind, body: input.body, relayOfId: input.kind !== "STALL" ? input.relayOfId ?? null : null, createdAt: { gte: new Date(Date.now() - DUPLICATE_WINDOW_MS) } }, select: { id: true } });
+  if (duplicate) return duplicate;
   const today = await db.communityPost.count({ where: { authorId: userId, createdAt: { gte: oneDayAgo() } } });
   if (today >= POSTS_PER_DAY) throw new CommunityError(429, "DAILY_LIMIT");
 
@@ -174,9 +178,10 @@ export async function getCommunityPost(id: string, viewerId: string | null) {
       applications: { orderBy: { createdAt: "asc" }, select: { id: true, role: true, message: true, status: true, createdAt: true, applicantId: true, applicant: { select: authorSelect } } },
       helpOffers: { orderBy: { createdAt: "asc" }, select: { id: true, message: true, createdAt: true, userId: true, user: { select: authorSelect } } },
       relayOf: { select: { id: true, title: true, body: true, status: true } },
+      // 详情页的接力串新的在前，刚接上的人马上能在最上面看到自己。
       relays: {
         where: { status: { in: [...VISIBLE] } },
-        orderBy: { createdAt: "asc" },
+        orderBy: { createdAt: "desc" },
         take: 60,
         select: { id: true, kind: true, title: true, body: true, images: true, board: true, createdAt: true, author: { select: authorSelect }, _count: { select: { likes: true } } },
       },

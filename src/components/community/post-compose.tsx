@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useCommunityRequest } from "./use-community-request";
+import { clearDraft, loadDraft, loginHref, saveDraft } from "./draft";
 import { imeBlocks, imeSubmitGuard } from "@/lib/ui/ime-enter-guard";
 
 const BOARD_CHANNEL: Record<CommunityBoardId, string> = { TEAM: "team", CAREER: "career", RESEARCH: "research", AIGC: "aigc", CAMPUS: "campus" };
@@ -40,7 +41,11 @@ export type RelayTarget = { id: string; label: string; authorName: string; board
 /** 「附项目」选中的项目广场项目。 */
 export type RemixPick = { slug: string; title: string };
 
-export function PostCompose({ teams, competitions, defaultBoard, relay, project: initialProject, defaultOpen = false, triggerClassName }: { teams: Array<{ id: string; name: string }>; competitions: Array<{ id: string; title: string }>; defaultBoard?: CommunityBoardId; relay?: RelayTarget; project?: RemixPick; defaultOpen?: boolean; triggerClassName?: string }) {
+/**
+ * 发帖和「接一下」的弹窗。
+ * 游客也能打开、先写；点发出时把草稿存在本机，去登录，登录完回到 `returnTo`（带着打开弹窗的参数），字还在。
+ */
+export function PostCompose({ teams, competitions, defaultBoard, relay, project: initialProject, defaultOpen = false, triggerClassName, guest = false, returnTo }: { teams: Array<{ id: string; name: string }>; competitions: Array<{ id: string; title: string }>; defaultBoard?: CommunityBoardId; relay?: RelayTarget; project?: RemixPick; defaultOpen?: boolean; triggerClassName?: string; guest?: boolean; returnTo?: string }) {
   const t = useTranslations("product.communityPost.compose");
   const r = useTranslations("product.communityPost.relay");
   const page = useTranslations("product.communityPage");
@@ -64,6 +69,21 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
   const [project, setProject] = useState<RemixPick | null>(initialProject ?? null);
   const [projectQuery, setProjectQuery] = useState("");
   const [projectResults, setProjectResults] = useState<RemixPick[] | null>(null);
+  // 发出后到新帖子页面之前，按钮保持不可点，弹窗不再接受修改。
+  const [leaving, setLeaving] = useState(false);
+  const draftKey = relay ? `relay:${relay.id}` : "post";
+
+  // 登录回来自动打开弹窗时，把登录前写的字放回去。
+  useEffect(() => {
+    if (!defaultOpen || guest) return;
+    const draft = loadDraft(draftKey);
+    if (!draft) return;
+    if (draft.kind === "NOTE" || draft.kind === "TEXT" || (draft.kind === "STALL" && !relay)) setKind(draft.kind);
+    if (draft.stall && (COMMUNITY_STALL_KINDS as readonly string[]).includes(draft.stall)) setStall(draft.stall as CommunityStallKindId);
+    if (!relay && draft.board && (COMMUNITY_BOARDS as readonly string[]).includes(draft.board)) setBoard(draft.board as CommunityBoardId);
+    if (draft.title) setTitle(draft.title);
+    if (draft.body) setBody(draft.body);
+  }, [defaultOpen, guest, draftKey, relay]);
 
   useEffect(() => {
     if (!open || kind !== "NOTE") return;
@@ -123,7 +143,13 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!ready || pending) return;
+    if (!ready || pending || leaving) return;
+    if (guest) {
+      saveDraft(draftKey, { kind, stall, board, title, body });
+      setLeaving(true);
+      window.location.assign(loginHref(returnTo ?? "/community"));
+      return;
+    }
     const relayOfId = relay?.id;
     const payload = kind === "TEXT" ? { kind, board, body, relayOfId }
       : kind === "NOTE" ? { kind, board, title, body, images, relayOfId, catalogSlug: project?.slug }
@@ -135,12 +161,16 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
           teamId: isTeam ? teamId : undefined,
           roles: isTeam ? roles : undefined,
         };
-    const result = await send<{ id: string }>("/api/community/posts", payload);
+    // 不先刷新当前页：刷新和跳转抢在一起时，跳转会被吞掉，弹窗就停在「发布中…」。
+    const result = await send<{ id: string }>("/api/community/posts", payload, { refresh: false });
     if (!result) return;
-    toast.success(t("success"));
+    clearDraft(draftKey);
+    setLeaving(true);
+    toast.success(relay ? r("success") : t("success"));
     setOpen(false);
     setTitle(""); setBody(""); setImages([]); setRoles([]); setProject(null); setProjectQuery("");
-    router.push(`/community/posts/${result.id}`);
+    // 接一下发出后回到原帖的接力串，马上能看到自己；新帖去新帖页面。
+    router.push(relay ? `/community/posts/${relay.id}?relayed=${result.id}#relays` : `/community/posts/${result.id}`);
   };
 
   const segment = (active: boolean) => `h-9 flex-1 rounded-md text-sm transition-colors ${active ? "bg-background font-semibold shadow-sm" : "text-muted-foreground hover:text-foreground"}`;
@@ -270,7 +300,7 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
         </div>
         <DialogFooter className="border-t px-5 py-3.5">
           <Button type="button" variant="outline" onClick={() => setOpen(false)}>{t("cancel")}</Button>
-          <Button type="submit" disabled={!ready || pending || uploading}>{pending ? t("submitting") : relay ? r("submit") : t("submit")}</Button>
+          <Button type="submit" disabled={!ready || pending || uploading || leaving}>{pending || leaving ? t("submitting") : guest ? t("loginToSubmit") : relay ? r("submit") : t("submit")}</Button>
         </DialogFooter>
       </form>
     </DialogContent>

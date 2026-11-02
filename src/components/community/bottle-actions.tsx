@@ -1,24 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Flag, Waves } from "lucide-react";
 import { BOTTLE_BODY_MAX, BOTTLE_REPLY_MAX, COMMUNITY_REPORT_REASONS } from "@/contracts/community-posts";
 import { useCommunityRequest } from "@/components/community/use-community-request";
+import { clearDraft, loadDraft, loginHref, saveDraft } from "@/components/community/draft";
 import { Button } from "@/components/ui/button";
 import { imeSubmitGuard } from "@/lib/ui/ime-enter-guard";
 
-export function ThrowBottleForm() {
+const BOTTLE_DRAFT = "bottle";
+
+/** 扔瓶子。游客也能先写，点扔的时候存草稿去登录，回来字还在。 */
+export function ThrowBottleForm({ guest = false }: { guest?: boolean }) {
   const t = useTranslations("product.communityBottle");
   const { send, pending } = useCommunityRequest();
   const [body, setBody] = useState("");
+  const [leaving, setLeaving] = useState(false);
   const ready = body.trim().length >= 2;
+
+  useEffect(() => {
+    if (guest) return;
+    const draft = loadDraft(BOTTLE_DRAFT);
+    if (draft?.body) setBody(draft.body);
+  }, [guest]);
 
   return <form className="space-y-3" onSubmit={async (event) => {
     event.preventDefault();
-    if (!ready) return;
+    if (!ready || pending || leaving) return;
+    if (guest) {
+      saveDraft(BOTTLE_DRAFT, { body });
+      setLeaving(true);
+      window.location.assign(loginHref("/community/bottles"));
+      return;
+    }
     if (await send("/api/community/bottles", { action: "throw", body })) {
+      clearDraft(BOTTLE_DRAFT);
       setBody("");
       toast.success(t("thrown"));
     }
@@ -28,7 +46,7 @@ export function ThrowBottleForm() {
       className="w-full resize-none rounded-xl bg-card px-3.5 py-3 text-base leading-relaxed outline-none shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-shadow focus-visible:shadow-[inset_0_0_0_0.5px_var(--hairline),var(--focus-ring)]" />
     <div className="flex items-center justify-between gap-3">
       <span className="text-xs tabular-nums text-muted-foreground">{body.length}/{BOTTLE_BODY_MAX}</span>
-      <Button type="submit" disabled={!ready || pending}>{t("throw")}</Button>
+      <Button type="submit" disabled={!ready || pending || leaving}>{guest ? t("loginToThrow") : t("throw")}</Button>
     </div>
   </form>;
 }

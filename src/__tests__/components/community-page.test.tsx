@@ -15,7 +15,7 @@ vi.mock("@/server/community/feed", () => ({
 vi.mock("@/server/community/posts", () => ({ getComposeOptions: mocks.compose, listMyStalls: mocks.stalls }));
 vi.mock("@/server/community/follows", () => ({ suggestFollows: mocks.suggest }));
 vi.mock("@/components/community/follow-button", () => ({ FollowButton: ({ userId, relation }: { userId: string; relation: { followedBy: boolean } }) => <button type="button" data-user={userId}>{relation.followedBy ? "followBack" : "follow"}</button> }));
-vi.mock("@/components/community/post-compose", () => ({ PostCompose: () => <button type="button">compose</button> }));
+vi.mock("@/components/community/post-compose", () => ({ PostCompose: ({ guest, returnTo, defaultOpen }: { guest?: boolean; returnTo?: string; defaultOpen?: boolean }) => <button type="button" data-guest={guest ? "true" : undefined} data-return={returnTo} data-open={defaultOpen ? "true" : undefined}>compose</button> }));
 vi.mock("next-intl/server", () => ({ getTranslations: async () => (key: string) => key }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect, notFound: () => { throw new Error("NOT_FOUND"); }, useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/components/community/community-feed", () => ({ CommunityFeed: ({ items }: { items: unknown[] }) => <ul data-testid="community-feed">{items.map((_, i) => <li key={i} />)}</ul> }));
@@ -45,7 +45,9 @@ it("shows the public feed to visitors without loading private growth", async () 
   expect(screen.queryByRole("link", { name: "channels.following" })).not.toBeInTheDocument();
   expect(screen.getByTestId("community-feed").children).toHaveLength(1);
   expect(screen.getByTestId("community-guest-preview")).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "publish" })).toHaveAttribute("href", "/login?callbackUrl=/community");
+  // 游客也能打开发帖弹窗先写；发出时去登录，回到原板块并自动打开弹窗。
+  expect(screen.getByRole("button", { name: "compose" })).toHaveAttribute("data-guest", "true");
+  expect(screen.getByRole("button", { name: "compose" })).toHaveAttribute("data-return", "/community?c=team&compose=1");
   // 切换排序时保留当前板块。
   expect(screen.getByRole("link", { name: "sortLatest" })).toHaveAttribute("href", "/community?c=team");
   expect(screen.getByRole("link", { name: "sortOpen" })).toHaveAttribute("aria-current", "page");

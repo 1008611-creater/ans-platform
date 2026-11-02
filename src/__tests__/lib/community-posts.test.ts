@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
     user: { findFirst: vi.fn(), findUnique: vi.fn() },
     competition: { findUnique: vi.fn() },
     teamMember: { findFirst: vi.fn(), findUnique: vi.fn(), count: vi.fn(), create: vi.fn(), update: vi.fn() },
-    communityPost: { count: vi.fn(), create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
+    communityPost: { count: vi.fn(), create: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
     communityPostLike: { findUnique: vi.fn() },
     communityReply: { count: vi.fn(), create: vi.fn() },
     communityHelpOffer: { create: vi.fn(), findUnique: vi.fn() },
@@ -66,6 +66,15 @@ describe("发帖", () => {
     await expectCode(createCommunityPost("u1", { ...teamStall, roles: [] }), "INVALID_INPUT");
     await expectCode(createCommunityPost("u1", { ...teamStall, stall: "SEEK", teamId: undefined, expiresAt: inDays(61).toISOString() }), "INVALID_DEADLINE");
     await expectCode(createCommunityPost("u1", { ...teamStall, stall: "SEEK", teamId: undefined, expiresAt: inDays(-1).toISOString() }), "INVALID_DEADLINE");
+  });
+
+  it("treats the same post sent again within two minutes as a double click", async () => {
+    mocks.db.communityPost.findFirst.mockResolvedValue({ id: "first" });
+    await expect(createCommunityPost("u1", { kind: "TEXT", board: "CAMPUS", body: "插座修好了" })).resolves.toEqual({ id: "first" });
+    expect(mocks.db.communityPost.create).not.toHaveBeenCalled();
+    expect(mocks.db.communityPost.findFirst).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ authorId: "u1", kind: "TEXT", body: "插座修好了", relayOfId: null, createdAt: { gte: expect.any(Date) } }),
+    }));
   });
 
   it("caps quick lines at 140 characters and posts per day", async () => {

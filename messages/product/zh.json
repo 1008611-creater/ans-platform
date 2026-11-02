@@ -4142,7 +4142,8 @@
       "project": "附项目",
       "projectSearch": "搜项目广场里的项目",
       "projectEmpty": "没找到相关项目",
-      "removeProject": "去掉附的项目"
+      "removeProject": "去掉附的项目",
+      "loginToSubmit": "登录后发出"
     },
     "detail": {
       "back": "社区",
@@ -4244,7 +4245,7 @@
     },
     "relay": {
       "title": "接力 {count}",
-      "hint": "每个人的版本按时间排开，最早的在前",
+      "hint": "新接的在前",
       "open": "接一下",
       "dialogTitle": "接一下",
       "from": "接力自 {name}，已有 {count} 人接",
@@ -4254,7 +4255,8 @@
       "empty": "还没有人接，做第一个吧。",
       "loginToRelay": "登录后接一下",
       "rootLink": "看原帖和整串接力",
-      "index": "#{n}"
+      "index": "#{n}",
+      "success": "接上了"
     }
   },
   "communityBottle": {
@@ -4285,7 +4287,9 @@
     "mineEmpty": "还没扔过瓶子。",
     "pickedBy": "{count} 人捞到",
     "stillFloating": "还在漂",
-    "hiddenNote": "这个瓶子被举报，正在复核，别人暂时捞不到。"
+    "hiddenNote": "这个瓶子被举报，正在复核，别人暂时捞不到。",
+    "loginToThrow": "登录后扔进海里",
+    "guestNote": "先写，点扔进海里时再登录，写的字不会丢。"
   },
   "communityReports": {
     "title": "社区举报复核",

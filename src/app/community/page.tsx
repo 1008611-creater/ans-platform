@@ -26,7 +26,7 @@ export async function generateMetadata() {
   return { title: t("title"), description: t("description") };
 }
 
-type SearchParams = Promise<{ c?: string | string[]; tab?: string | string[]; sort?: string | string[]; project?: string | string[] }>;
+type SearchParams = Promise<{ c?: string | string[]; tab?: string | string[]; sort?: string | string[]; project?: string | string[]; compose?: string | string[] }>;
 
 const tabClass = (active: boolean) => `border-b-2 px-1 pb-2 text-sm font-semibold transition-colors ${active ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`;
 
@@ -49,6 +49,14 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
     loadRemixProjects([projectSlug]),
   ]);
   const remixProject = projectSlug ? remixProjects.get(projectSlug) : undefined;
+  // 游客点「发帖」先写，登录回来带着 compose=1，弹窗直接打开、草稿放回去。
+  const composeIntent = params.compose === "1";
+  const composeBack = (() => {
+    const query = new URLSearchParams();
+    if (channel !== "all" && channel !== "following") query.set("c", channel);
+    query.set("compose", "1");
+    return `/community?${query.toString()}`;
+  })();
   const channels = COMMUNITY_CHANNELS.filter((id) => id !== "following" || Boolean(userId));
   const suggestReason = (person: (typeof suggestions)[number]) => person.reason === "fan" ? t("suggestFan") : t(person.reason === "relays" ? "suggestRelays" : "suggestPosts", { count: person.count });
   const channelHref = (id: string, nextSort = sort) => {
@@ -67,8 +75,8 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
         <div className="flex items-center gap-2">
           <Button asChild size="sm" variant="outline" className="gap-1.5"><Link href="/community/bottles" data-testid="community-bottles-link"><Waves className="h-4 w-4" aria-hidden="true" />{t("bottlesLink")}</Link></Button>
           {compose
-            ? <PostCompose teams={compose.teams} competitions={compose.competitions} project={remixProject && { slug: remixProject.slug, title: remixProject.title }} defaultOpen={Boolean(remixProject)} />
-            : <Button asChild size="sm"><Link href="/login?callbackUrl=/community">{t("publish")}</Link></Button>}
+            ? <PostCompose teams={compose.teams} competitions={compose.competitions} project={remixProject && { slug: remixProject.slug, title: remixProject.title }} defaultOpen={Boolean(remixProject) || composeIntent} />
+            : <PostCompose guest teams={[]} competitions={[]} returnTo={composeBack} />}
         </div>
       </header>
 

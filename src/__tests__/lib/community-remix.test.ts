@@ -9,7 +9,7 @@ const catalog = [
 const mocks = vi.hoisted(() => ({
   db: {
     user: { findFirst: vi.fn() },
-    communityPost: { count: vi.fn(), create: vi.fn(), findMany: vi.fn() },
+    communityPost: { count: vi.fn(), create: vi.fn(), findFirst: vi.fn(), findMany: vi.fn() },
     communityFollow: { findMany: vi.fn() },
     auditLog: { create: vi.fn() },
     $transaction: vi.fn(),
