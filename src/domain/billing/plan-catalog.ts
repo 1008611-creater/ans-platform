@@ -69,6 +69,13 @@ const targetBenefits: Readonly<Record<PlanTier, PlanTargetBenefits>> = Object.fr
   }),
 });
 
+export type MarketSellerTier = "free" | PlanTier;
+
+/** Platform fee on a seller's market income: free 10%, Plan 8%, Pro 6%. */
+export function marketCommissionBpsForTier(tier: MarketSellerTier): number {
+  return tier === "free" ? FREE_PLAN_TARGET_BENEFITS.marketCommissionBps : targetBenefits[tier].marketCommissionBps;
+}
+
 function sku(tier: PlanTier, period: PlanPeriod, priceMinor: number, grantPoints: number): PlanSku {
   const durationDays = period === "week" ? 7 : period === "month" ? 30 : 90;
   const offsets = period === "quarter" ? [0, 30, 60] : [0];

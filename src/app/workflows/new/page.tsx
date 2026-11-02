@@ -55,8 +55,8 @@ export default async function NewWorkflowPage({ searchParams }: { searchParams: 
             {isEn ? "Visual Workflow Canvas (Guest Preview): " : "可视化工作流编排画布（免登录体验模式）："}
           </strong>
           {isEn
-            ? "Arrange model nodes, input variables, and output stages below; sign in to save your draft and publish to ANS Market (80% creator revenue share)."
-            : "你可以直接在下方编排模型节点、输入变量与输出阶段；登录账号后即可保存草稿并发布到市场获得 80% 算力分成。"}
+            ? "Arrange model nodes, input variables, and output stages below; sign in to save your draft and publish to ANS Market. Creators keep 90% of the points earned (92% on Plan, 94% on Pro)."
+            : "你可以直接在下方编排模型节点、输入变量与输出阶段；登录后可保存草稿并发布到市场，作者拿成交积分的 90%（Plan 会员 92%，Pro 会员 94%）。"}
         </p>
         <Button asChild size="sm">
           <Link href={`/login?callbackUrl=${encodeURIComponent(callback)}`}>{t("login")}</Link>

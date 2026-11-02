@@ -24,7 +24,7 @@ export default async function CreatorPage() {
         >
           <div className="space-y-1">
             <Badge className="bg-emerald-600 text-white hover:bg-emerald-500">
-              创作者分成中心 · 80% 算力积分实时分润
+              创作者中心：作者拿成交积分的 90%
             </Badge>
             <p className="text-sm text-muted-foreground">
               将 AI 工作流、农情模型、3D 简历模板或 ComfyUI 节点封装上架，每次调用即自动结算分成。
@@ -71,8 +71,8 @@ export default async function CreatorPage() {
                   desc: "通过单行 Webhook 或平台托管执行器完成鉴权与扣费，无需自建支付与账本系统。",
                 },
                 {
-                  title: "Step 03 · 80% 算力积分实时入账",
-                  desc: "每笔订单自动按 80% 划入创作者账本，可用于调用旗舰大模型或兑换赛事算力包。",
+                  title: "Step 03 · 订单完成后积分入账",
+                  desc: "订单完成后，扣除平台服务费（免费用户 10%，Plan 8%，Pro 6%），其余积分划入你的账户。",
                 },
               ].map((step, i) => (
                 <div key={i} className="rounded-2xl border border-border/70 bg-card/85 p-5">

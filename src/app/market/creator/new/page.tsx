@@ -24,7 +24,7 @@ export default async function NewOfferPage() {
               商品与工作流上架工坊 · 免登实时预览模式
             </Badge>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              免登录可体验商品卡片与积分阶梯定价；登录后保存即可正式上架并享 80% 算力积分分成。
+              免登录可体验商品卡片与积分阶梯定价；登录后保存，审核通过即可上架。作者拿成交积分的 90%（Plan 会员 92%，Pro 会员 94%）。
             </p>
           </div>
           <Button asChild size="sm" className="shrink-0 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500">

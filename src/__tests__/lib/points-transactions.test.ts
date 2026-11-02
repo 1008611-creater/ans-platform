@@ -15,8 +15,7 @@ beforeEach(() => {
  m.event.mockResolvedValue(null); m.escrow.mockResolvedValue({ orderId: "order", amount: 10, sellerPoints: 9, feePoints: 1, state: "HELD" }); m.escrowUpdate.mockResolvedValue({ count: 1 });
  m.userUpdate.mockResolvedValue({ quotaPoints: 9 }); m.balance.mockResolvedValue({ quotaPoints: 1000 }); m.userChange.mockResolvedValue({ count: 1 }); m.operation.mockResolvedValue(null); m.receipt.mockResolvedValue(null); m.operationCreate.mockResolvedValue({ id: "operation" });
 });
-it("requires an explicit commission configuration", () => { expect(() => pointsPricingPolicy()).toThrow(); vi.stubEnv("ANS_MARKET_COMMISSION_BPS", "0"); expect(pointsPricingPolicy()).toEqual({ commissionBps: 0 }); });
-it.each(["-1", "1.5", "10001", "nan"])("rejects invalid fee %s", value => { vi.stubEnv("ANS_MARKET_COMMISSION_BPS", value); expect(() => pointsPricingPolicy()).toThrow(); });
+it("charges the seller plan rate", () => { expect(pointsPricingPolicy()).toEqual({ commissionBps: 1000 }); expect(pointsPricingPolicy("plan")).toEqual({ commissionBps: 800 }); expect(pointsPricingPolicy("pro")).toEqual({ commissionBps: 600 }); });
 it("escrows only the buyer's real points and freezes the seller split", async () => {
  await payMarketOrderPoints("order", "buyer", { expectedRevision: 0, operationKey: "purchase-key" });
  expect(m.debit).toHaveBeenCalledWith(tx, expect.objectContaining({ userId: "buyer", costPoints: 10 }));
