@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, GraduationCap, Clapperboard, Code2 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import type { HubDefinition } from "@/domain/hubs/registry";
-import { hubProjects, hubWorkflowRecipes } from "@/domain/hubs/registry";
+import { hubProjects, hubShortcut, hubWorkflowRecipes } from "@/domain/hubs/registry";
 import type { CatalogWorkflowId } from "@/contracts/catalog";
 import type { CatalogProject } from "@/domain/catalog/projects";
 import styles from "./hubs.module.css";
@@ -13,6 +13,16 @@ export async function HubDirectory({ hubs, published, publishedRecipeIds, member
   return <div className={styles.directory}>{hubs.map(hub => {
     const Icon = icons[hub.slug];
     const recipes = hubWorkflowRecipes(hub, publishedRecipeIds);
-    return <article key={hub.slug} className={styles.hub}><div className={styles.identity}><Icon aria-hidden="true" /><span>{t(`types.${hub.organization.type}`)}</span></div><h2><Link href={`/hubs/${hub.slug}`}>{t(`items.${hub.slug}.name`)}<ArrowRight className="size-5" aria-hidden="true" /></Link></h2><p>{t(`items.${hub.slug}.description`)}</p><dl className={styles.counts}><div><dt>{t("counts.workflows")}</dt><dd>{recipes === null || memberCounts?.[hub.slug]===null ? t("unavailable") : recipes.length+(memberCounts?.[hub.slug]??0)}</dd></div><div><dt>{t("counts.projects")}</dt><dd>{published ? hubProjects(hub, published).length : t("unavailable")}</dd></div><div><dt>{t("counts.resources")}</dt><dd>{hub.resources.length}</dd></div></dl></article>;
+    const members = memberCounts?.[hub.slug];
+    // Unknown counts are left out rather than shown as zero; zero is left out too.
+    const workflows = recipes === null || members === null ? null : recipes.length + (members ?? 0);
+    const projects = published ? hubProjects(hub, published).length : null;
+    const href = hubShortcut(hub, members) ?? `/hubs/${hub.slug}`;
+    const summary = [
+      workflows ? t("summary.workflows", { count: workflows }) : null,
+      projects ? t("summary.projects", { count: projects }) : null,
+      href === `/hubs/${hub.slug}` && hub.resources.length ? t("summary.resources", { count: hub.resources.length }) : null,
+    ].filter(Boolean);
+    return <article key={hub.slug} className={styles.hub}><div className={styles.identity}><Icon aria-hidden="true" /><span>{t(`types.${hub.organization.type}`)}</span></div><h2><Link href={href}>{t(`items.${hub.slug}.name`)}<ArrowRight className="size-5" aria-hidden="true" /></Link></h2><p>{t(`items.${hub.slug}.description`)}</p>{summary.length > 0 && <p className={styles.summary}>{summary.join(t("summary.separator"))}</p>}</article>;
   })}</div>;
 }

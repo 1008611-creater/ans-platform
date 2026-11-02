@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import { VibeHubFooter } from "./footer";
 import { VibeHubShell } from "./shell";
@@ -12,5 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default function VibeHubLayout({ children }: { children: React.ReactNode }) {
-  return <Suspense><VibeHubShell>{children}<VibeHubFooter /></VibeHubShell></Suspense>;
+  // No Suspense around the page: every VibeHub page reads searchParams and renders
+  // per request, and a boundary here would send a 200 before a page can call
+  // notFound() or redirect(), turning both into client-side fallbacks.
+  return <VibeHubShell>{children}<VibeHubFooter /></VibeHubShell>;
 }

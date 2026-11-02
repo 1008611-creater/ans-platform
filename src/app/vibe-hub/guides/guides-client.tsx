@@ -75,7 +75,7 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
           <div className="mb-4 grid gap-5 sm:grid-cols-[1.2fr_0.8fr] sm:items-center">
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                <span>{lang === "en" ? "📖 Step-by-Step Guide & Ready Prompt" : "📖 实操步骤清单与提示词模板"}</span>
+                <span>{lang === "en" ? "Step-by-step guide and ready prompt" : "实操步骤和提示词模板"}</span>
               </div>
               <h2 id="ans-current-guide-title">{guide.title}</h2>
               <p>{guide.summary}</p>
@@ -106,7 +106,7 @@ export function GuidesClient({ guide, topicMode, topics, initialStep }: { guide:
           {guide.prompt && (
             <div id="prompt" className="mb-4 rounded-xl border border-emerald-500/25 bg-card/85 p-3.5">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <strong className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">⚡ {guide.prompt.title}</strong>
+                <strong className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">{guide.prompt.title}</strong>
                 <SkillCopyButton text={guide.prompt.text} label={t("copyRequest")} copiedLabel={t("copied")} />
               </div>
               <p className="mt-2 line-clamp-3 font-mono text-xs leading-5 text-muted-foreground">{guide.prompt.text}</p>
