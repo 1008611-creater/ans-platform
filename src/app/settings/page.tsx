@@ -49,6 +49,14 @@ export default async function SettingsPage() {
       </div>
 
       <div className="space-y-6">
+        {config.features.mcp !== false && (
+          <ApiKeySettings
+            actorId={user.id}
+            hasExistingKey={!!user.apiKey}
+            initialPublicByDefault={user.mcpPromptsPublicByDefault}
+          />
+        )}
+
         <ProfileForm 
           user={{
             id: user.id,
@@ -61,14 +69,6 @@ export default async function SettingsPage() {
             customLinks: user.customLinks as CustomLink[] | null,
           }}
         />
-
-        {config.features.mcp !== false && (
-          <ApiKeySettings
-            actorId={user.id}
-            hasExistingKey={!!user.apiKey}
-            initialPublicByDefault={user.mcpPromptsPublicByDefault}
-          />
-        )}
 
         <ModelCredentials actorId={user.id} initialCredentials={await listCredentials(session.user.id)} />
       </div>

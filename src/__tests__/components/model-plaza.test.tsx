@@ -53,7 +53,7 @@ describe("model plaza", () => {
     opener.focus(); fireEvent.click(opener);
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByText(/接入方案准备中，默认关闭/)).toBeVisible();
-    expect(within(dialog).getByRole("link", { name: "查看客户端接入设置" })).toHaveAttribute("href", "/settings");
+    expect(within(dialog).getByRole("link", { name: "查看客户端接入设置" })).toHaveAttribute("href", "/settings#api-key");
     expect(within(dialog).getByRole("button", { name: "关闭详情" })).toBeVisible();
     fireEvent.keyDown(document, { key: "Escape" });
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());

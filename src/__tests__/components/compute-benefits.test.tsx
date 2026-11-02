@@ -50,7 +50,7 @@ describe("compute benefits UI", () => {
     expect(await screen.findByText(copy.terraPending)).toBeVisible();
     expect(screen.getByText(copy.funding)).toBeVisible();
     expect(screen.getByText(/x-ans-funding: paid/)).toBeVisible();
-    expect(screen.getByRole("link", { name: copy.keys })).toHaveAttribute("href", "/settings");
+    expect(screen.getByRole("link", { name: copy.keys })).toHaveAttribute("href", "/settings#api-key");
   });
   it("submits only the versioned questionnaire answers and prevents double submission", async () => {
     const fetcher = fetchSummary(); render(<ComputeBenefits actorId="u1" />);

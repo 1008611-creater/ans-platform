@@ -110,7 +110,7 @@ function CreditsCenterSession({ actorId, availablePoints, reservedPoints = 0, pe
       <nav aria-label={t("entryPoints")} className="mt-4 flex flex-wrap gap-2 border-t pt-4">
         {([
           { href: "/models", title: "plazaTitle", body: "plazaBody", icon: Cpu },
-          { href: "/settings", title: "connectionTitle", body: "connectionBody", icon: TerminalSquare },
+          { href: "/settings#api-key", title: "connectionTitle", body: "connectionBody", icon: TerminalSquare },
           { href: "/projects", title: "projectsTitle", body: "projectsBody", icon: FolderOpen },
           { href: "/workflows/runs", title: "runsTitle", body: "runsBody", icon: ReceiptText },
           { href: "/workspace/compute", title: "aigcTitle", body: "aigcBody", icon: ReceiptText },
