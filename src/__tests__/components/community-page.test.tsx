@@ -2,7 +2,7 @@ import { beforeEach, expect, it, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import CommunityPage from "@/app/community/page";
 
-const mocks = vi.hoisted(() => ({ auth: vi.fn(), redirect: vi.fn(), growth: vi.fn(), growthPanel: vi.fn(), communityPanel: vi.fn(), feed: vi.fn(), compose: vi.fn(), stalls: vi.fn(), suggest: vi.fn() }));
+const mocks = vi.hoisted(() => ({ auth: vi.fn(), redirect: vi.fn(), growth: vi.fn(), growthPanel: vi.fn(), communityPanel: vi.fn(), feed: vi.fn(), compose: vi.fn(), stalls: vi.fn(), suggest: vi.fn(), competitions: vi.fn() }));
 vi.mock("next-auth/react", () => ({ useSession: () => ({ status: "authenticated", data: { user: { id: "self" } } }) }));
 vi.mock("@/lib/auth", () => ({ auth: mocks.auth }));
 vi.mock("@/server/growth/service", () => ({ getGrowthProfile: mocks.growth }));
@@ -12,7 +12,7 @@ vi.mock("@/server/community/feed", () => ({
   parseCommunitySort: (value: unknown) => value === "open" ? "open" : "latest",
   listCommunityFeed: mocks.feed,
 }));
-vi.mock("@/server/community/posts", () => ({ getComposeOptions: mocks.compose, listMyStalls: mocks.stalls }));
+vi.mock("@/server/community/posts", () => ({ getComposeOptions: mocks.compose, listMyStalls: mocks.stalls, listOpenCompetitions: mocks.competitions }));
 vi.mock("@/server/community/follows", () => ({ suggestFollows: mocks.suggest }));
 vi.mock("@/components/community/follow-button", () => ({ FollowButton: ({ userId, relation }: { userId: string; relation: { followedBy: boolean } }) => <button type="button" data-user={userId}>{relation.followedBy ? "followBack" : "follow"}</button> }));
 vi.mock("@/components/community/post-compose", () => ({ PostCompose: ({ guest, returnTo, defaultOpen }: { guest?: boolean; returnTo?: string; defaultOpen?: boolean }) => <button type="button" data-guest={guest ? "true" : undefined} data-return={returnTo} data-open={defaultOpen ? "true" : undefined}>compose</button> }));
@@ -31,6 +31,7 @@ beforeEach(() => {
   mocks.suggest.mockResolvedValue([]);
   mocks.compose.mockResolvedValue({ teams: [], competitions: [] });
   mocks.stalls.mockResolvedValue([]);
+  mocks.competitions.mockResolvedValue([]);
 });
 afterEach(cleanup);
 it("shows the public feed to visitors without loading private growth", async () => {
@@ -47,7 +48,7 @@ it("shows the public feed to visitors without loading private growth", async () 
   expect(screen.getByTestId("community-guest-preview")).toBeInTheDocument();
   // 游客也能打开发帖弹窗先写；发出时去登录，回到原板块并自动打开弹窗。
   expect(screen.getByRole("button", { name: "compose" })).toHaveAttribute("data-guest", "true");
-  expect(screen.getByRole("button", { name: "compose" })).toHaveAttribute("data-return", "/community?c=team&compose=1");
+  expect(screen.getByRole("button", { name: "compose" })).toHaveAttribute("data-return", "/community?c=team&sort=open&compose=1");
   // 切换排序时保留当前板块。
   expect(screen.getByRole("link", { name: "sortLatest" })).toHaveAttribute("href", "/community?c=team");
   expect(screen.getByRole("link", { name: "sortOpen" })).toHaveAttribute("aria-current", "page");
@@ -58,7 +59,17 @@ it("shows an honest empty state instead of padding the feed", async () => {
   mocks.feed.mockResolvedValue({ feed: [], followingCount: null, pinned: [] });
   render(await CommunityPage({ searchParams: Promise.resolve({}) }));
   expect(screen.queryByTestId("community-feed")).not.toBeInTheDocument();
-  expect(screen.getByText("empty")).toBeInTheDocument();
+  // 空板块给一句话和一个预选好的发帖按钮，不编造帖子。
+  expect(screen.getByTestId("community-empty-guide")).toHaveTextContent("guide.all.title");
+  expect(mocks.competitions).not.toHaveBeenCalled();
+});
+it("points an empty team board at the competitions that are open", async () => {
+  mocks.auth.mockResolvedValue(null);
+  mocks.feed.mockResolvedValue({ feed: [], followingCount: null, pinned: [] });
+  mocks.competitions.mockResolvedValue([{ id: "agrihackathon-2026", title: "农客松", href: "/competitions/agrihackathon" }]);
+  render(await CommunityPage({ searchParams: Promise.resolve({ c: "team" }) }));
+  expect(screen.getByTestId("community-empty-guide")).toHaveTextContent("guide.team.title");
+  expect(screen.getByRole("link", { name: "guide.competition" })).toHaveAttribute("href", "/competitions/agrihackathon");
 });
 it("gives members a real check-in record beside the feed", async () => {
   mocks.auth.mockResolvedValue({ user: { id: "self", username: "real-member" } });

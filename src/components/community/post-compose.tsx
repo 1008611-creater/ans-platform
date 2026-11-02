@@ -40,12 +40,14 @@ function dayInput(offsetDays: number) {
 export type RelayTarget = { id: string; label: string; authorName: string; board: CommunityBoardId; count: number; cover: string | null };
 /** 「附项目」选中的项目广场项目。 */
 export type RemixPick = { slug: string; title: string };
+/** 打开弹窗时预选的板块和类型：在哪个板块点发帖，就预选哪个。 */
+export type ComposePreset = { board: CommunityBoardId; kind: CommunityPostKindId; stall?: CommunityStallKindId };
 
 /**
  * 发帖和「接一下」的弹窗。
  * 游客也能打开、先写；点发出时把草稿存在本机，去登录，登录完回到 `returnTo`（带着打开弹窗的参数），字还在。
  */
-export function PostCompose({ teams, competitions, defaultBoard, relay, project: initialProject, defaultOpen = false, triggerClassName, guest = false, returnTo }: { teams: Array<{ id: string; name: string }>; competitions: Array<{ id: string; title: string }>; defaultBoard?: CommunityBoardId; relay?: RelayTarget; project?: RemixPick; defaultOpen?: boolean; triggerClassName?: string; guest?: boolean; returnTo?: string }) {
+export function PostCompose({ teams, competitions, preset, relay, project: initialProject, defaultOpen = false, triggerClassName, triggerLabel, guest = false, returnTo, canOfficial = false }: { teams: Array<{ id: string; name: string }>; competitions: Array<{ id: string; title: string }>; preset?: ComposePreset; relay?: RelayTarget; project?: RemixPick; defaultOpen?: boolean; triggerClassName?: string; triggerLabel?: string; guest?: boolean; returnTo?: string; canOfficial?: boolean }) {
   const t = useTranslations("product.communityPost.compose");
   const r = useTranslations("product.communityPost.relay");
   const page = useTranslations("product.communityPage");
@@ -53,9 +55,10 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
   const { send, pending } = useCommunityRequest();
   const id = useId();
   const [open, setOpen] = useState(defaultOpen);
-  const [kind, setKind] = useState<CommunityPostKindId>(relay || initialProject ? "NOTE" : "STALL");
-  const [stall, setStall] = useState<CommunityStallKindId>("SEEK");
-  const [board, setBoard] = useState<CommunityBoardId>(relay?.board ?? defaultBoard ?? "CAMPUS");
+  const [kind, setKind] = useState<CommunityPostKindId>(relay || initialProject ? "NOTE" : preset?.kind ?? "TEXT");
+  const [stall, setStall] = useState<CommunityStallKindId>(preset?.stall ?? "SEEK");
+  const [board, setBoard] = useState<CommunityBoardId>(relay?.board ?? preset?.board ?? "CAMPUS");
+  const [official, setOfficial] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [images, setImages] = useState<string[]>([]);
@@ -151,8 +154,9 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
       return;
     }
     const relayOfId = relay?.id;
-    const payload = kind === "TEXT" ? { kind, board, body, relayOfId }
-      : kind === "NOTE" ? { kind, board, title, body, images, relayOfId, catalogSlug: project?.slug }
+    const asOfficial = canOfficial && !relay && official ? true : undefined;
+    const payload = kind === "TEXT" ? { kind, board, body, relayOfId, official: asOfficial }
+      : kind === "NOTE" ? { kind, board, title, body, images, relayOfId, catalogSlug: project?.slug, official: asOfficial }
         : {
           kind, stall, board, title, body,
           // 截止日当天结束前都算有效。
@@ -180,7 +184,7 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
   return <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger asChild>{relay
       ? <Button className={triggerClassName}><Repeat2 className="h-4 w-4" aria-hidden="true" />{r("open")}</Button>
-      : <Button size="sm" className={triggerClassName}><Plus className="h-4 w-4" aria-hidden="true" />{t("open")}</Button>}</DialogTrigger>
+      : <Button size="sm" className={triggerClassName}><Plus className="h-4 w-4" aria-hidden="true" />{triggerLabel ?? t("open")}</Button>}</DialogTrigger>
     {/* 弹窗里有表单，点遮罩不关，免得写了一半的内容丢掉；Esc 和取消按钮照常关闭。 */}
     <DialogContent onInteractOutside={(event) => event.preventDefault()} className="max-h-[90vh] gap-0 overflow-y-auto p-0 sm:max-w-xl">
       <form onSubmit={submit} className="flex flex-col">
@@ -295,6 +299,10 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
             <label htmlFor={`${id}-deadline`} className={LABEL}>{t("deadline")}</label>
             <input id={`${id}-deadline`} type="date" value={deadline} min={dayInput(0)} max={dayInput(STALL_MAX_DAYS - 1)} onChange={(event) => setDeadline(event.target.value)} className={FIELD} />
           </div>}
+
+          {canOfficial && !relay && kind !== "STALL" && <label className="flex min-h-11 items-center gap-2 text-sm">
+            <input type="checkbox" checked={official} onChange={(event) => setOfficial(event.target.checked)} className="h-4 w-4" />{t("official")}
+          </label>}
 
           {relay && <p className="text-xs text-muted-foreground text-pretty">{r("boardNote", { board: page(`channels.${BOARD_CHANNEL[relay.board]}`) })}</p>}
         </div>

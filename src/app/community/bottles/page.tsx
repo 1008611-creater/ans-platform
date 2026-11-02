@@ -37,7 +37,7 @@ export default async function CommunityBottlesPage() {
       <section aria-labelledby="bottle-throw" className="space-y-3 rounded-2xl border bg-card p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="bottle-throw" className="font-semibold">{t("throwTitle")}</h2>
-          <p className="text-sm text-muted-foreground ans-num">{t("floating", { count: floating })}</p>
+          <p className="text-sm text-muted-foreground ans-num">{floating > 0 ? t("floating", { count: floating }) : t("floatingEmpty")}</p>
         </div>
         <ThrowBottleForm guest />
         <p className="text-xs text-muted-foreground">{t("guestNote")}</p>
@@ -54,7 +54,7 @@ export default async function CommunityBottlesPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 id="bottle-picked" className="font-semibold">{t("pickedTitle")}</h2>
-                <p className="text-sm text-muted-foreground">{t("floating", { count: floating })}</p>
+                <p className="text-sm text-muted-foreground">{floating > 0 ? t("floating", { count: floating }) : t("floatingEmpty")}</p>
               </div>
               <PickBottleButton />
             </div>

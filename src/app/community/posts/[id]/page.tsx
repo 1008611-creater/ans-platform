@@ -10,8 +10,8 @@ import { getFollowRelation } from "@/server/community/follows";
 import { countRemixPosts, loadRemixProjects } from "@/server/community/remix";
 import { FollowButton } from "@/components/community/follow-button";
 import { PostCompose, type RelayTarget } from "@/components/community/post-compose";
-import { BOARD_CHIP } from "@/components/community/community-feed";
-import { ApplicationList, ApplyForm, ClosePostButton, HelpForm, LikeButton, OfferList, PinPostButton, ReplyForm, ReportPost } from "@/components/community/post-actions";
+import { BOARD_CHIP, OfficialChip } from "@/components/community/community-feed";
+import { ApplicationList, ApplyForm, ClosePostButton, HelpForm, LikeButton, OfferList, OfficialPostButton, PinPostButton, ReplyForm, ReportPost } from "@/components/community/post-actions";
 import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
@@ -77,6 +77,7 @@ export default async function CommunityPostPage({ params, searchParams }: { para
         <article className="space-y-5 rounded-2xl border bg-card p-5 sm:p-7">
           {post.status === "HIDDEN" && <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-100">{t("hiddenNote")}</p>}
           <div className="flex flex-wrap items-center gap-2">
+            {post.officialAt && <OfficialChip label={page("official")} />}
             {post.kind === "STALL" && <span className="rounded-md bg-foreground px-2 py-0.5 text-xs font-bold text-background">{page(`stall.${post.stall ?? "SEEK"}`)}</span>}
             {!(isTeam && post.board === "TEAM") && <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${BOARD_CHIP[post.board]}`}>{page(`channels.${channel}`)}</span>}
             {post.active && post.expiresAt && <span className="ml-auto flex items-center gap-1 text-sm text-muted-foreground"><Clock className="h-4 w-4" aria-hidden="true" />{t(isTeam ? "deadlineTeam" : "deadlineNote", { date: date.format(post.expiresAt) })}</span>}
@@ -142,7 +143,10 @@ export default async function CommunityPostPage({ params, searchParams }: { para
           <div className="flex flex-wrap items-center gap-3 border-t pt-4">
             {viewerId ? <LikeButton postId={post.id} liked={post.liked} count={post._count.likes} /> : <span className="text-sm text-muted-foreground">{page("likes")} {post._count.likes}</span>}
             <span className="flex-1" />
-            {session?.user?.role === "ADMIN" && post.kind !== "STALL" && post.status !== "HIDDEN" && <PinPostButton postId={post.id} pinned={Boolean(post.pinnedAt)} />}
+            {session?.user?.role === "ADMIN" && post.kind !== "STALL" && post.status !== "HIDDEN" && <>
+              <OfficialPostButton postId={post.id} official={Boolean(post.officialAt)} />
+              <PinPostButton postId={post.id} pinned={Boolean(post.pinnedAt)} />
+            </>}
             {viewerId && !post.isAuthor && <ReportPost postId={post.id} />}
           </div>
         </article>
@@ -151,7 +155,8 @@ export default async function CommunityPostPage({ params, searchParams }: { para
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
               <h2 id="relays-heading" className="text-sm font-semibold ans-num">{r("title", { count: post._count.relays })}</h2>
-              <p className="text-xs text-muted-foreground">{post._count.relays > 0 ? r("hint") : r("empty")}</p>
+              <p className="text-xs text-muted-foreground text-pretty">{r("explain")}</p>
+              {post._count.relays === 0 && <p className="text-xs text-muted-foreground">{r("empty")}</p>}
             </div>
             {relayTarget && <PostCompose teams={[]} competitions={[]} relay={relayTarget} guest={!viewerId} returnTo={relayBack} defaultOpen={relayIntent && Boolean(viewerId)} />}
           </div>

@@ -212,6 +212,32 @@ describe("置顶", () => {
   });
 });
 
+describe("官方帖", () => {
+  it("only lets admins mark a post official, so Day posts can move out of a regular board", async () => {
+    mocks.db.communityPost.findUnique.mockResolvedValue(openPost({ kind: "NOTE", stall: null, expiresAt: null }));
+    mocks.db.user.findUnique.mockResolvedValue({ role: "USER" });
+    await expectCode(runCommunityPostAction("u1", "post1", { action: "official", official: true }), "FORBIDDEN");
+    mocks.db.user.findUnique.mockResolvedValue({ role: "ADMIN" });
+    await expect(runCommunityPostAction("u1", "post1", { action: "official", official: true })).resolves.toEqual({ official: true });
+    expect(mocks.db.communityPost.update).toHaveBeenCalledWith({ where: { id: "post1" }, data: { officialAt: expect.any(Date) } });
+    expect(mocks.db.auditLog.create).toHaveBeenCalledWith({ data: expect.objectContaining({ action: "COMMUNITY_POST_OFFICIAL", resourceId: "post1" }) });
+  });
+
+  it("lets only admins post as official", async () => {
+    mocks.db.user.findUnique.mockResolvedValue({ role: "USER" });
+    await expectCode(createCommunityPost("u1", { kind: "TEXT", board: "CAMPUS", body: "今天的挑战", official: true }), "FORBIDDEN");
+    mocks.db.user.findUnique.mockResolvedValue({ role: "ADMIN" });
+    await createCommunityPost("u1", { kind: "TEXT", board: "CAMPUS", body: "今天的挑战", official: true });
+    expect(mocks.db.communityPost.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ officialAt: expect.any(Date) }) }));
+  });
+
+  it("puts official posts first in the pinned row", async () => {
+    mocks.db.communityPost.findMany.mockResolvedValue([]);
+    await listCommunityPosts({ pinned: true, take: 2 });
+    expect(mocks.db.communityPost.findMany).toHaveBeenCalledWith(expect.objectContaining({ orderBy: [{ officialAt: { sort: "desc", nulls: "last" } }, { pinnedAt: "desc" }] }));
+  });
+});
+
 describe("举报与可见性", () => {
   it("hides a post once three people report it", async () => {
     mocks.db.communityPost.findUnique.mockResolvedValue(openPost());

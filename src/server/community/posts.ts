@@ -89,7 +89,10 @@ export async function createCommunityPost(userId: string, raw: unknown) {
   if (today >= POSTS_PER_DAY) throw new CommunityError(429, "DAILY_LIMIT");
 
   const relayRoot = input.kind !== "STALL" && input.relayOfId ? await resolveRelayRoot(input.relayOfId) : null;
-  const data: Prisma.CommunityPostUncheckedCreateInput = { authorId: userId, kind: input.kind, board: relayRoot?.board ?? input.board as CommunityBoard, body: input.body, images: [], relayOfId: relayRoot?.id ?? null };
+  // 只有管理员能发官方帖；接力帖跟着原帖，不单独算官方。
+  const official = input.kind !== "STALL" && input.official === true && !relayRoot;
+  if (official) await requireAdmin(userId);
+  const data: Prisma.CommunityPostUncheckedCreateInput = { authorId: userId, kind: input.kind, board: relayRoot?.board ?? input.board as CommunityBoard, body: input.body, images: [], relayOfId: relayRoot?.id ?? null, officialAt: official ? new Date() : null };
   if (input.kind === "NOTE") {
     if (input.catalogSlug && !(await isPublishedCatalogSlug(input.catalogSlug))) throw new CommunityError(400, "INVALID_PROJECT");
     Object.assign(data, { title: input.title, images: input.images, catalogSlug: input.catalogSlug ?? null });
@@ -155,7 +158,9 @@ export async function listCommunityPosts({ board, sort = "latest", take = 40, au
       ? { status: "OPEN", kind: "STALL", stall: { in: ["SEEK", "TEAM"] }, expiresAt: { gt: now } }
       : { status: { in: [...VISIBLE] }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }, { status: "RESOLVED" }] }),
   };
-  const rows = await db.communityPost.findMany({ where, include: feedInclude, orderBy: pinned ? { pinnedAt: "desc" } : { createdAt: "desc" }, take: Math.min(Math.max(take, 1), 60) });
+  // 置顶区里官方帖排在前面，其余按置顶时间。
+  const orderBy: Prisma.CommunityPostOrderByWithRelationInput[] = pinned ? [{ officialAt: { sort: "desc", nulls: "last" } }, { pinnedAt: "desc" }] : [{ createdAt: "desc" }];
+  const rows = await db.communityPost.findMany({ where, include: feedInclude, orderBy, take: Math.min(Math.max(take, 1), 60) });
   return rows.map(({ applications, roles, relayOf, relays, ...post }) => ({
     ...post,
     relayOf: relayQuote(relayOf),
@@ -223,6 +228,12 @@ export async function listMyStalls(userId: string) {
 }
 
 /** 发组队帖时能选的队伍（我是队长或管理员）和还没结束的比赛。 */
+/** 还没结束的比赛，组队板块空的时候给个入口。农客松有自己的主会场。 */
+export async function listOpenCompetitions(take = 2) {
+  const rows = await db.competition.findMany({ where: { status: { not: "ENDED" } }, select: { id: true, title: true }, orderBy: { createdAt: "desc" }, take });
+  return rows.map((row) => ({ ...row, href: row.id.startsWith("agrihackathon") ? "/competitions/agrihackathon" : `/competitions/${row.id}` }));
+}
+
 export async function getComposeOptions(userId: string) {
   const [memberships, competitions] = await Promise.all([
     db.teamMember.findMany({ where: { userId, status: "ACTIVE", role: { in: ["OWNER", "ADMIN"] } }, select: { team: { select: { id: true, name: true } } }, orderBy: { joinedAt: "desc" }, take: 20 }),
@@ -385,14 +396,27 @@ async function decideApplication(post: ActionPost, userId: string, applicationId
   return result;
 }
 
-/** 置顶只有管理员能做，用来把每天的官方挑战帖放到推荐频道最上面。摊位会过期，不给置顶。 */
-async function pinPost(post: ActionPost, userId: string, pinned: boolean) {
+async function requireAdmin(userId: string) {
   const user = await db.user.findUnique({ where: { id: userId }, select: { role: true } });
   if (user?.role !== "ADMIN") throw new CommunityError(403, "FORBIDDEN");
+}
+
+/** 置顶只有管理员能做，用来把每天的官方挑战帖放到推荐频道最上面。摊位会过期，不给置顶。 */
+async function pinPost(post: ActionPost, userId: string, pinned: boolean) {
+  await requireAdmin(userId);
   if (post.kind === "STALL") throw new CommunityError(400, "INVALID_ACTION");
   await db.communityPost.update({ where: { id: post.id }, data: { pinnedAt: pinned ? new Date() : null } });
   await db.auditLog.create({ data: { actorId: userId, action: pinned ? "COMMUNITY_POST_PINNED" : "COMMUNITY_POST_UNPINNED", resourceType: "community_post", resourceId: post.id } });
   return { pinned };
+}
+
+/** 标成官方帖或取消，只有管理员能做。已经发在别的板块的官方帖（比如 Day 03）也能事后补标。 */
+async function markOfficial(post: ActionPost, userId: string, official: boolean) {
+  await requireAdmin(userId);
+  if (post.kind === "STALL") throw new CommunityError(400, "INVALID_ACTION");
+  await db.communityPost.update({ where: { id: post.id }, data: { officialAt: official ? new Date() : null } });
+  await db.auditLog.create({ data: { actorId: userId, action: official ? "COMMUNITY_POST_OFFICIAL" : "COMMUNITY_POST_UNOFFICIAL", resourceType: "community_post", resourceId: post.id } });
+  return { official };
 }
 
 async function reportPost(post: ActionPost, userId: string, reason: string, details?: string) {
@@ -426,5 +450,6 @@ export async function runCommunityPostAction(userId: string, postId: string, raw
     case "decide": return decideApplication(post, userId, input.applicationId, input.decision);
     case "report": return reportPost(post, userId, input.reason, input.details);
     case "pin": return pinPost(post, userId, input.pinned);
+    case "official": return markOfficial(post, userId, input.official);
   }
 }

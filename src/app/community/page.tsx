@@ -6,10 +6,10 @@ import { auth } from "@/lib/auth";
 import { formatLevel } from "@/lib/level";
 import { getGrowthProfile } from "@/server/growth/service";
 import { COMMUNITY_CHANNELS, listCommunityFeed, parseCommunityChannel, parseCommunitySort } from "@/server/community/feed";
-import { getComposeOptions, listMyStalls } from "@/server/community/posts";
+import { getComposeOptions, listMyStalls, listOpenCompetitions } from "@/server/community/posts";
 import { suggestFollows } from "@/server/community/follows";
 import { FollowButton } from "@/components/community/follow-button";
-import { PostCompose } from "@/components/community/post-compose";
+import { PostCompose, type ComposePreset } from "@/components/community/post-compose";
 import { loadRemixProjects } from "@/server/community/remix";
 import { catalogSlugSchema } from "@/contracts/community-posts";
 import { CommunityFeed } from "@/components/community/community-feed";
@@ -17,7 +17,7 @@ import { CheckInHeatmap } from "@/components/community/check-in-heatmap";
 import { CommunityPanel } from "@/components/community/community-panel";
 import { ProfileGrowthPanel } from "@/components/growth/profile-growth-panel";
 import { Button } from "@/components/ui/button";
-import { Pin, Waves } from "lucide-react";
+import { ChevronRight, Pin, Waves } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +27,17 @@ export async function generateMetadata() {
 }
 
 type SearchParams = Promise<{ c?: string | string[]; tab?: string | string[]; sort?: string | string[]; project?: string | string[]; compose?: string | string[] }>;
+
+/** 在哪个板块发帖，就预选那个板块和最常用的帖子类型。推荐频道默认一句话，门槛最低。 */
+const CHANNEL_PRESET: Record<string, ComposePreset> = {
+  all: { board: "CAMPUS", kind: "TEXT" },
+  team: { board: "TEAM", kind: "STALL", stall: "TEAM" },
+  career: { board: "CAREER", kind: "NOTE" },
+  research: { board: "RESEARCH", kind: "NOTE" },
+  aigc: { board: "AIGC", kind: "NOTE" },
+  campus: { board: "CAMPUS", kind: "STALL", stall: "SEEK" },
+  open: { board: "CAMPUS", kind: "STALL", stall: "SEEK" },
+};
 
 const tabClass = (active: boolean) => `border-b-2 px-1 pb-2 text-sm font-semibold transition-colors ${active ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`;
 
@@ -40,20 +51,25 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
   const sort = parseCommunitySort(params.sort);
   // 从项目广场「晒我的同款」进来：弹窗直接打开，项目已经附好。
   const projectSlug = userId && typeof params.project === "string" && catalogSlugSchema.safeParse(params.project).success ? params.project : null;
-  const [growth, feed, compose, stalls, suggestions, remixProjects] = await Promise.all([
+  const [growth, feed, compose, stalls, suggestions, remixProjects, openCompetitions] = await Promise.all([
     userId ? getGrowthProfile(userId) : null,
     showGrowth ? null : listCommunityFeed(channel, sort, userId ?? null),
     userId ? getComposeOptions(userId) : null,
     userId && !showGrowth ? listMyStalls(userId) : [],
     userId && !showGrowth ? suggestFollows(userId) : [],
     loadRemixProjects([projectSlug]),
+    !showGrowth && channel === "team" ? listOpenCompetitions() : [],
   ]);
   const remixProject = projectSlug ? remixProjects.get(projectSlug) : undefined;
   // 游客点「发帖」先写，登录回来带着 compose=1，弹窗直接打开、草稿放回去。
   const composeIntent = params.compose === "1";
+  const canOfficial = session?.user?.role === "ADMIN";
+  const preset = CHANNEL_PRESET[sort === "open" ? "open" : channel] ?? CHANNEL_PRESET.all;
+  const guideKey = sort === "open" ? "open" : channel;
   const composeBack = (() => {
     const query = new URLSearchParams();
     if (channel !== "all" && channel !== "following") query.set("c", channel);
+    if (sort === "open") query.set("sort", "open");
     query.set("compose", "1");
     return `/community?${query.toString()}`;
   })();
@@ -75,8 +91,8 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
         <div className="flex items-center gap-2">
           <Button asChild size="sm" variant="outline" className="gap-1.5"><Link href="/community/bottles" data-testid="community-bottles-link"><Waves className="h-4 w-4" aria-hidden="true" />{t("bottlesLink")}</Link></Button>
           {compose
-            ? <PostCompose teams={compose.teams} competitions={compose.competitions} project={remixProject && { slug: remixProject.slug, title: remixProject.title }} defaultOpen={Boolean(remixProject) || composeIntent} />
-            : <PostCompose guest teams={[]} competitions={[]} returnTo={composeBack} />}
+            ? <PostCompose teams={compose.teams} competitions={compose.competitions} preset={preset} canOfficial={canOfficial} project={remixProject && { slug: remixProject.slug, title: remixProject.title }} defaultOpen={Boolean(remixProject) || composeIntent} />
+            : <PostCompose guest teams={[]} competitions={[]} preset={preset} returnTo={composeBack} />}
         </div>
       </header>
 
@@ -127,9 +143,15 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
                   </ul>}
                 </div>
               ) : (
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed px-5 py-6 text-sm text-muted-foreground">
-                  <span>{t("empty")}</span>
-                  {!compose && <Link href="/login?callbackUrl=/community" className="font-semibold text-primary hover:underline">{t("emptyAction")}</Link>}
+                // 空板块不只说「没有帖子」：一句话告诉新人这里发什么，再给一个预选好的发帖按钮。
+                <div className="space-y-3 rounded-2xl bg-card px-5 py-6 shadow-[inset_0_0_0_0.5px_var(--hairline)]" data-testid="community-empty-guide">
+                  <p className="text-[15px] font-semibold text-pretty">{t(`guide.${guideKey}.title`)}</p>
+                  <PostCompose guest={!compose} teams={compose?.teams ?? []} competitions={compose?.competitions ?? []} preset={preset} returnTo={composeBack} triggerLabel={t(`guide.${guideKey}.action`)} />
+                  {openCompetitions.length > 0 && <ul className="space-y-1 border-t pt-3">
+                    {openCompetitions.map((item) => <li key={item.id}><Link href={item.href} className="inline-flex min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+                      {t("guide.competition", { title: item.title })}<ChevronRight className="h-4 w-4" aria-hidden="true" />
+                    </Link></li>)}
+                  </ul>}
                 </div>
               )}
             </section>
