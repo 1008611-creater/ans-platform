@@ -25,7 +25,8 @@ describe("explicit real Hub associations", () => {
     expect(getHub("vibehub")!.resources[0].href).toBe("/vibe-hub");
     const aigc = getHub("aigc")!;
     expect(aigc.workflowRecipeIds).toEqual([]);
-    expect(aigc.resources.map(resource => resource.kind)).toEqual(["hosted-tool", "hosted-tool"]);
+    // Toonflow (an external site) and Hypit (org-only) were withdrawn with their market cards.
+    expect(aigc.resources).toEqual([]);
     for (const hub of HUBS) for (const slug of hub.projectSlugs) expect(CATALOG_PROJECTS.some(project => project.slug === slug), slug).toBe(true);
   });
 });
