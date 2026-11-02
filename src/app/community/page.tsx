@@ -87,7 +87,10 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
   return (
     <div className="ans-product-container ans-page-content ans-community-page space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
+        <div className="min-w-0 space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
+          {!userId && <p className="text-sm text-muted-foreground text-pretty" data-testid="community-tagline">{t("tagline")}</p>}
+        </div>
         <div className="flex items-center gap-2">
           <Button asChild size="sm" variant="outline" className="gap-1.5"><Link href="/community/bottles" data-testid="community-bottles-link"><Waves className="h-4 w-4" aria-hidden="true" />{t("bottlesLink")}</Link></Button>
           {compose
@@ -148,6 +151,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
                 <div className="space-y-3 rounded-2xl bg-card px-5 py-6 shadow-[inset_0_0_0_0.5px_var(--hairline)]" data-testid="community-empty-guide">
                   <p className="text-[15px] font-semibold text-pretty">{t(`guide.${guideKey}.title`)}</p>
                   <PostCompose guest={!compose} teams={compose?.teams ?? []} competitions={compose?.competitions ?? []} preset={preset} returnTo={composeBack} triggerLabel={t(`guide.${guideKey}.action`)} />
+                  {guideKey === "team" && <Link href="/teams" className="inline-flex min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground">{t("guide.teamCreate")}<ChevronRight className="h-4 w-4" aria-hidden="true" /></Link>}
                   {openCompetitions.length > 0 && <ul className="space-y-1 border-t pt-3">
                     {openCompetitions.map((item) => <li key={item.id}><Link href={item.href} className="inline-flex min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
                       {t("guide.competition", { title: item.title })}<ChevronRight className="h-4 w-4" aria-hidden="true" />

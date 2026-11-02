@@ -76,9 +76,9 @@ export function PostCompose({ teams, competitions, preset, relay, project: initi
   const [leaving, setLeaving] = useState(false);
   const draftKey = relay ? `relay:${relay.id}` : "post";
 
-  // 登录回来自动打开弹窗时，把登录前写的字放回去。
+  // 打开弹窗时，把登录前或去建队前写的字放回去。
   useEffect(() => {
-    if (!defaultOpen || guest) return;
+    if (!open || guest) return;
     const draft = loadDraft(draftKey);
     if (!draft) return;
     if (draft.kind === "NOTE" || draft.kind === "TEXT" || (draft.kind === "STALL" && !relay)) setKind(draft.kind);
@@ -86,7 +86,7 @@ export function PostCompose({ teams, competitions, preset, relay, project: initi
     if (!relay && draft.board && (COMMUNITY_BOARDS as readonly string[]).includes(draft.board)) setBoard(draft.board as CommunityBoardId);
     if (draft.title) setTitle(draft.title);
     if (draft.body) setBody(draft.body);
-  }, [defaultOpen, guest, draftKey, relay]);
+  }, [open, guest, draftKey, relay]);
 
   useEffect(() => {
     if (!open || kind !== "NOTE") return;
@@ -142,7 +142,7 @@ export function PostCompose({ teams, competitions, preset, relay, project: initi
   const bodyMax = kind === "TEXT" ? TEXT_POST_MAX : POST_BODY_MAX;
   const ready = kind === "TEXT" ? body.trim().length >= 2
     : kind === "NOTE" ? title.trim().length >= 2 && body.trim().length >= 2
-      : title.trim().length >= 4 && Boolean(deadline) && (!isTeam || (Boolean(teamId) && roles.length > 0));
+      : title.trim().length >= 4 && Boolean(deadline) && (!isTeam || guest || (Boolean(teamId) && roles.length > 0));
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -220,8 +220,10 @@ export function PostCompose({ teams, competitions, preset, relay, project: initi
           </div>}
 
           {isTeam && <>
-            {teams.length === 0
-              ? <p className="rounded-lg bg-muted px-3 py-2.5 text-sm">{t("teamNone")} <Link href="/teams" className="font-semibold underline underline-offset-2">{t("createTeam")}</Link></p>
+            {guest
+              ? <p className="rounded-lg bg-muted px-3 py-2.5 text-sm">{t("teamGuest")}</p>
+              : teams.length === 0
+              ? <p className="rounded-lg bg-muted px-3 py-2.5 text-sm">{t("teamNone")} <Link href="/teams" onClick={() => saveDraft(draftKey, { kind, stall, board, title, body })} className="font-semibold underline underline-offset-2">{t("createTeam")}</Link></p>
               : <div className="grid gap-3 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor={`${id}-competition`} className={LABEL}>{t("competition")}</label>
@@ -251,6 +253,7 @@ export function PostCompose({ teams, competitions, preset, relay, project: initi
                 <input id={`${id}-role`} value={roleDraft} maxLength={20} placeholder={t("roleName")} onChange={(event) => setRoleDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); if (!imeBlocks(event)) addRole(); } }} className={FIELD} />
                 <Button type="button" variant="outline" onClick={addRole} disabled={!roleDraft.trim()}><Plus className="h-4 w-4" aria-hidden="true" />{t("addRole")}</Button>
               </div>}
+              {!guest && teams.length > 0 && roles.length === 0 && <p className="text-xs text-muted-foreground">{t("rolesRequired")}</p>}
             </fieldset>
           </>}
 

@@ -3762,8 +3762,10 @@
         "title": "Nobody is waiting for help right now. Need a hand? Post a request",
         "action": "Ask for help"
       },
-      "competition": "Open now: {title}"
-    }
+      "competition": "Open now: {title}",
+      "teamCreate": "Create a team first"
+    },
+    "tagline": "Students talk AI, find teammates and help each other here. See a post you like? Tap \"Relay\" to add yours."
   },
   "modelPlaza": {
     "title": "Model plaza",
@@ -4177,7 +4179,9 @@
       "projectEmpty": "No matching projects",
       "removeProject": "Remove attached project",
       "loginToSubmit": "Sign in to post",
-      "official": "Post as official"
+      "official": "Post as official",
+      "teamGuest": "Sign in to post for your team",
+      "rolesRequired": "Add at least one role to post"
     },
     "detail": {
       "back": "Community",
@@ -4328,7 +4332,7 @@
     "stillFloating": "Still drifting",
     "hiddenNote": "This bottle was reported and is under review. Others can't pick it up for now.",
     "loginToThrow": "Sign in to throw",
-    "guestNote": "Write first. You'll sign in when you throw it, and your words stay.",
+    "guestNote": "Write first and sign in when you throw it; your text stays. After signing in you can also pick up bottles.",
     "floatingEmpty": "The sea is empty. Throw the first one",
     "withdraw": "Take back",
     "withdrawConfirm": "Take it back?",

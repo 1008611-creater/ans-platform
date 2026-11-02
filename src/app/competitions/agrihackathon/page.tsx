@@ -113,7 +113,7 @@ export default async function AgriHackathonPage() {
       <section data-agri-segment="pipeline" aria-labelledby="agri-pipeline-heading" className="space-y-3 rounded-2xl border bg-card/60 p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="font-mono text-[11px]">STEP 01 → 05</Badge>
+            <Badge variant="secondary" className="font-mono text-xs">STEP 01 → 05</Badge>
             <h2 id="agri-pipeline-heading" className="text-lg font-semibold">{t("pipelineTitle")}</h2>
           </div>
           <p className="text-xs text-muted-foreground max-md:hidden">{t("pipelineDescription")}</p>
@@ -134,7 +134,7 @@ export default async function AgriHackathonPage() {
               >
                 <div className="space-y-1.5 max-md:flex max-md:min-w-0 max-md:flex-1 max-md:items-center max-md:gap-2.5 max-md:space-y-0">
                   <div className="flex items-center justify-between gap-2">
-                    <Badge variant={isCoreSubmit ? "default" : "outline"} className="font-mono text-[10px] max-md:text-xs">{step.step}</Badge>
+                    <Badge variant={isCoreSubmit ? "default" : "outline"} className="font-mono text-xs">{step.step}</Badge>
                     <StepIcon className="size-4 shrink-0 text-primary max-md:hidden" aria-hidden="true" />
                   </div>
                   <h3 className="text-sm font-semibold leading-snug max-md:truncate">{step.title}</h3>
@@ -158,7 +158,7 @@ export default async function AgriHackathonPage() {
           })}
         </ol>
         <nav aria-label={t("nextAction")} className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t pt-2.5">
-          <Link href="/community?c=team" className={linkClass}>{t("findTeammates")}</Link>
+          <Button asChild size="sm" variant="outline" className="min-h-11"><Link href="/community?c=team">{t("findTeammates")}</Link></Button>
           <Link href="/teams" className={linkClass}>{t("openTeams")}</Link>
           {competition && <Link href={`/competitions/${competition.id}`} className={linkClass}>{t("enterWorkbench")}</Link>}
           <Link href="/explore/agrihackathon/submit" className={linkClass}>{t("bindProject")}</Link>
@@ -186,7 +186,7 @@ export default async function AgriHackathonPage() {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between gap-2">
               <h3 className="flex items-center gap-2 text-sm font-semibold"><Icon className="size-4 shrink-0 text-primary" aria-hidden="true" />{track.name}</h3>
-              <Badge variant="outline" className="font-mono text-[10px]">{track.code}</Badge>
+              <Badge variant="outline" className="font-mono text-xs">{track.code}</Badge>
             </div>
             <p className="text-xs leading-5 text-muted-foreground">{track.description}</p>
           </div>
