@@ -44,10 +44,25 @@ describe("API key account safety", () => {
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
     render(<ApiKeySettings {...props} initialApiKey="isolated-fixture-key" hasExistingKey />);
     fireEvent.click(screen.getByRole("button", { name: "copyKey" }));
-    await waitFor(() => expect(m.error).toHaveBeenCalledWith("error"));
+    await waitFor(() => expect(m.error).toHaveBeenCalledWith("copyFailed"));
     expect(m.success).not.toHaveBeenCalled();
     writeText.mockResolvedValue(undefined);
     fireEvent.click(screen.getByRole("button", { name: "copyKey" }));
     await waitFor(() => expect(m.success).toHaveBeenCalledWith("copied"));
+  });
+  it("falls back to execCommand when the Clipboard API is refused", async () => {
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: vi.fn().mockRejectedValue(new Error("denied")) } });
+    const execCommand = vi.fn().mockReturnValue(true);
+    Object.defineProperty(document, "execCommand", { configurable: true, value: execCommand });
+    render(<ApiKeySettings {...props} initialApiKey="isolated-fixture-key" hasExistingKey />);
+    fireEvent.click(screen.getByRole("button", { name: "copyKey" }));
+    await waitFor(() => expect(m.success).toHaveBeenCalledWith("copied"));
+    expect(execCommand).toHaveBeenCalledWith("copy");
+  });
+  it("offers a new key instead of a dead copy button when the stored key cannot be shown", () => {
+    render(<ApiKeySettings {...props} hasExistingKey />);
+    expect(screen.queryByRole("button", { name: "copyKey" })).toBeNull();
+    expect(screen.getByRole("button", { name: "regenerateAndCopy" })).toBeTruthy();
+    expect(screen.getByText("keyHiddenHint")).toBeTruthy();
   });
 });

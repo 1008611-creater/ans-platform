@@ -73,7 +73,7 @@ export const SWISS_COMPUTE_STEPS: SwissStepItem[] = [
       "在 /settings 创建 pchat_ 个人密钥填入客户端即可",
     ],
     ctaLabel: "创建 API Key →",
-    ctaHref: "/settings",
+    ctaHref: "/settings#api-key",
   },
   {
     num: "04",
@@ -217,7 +217,7 @@ export OPENAI_API_KEY="pchat_你的个人密钥"`,
             ))}
             {onOpenGuide ? (
               <Link
-                href="/settings"
+                href="/settings#api-key"
                 className="ml-1 inline-flex items-center gap-1 rounded-full bg-emerald-700 px-2.5 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-800"
               >
                 <KeyRound className="h-2.5 w-2.5" />

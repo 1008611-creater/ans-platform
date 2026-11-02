@@ -40,7 +40,7 @@ describe("live voucher offers",()=>{
   expect(screen.getByText(/0.016274/)).toBeVisible();
   expect(screen.getByText('pendingTitle{"count":2}')).toBeVisible();
   expect(screen.getByRole("navigation",{name:"entryPoints"})).toBeInTheDocument();
-  expect(screen.getByRole("link",{name:/connectionTitle/})).toHaveAttribute("href","/settings");
+  expect(screen.getByRole("link",{name:/connectionTitle/})).toHaveAttribute("href","/settings#api-key");
   expect(screen.getByRole("link",{name:/projectsTitle/})).toHaveAttribute("href","/projects");
   expect(screen.getByRole("link",{name:/runsTitle/})).toHaveAttribute("href","/workflows/runs");
   expect(screen.getByRole("link",{name:/aigcTitle aigcBody/})).toHaveAttribute("href","/workspace/compute");
