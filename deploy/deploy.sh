@@ -154,10 +154,37 @@ NEW_DIR="$RELEASES_DIR/$NEW_PROJECT"
 mkdir -p "$NEW_DIR"
 cp "$LIVE_CONFIG" "$NEW_DIR/rollback-private.json"
 python3 - "$LIVE_CONFIG" "$NEW_DIR/production-private.json" "ans-platform:$SHORT" <<'PY'
-import json, sys
+import json, os, sys
 src, dst, image = sys.argv[1], sys.argv[2], sys.argv[3]
 data = json.load(open(src))
-data["services"]["app"]["image"] = image
+app = data["services"]["app"]
+app["image"] = image
+
+def parse(volume):
+    if isinstance(volume, dict):
+        return volume.get("type", "bind"), volume.get("source", ""), volume.get("target", ""), bool(volume.get("read_only"))
+    parts = str(volume).split(":")
+    source, target = parts[0], parts[1] if len(parts) > 1 else ""
+    return ("bind" if source.startswith("/") else "volume"), source, target, len(parts) > 2 and "ro" in parts[2].split(",")
+
+# public/ 里的静态资源只跟镜像走。2026-11-01 一条 10-14 留下的只读挂载
+# （…/preserved-mascot-assets → /app/public/mascot/3d）的源目录被清理掉，
+# Docker 重建成空目录，把镜像里的 3D 兔兔龙整个盖成 404，且每次发布都沿用它。
+kept = []
+for volume in app.get("volumes", []):
+    kind, source, target, read_only = parse(volume)
+    if target == "/app/public" or target.startswith("/app/public/"):
+        print(f"  去掉覆盖镜像静态资源的挂载：{source} -> {target}")
+        continue
+    # 只读挂载是交付给容器的现成内容，源不在或为空就等于把容器里那处清空；
+    # 可写的数据目录刚建时可以是空的，只要求它存在。
+    if kind == "bind" and not os.path.exists(source):
+        sys.exit(f"错误：挂载源 {source}（-> {target}）不存在，Docker 会建成空目录。先恢复它再发布（未动线上容器）。")
+    if kind == "bind" and read_only and os.path.isdir(source) and not os.listdir(source):
+        sys.exit(f"错误：只读挂载源 {source}（-> {target}）是空目录。先恢复它再发布（未动线上容器）。")
+    kept.append(volume)
+if "volumes" in app:
+    app["volumes"] = kept
 json.dump(data, open(dst, "w"), indent=2, ensure_ascii=False)
 print(f"  image -> {image}")
 PY
