@@ -82,6 +82,17 @@ export function BottleReplyForm({ bottleId }: { bottleId: string }) {
   </form>;
 }
 
+/** 收回自己还没人回的瓶子。点一次先问一句，再点才收回。 */
+export function WithdrawBottleButton({ bottleId }: { bottleId: string }) {
+  const t = useTranslations("product.communityBottle");
+  const { send, pending } = useCommunityRequest();
+  const [confirming, setConfirming] = useState(false);
+  return <Button type="button" size="sm" variant="ghost" disabled={pending} className="h-9 px-2 text-muted-foreground" onClick={async () => {
+    if (!confirming) { setConfirming(true); return; }
+    if (await send(`/api/community/bottles/${bottleId}`, { action: "withdraw" })) toast.success(t("withdrawn"));
+  }}>{confirming ? t("withdrawConfirm") : t("withdraw")}</Button>;
+}
+
 export function ReportBottle({ bottleId }: { bottleId: string }) {
   const t = useTranslations("product.communityBottle");
   const reasons = useTranslations("product.communityPost.detail.reportReasons");

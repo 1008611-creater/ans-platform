@@ -4,7 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { countFloatingBottles, listMyBottles, listMyPicks } from "@/server/community/bottles";
 import { AccountContentBoundary } from "@/components/auth/account-content-boundary";
-import { BottleReplyForm, PickBottleButton, ReportBottle, ThrowBottleForm } from "@/components/community/bottle-actions";
+import { BottleReplyForm, PickBottleButton, ReportBottle, ThrowBottleForm, WithdrawBottleButton } from "@/components/community/bottle-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -79,9 +79,12 @@ export default async function CommunityBottlesPage() {
             <ul className="space-y-3">
               {mine.map((bottle) => <li key={bottle.id} className="space-y-3 rounded-2xl border bg-card p-4" data-testid="my-bottle">
                 <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{bottle.body}</p>
-                <p className="text-xs text-muted-foreground">
-                  {date.format(bottle.createdAt)} {bottle._count.picks > 0 ? t("pickedBy", { count: bottle._count.picks }) : t("stillFloating")}
-                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    {date.format(bottle.createdAt)} {bottle._count.picks > 0 ? t("pickedBy", { count: bottle._count.picks }) : t("stillFloating")}
+                  </p>
+                  {bottle.status === "OPEN" && bottle.replies.length === 0 && <WithdrawBottleButton bottleId={bottle.id} />}
+                </div>
                 {bottle.status === "HIDDEN" && <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-100">{t("hiddenNote")}</p>}
                 {bottle.replies.length > 0 && <ul className="space-y-2 border-t pt-3">
                   {bottle.replies.map((reply) => <li key={reply.id} className={`${NOTE} px-3 py-2 text-sm`}>{reply.body}</li>)}

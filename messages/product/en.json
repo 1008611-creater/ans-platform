@@ -4278,7 +4278,8 @@
       "NOT_PICKED": "You can only reply to bottles you picked up",
       "ALREADY_REPLIED": "One reply per bottle",
       "INVALID_RELAY": "This post can't be relayed. It may be hidden.",
-      "INVALID_PROJECT": "This project is no longer listed"
+      "INVALID_PROJECT": "This project is no longer listed",
+      "BOTTLE_HAS_REPLIES": "Someone already replied, so this bottle can't be taken back"
     },
     "relay": {
       "title": "Relays {count}",
@@ -4328,7 +4329,10 @@
     "hiddenNote": "This bottle was reported and is under review. Others can't pick it up for now.",
     "loginToThrow": "Sign in to throw",
     "guestNote": "Write first. You'll sign in when you throw it, and your words stay.",
-    "floatingEmpty": "The sea is empty. Throw the first one"
+    "floatingEmpty": "The sea is empty. Throw the first one",
+    "withdraw": "Take back",
+    "withdrawConfirm": "Take it back?",
+    "withdrawn": "Bottle taken back"
   },
   "communityReports": {
     "title": "Community reports",

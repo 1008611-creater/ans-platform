@@ -48,7 +48,7 @@ export function AgriMobileSegments({ labels, label, children }: { labels: Record
   }
 
   return <div data-agri-active={active} className="ans-agri-segments space-y-6" onClickCapture={followAnchor}>
-    <div ref={bar} className="sticky top-12 z-30 -mx-5 scroll-mt-12 bg-background px-5 py-2 md:hidden">
+    <div ref={bar} className="sticky top-12 z-30 -mx-4 scroll-mt-12 bg-background px-4 py-2 sm:-mx-5 sm:px-5 md:hidden">
       <div role="group" aria-label={label} className="grid grid-cols-3 gap-1 rounded-xl bg-muted p-1">
         {SEGMENTS.map(segment => <button key={segment} type="button" aria-pressed={active === segment} onClick={() => select(segment)}
           className={cn("min-h-11 rounded-lg text-sm font-medium transition-[color,background-color,transform] duration-200 ease-out active:scale-[0.97] motion-reduce:transition-none",

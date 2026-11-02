@@ -69,12 +69,23 @@ async function loadPickedBottle(userId: string, bottleId: string) {
   return bottle;
 }
 
+/** 作者收回自己的瓶子：只能在还没人回的时候收，收回后海里捞不到。 */
+async function withdrawBottle(userId: string, bottleId: string) {
+  const bottle = await db.communityBottle.findUnique({ where: { id: bottleId }, select: { authorId: true, status: true, _count: { select: { replies: true } } } });
+  if (!bottle || bottle.authorId !== userId || bottle.status === "WITHDRAWN") throw new CommunityError(404, "NOT_FOUND");
+  if (bottle._count.replies > 0) throw new CommunityError(409, "BOTTLE_HAS_REPLIES");
+  await db.communityBottle.update({ where: { id: bottleId }, data: { status: "WITHDRAWN" } });
+  await db.auditLog.create({ data: { actorId: userId, action: "COMMUNITY_BOTTLE_WITHDRAWN", resourceType: "community_bottle", resourceId: bottleId } });
+  return { withdrawn: true };
+}
+
 export async function runBottleAction(userId: string, bottleId: string, raw: unknown) {
   const parsed = bottleActionSchema.safeParse(raw);
   if (!parsed.success) throw new CommunityError(400, "INVALID_INPUT");
   await requireActiveUser(userId);
-  const bottle = await loadPickedBottle(userId, bottleId);
   const input = parsed.data;
+  if (input.action === "withdraw") return withdrawBottle(userId, bottleId);
+  const bottle = await loadPickedBottle(userId, bottleId);
 
   if (input.action === "reply") {
     try {
@@ -103,7 +114,7 @@ export async function runBottleAction(userId: string, bottleId: string, raw: unk
 /** 我扔出去的瓶子，以及别人回我的话（回复人匿名）。 */
 export async function listMyBottles(userId: string) {
   return db.communityBottle.findMany({
-    where: { authorId: userId },
+    where: { authorId: userId, status: { not: "WITHDRAWN" } },
     orderBy: { createdAt: "desc" },
     take: 20,
     select: {

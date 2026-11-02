@@ -1419,7 +1419,8 @@
       "pipeline": "闯关",
       "tracks": "赛道",
       "guide": "指南"
-    }
+    },
+    "findTeammates": "去社区找队友"
   },
   "templates": {
     "metadataTitle": "模板广场",

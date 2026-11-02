@@ -111,9 +111,10 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
       ) : feed && (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <nav className="-mx-1 flex min-w-0 gap-2 overflow-x-auto px-1 pb-1" aria-label={t("channelsLabel")}>
+            {/* 手机上分类条横滑：不露滚动条，右边渐隐提示还能往右滑；每个分类按钮够 44px 高。 */}
+            <nav className="-mx-1 flex min-w-0 gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] max-sm:-mr-4 max-sm:pr-8 max-sm:[mask-image:linear-gradient(to_right,#000_85%,transparent)] [&::-webkit-scrollbar]:hidden" aria-label={t("channelsLabel")}>
               {channels.map((id) => <Link key={id} href={channelHref(id)} aria-current={id === channel ? "page" : undefined}
-                className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm transition-colors ${id === channel ? "bg-foreground font-semibold text-background" : "bg-muted text-foreground/80 hover:text-foreground"}`}>
+                className={`inline-flex shrink-0 items-center rounded-full px-3.5 py-1.5 text-sm transition-colors max-sm:min-h-11 ${id === channel ? "bg-foreground font-semibold text-background" : "bg-muted text-foreground/80 hover:text-foreground"}`}>
                 {t(`channels.${id}`)}
               </Link>)}
             </nav>

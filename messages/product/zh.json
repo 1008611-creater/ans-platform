@@ -4278,7 +4278,8 @@
       "NOT_PICKED": "只能回自己捞到的瓶子",
       "ALREADY_REPLIED": "每个瓶子只能回一句",
       "INVALID_RELAY": "这条帖子不能接力，可能已被隐藏",
-      "INVALID_PROJECT": "这个项目已下架或不存在"
+      "INVALID_PROJECT": "这个项目已下架或不存在",
+      "BOTTLE_HAS_REPLIES": "已经有人回了，这个瓶子收不回来了"
     },
     "relay": {
       "title": "接力 {count}",
@@ -4328,7 +4329,10 @@
     "hiddenNote": "这个瓶子被举报，正在复核，别人暂时捞不到。",
     "loginToThrow": "登录后扔进海里",
     "guestNote": "先写，点扔进海里时再登录，写的字不会丢。",
-    "floatingEmpty": "海里还空着，扔第一个吧"
+    "floatingEmpty": "海里还空着，扔第一个吧",
+    "withdraw": "收回",
+    "withdrawConfirm": "确定收回？",
+    "withdrawn": "瓶子收回来了"
   },
   "communityReports": {
     "title": "社区举报复核",

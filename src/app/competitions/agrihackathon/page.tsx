@@ -158,6 +158,7 @@ export default async function AgriHackathonPage() {
           })}
         </ol>
         <nav aria-label={t("nextAction")} className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t pt-2.5">
+          <Link href="/community?c=team" className={linkClass}>{t("findTeammates")}</Link>
           <Link href="/teams" className={linkClass}>{t("openTeams")}</Link>
           {competition && <Link href={`/competitions/${competition.id}`} className={linkClass}>{t("enterWorkbench")}</Link>}
           <Link href="/explore/agrihackathon/submit" className={linkClass}>{t("bindProject")}</Link>

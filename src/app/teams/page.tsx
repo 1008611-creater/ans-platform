@@ -54,7 +54,11 @@ export default async function TeamsPage() {
             ? "Join campus AI, AIGC, and hackathon competitions across universities. Form teams, claim shared compute grants, and ship real projects."
             : "我们组织参加北京及全国高校的 AI、AIGC、黑客松赛事。平台负责组队、发放比赛算力包、展示作品。"
         }
-        actions={<Button asChild variant="outline"><Link href="/competitions">{p("nav.competitions")}</Link></Button>}
+        actions={<div className="flex flex-wrap gap-2">
+          {/* 先看谁在招人，再决定自己建队还是加入别人。 */}
+          <Button asChild variant="outline"><Link href="/community?c=team">{isEn ? "Find teammates in Community" : "去社区找队友"}</Link></Button>
+          <Button asChild variant="outline"><Link href="/competitions">{p("nav.competitions")}</Link></Button>
+        </div>}
       />
 
       <section className="mb-12">
@@ -69,7 +73,7 @@ export default async function TeamsPage() {
               <CardContent className="flex flex-col justify-between gap-3 py-3.5 sm:flex-row sm:items-center">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
-                    {isEn ? "1–5 Members · Shared Compute" : "1–5 人跨学科组队 · 共享赛事算力池"}
+                    {isEn ? "1–5 members, shared compute" : "1–5 人组队，共享赛事算力"}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
                     {isEn ? "Sign in to create a team and allocate shared points." : "登录后创建战队并分配赛事算力额度"}
@@ -219,7 +223,7 @@ export default async function TeamsPage() {
               </CardHeader>
               <CardContent className="pt-0">
                 <Button asChild variant="outline" size="sm">
-                  <Link href="/competitions/agrihackathon">{isEn ? "Enter AgriHackathon →" : "进入智耕黑客松 →"}</Link>
+                  <Link href="/competitions/agrihackathon">{isEn ? "Enter AgriHackathon →" : "进入农客松 →"}</Link>
                 </Button>
               </CardContent>
             </Card>

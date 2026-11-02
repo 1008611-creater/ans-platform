@@ -3542,6 +3542,8 @@ model CommunityPostReport {
 enum CommunityBottleStatus {
   OPEN
   HIDDEN
+  /// 作者在没人回之前自己收回了，海里捞不到，自己的列表里也不再显示。
+  WITHDRAWN
 }
 
 /// 漂流瓶：匿名的一段话，被随机捞到的人可以回一句，回复只有扔瓶子的人看得到。

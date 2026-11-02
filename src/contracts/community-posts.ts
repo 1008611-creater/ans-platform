@@ -110,4 +110,5 @@ export const throwBottleSchema = z.object({ body: z.string().trim().min(2).max(B
 export const bottleActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("reply"), body: z.string().trim().min(1).max(BOTTLE_REPLY_MAX) }),
   z.object({ action: z.literal("report"), reason: z.enum(COMMUNITY_REPORT_REASONS) }),
+  z.object({ action: z.literal("withdraw") }),
 ]);

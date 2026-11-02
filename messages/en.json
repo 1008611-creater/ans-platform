@@ -1419,7 +1419,8 @@
       "pipeline": "Steps",
       "tracks": "Tracks",
       "guide": "Guide"
-    }
+    },
+    "findTeammates": "Find teammates in Community"
   },
   "templates": {
     "metadataTitle": "Templates",
