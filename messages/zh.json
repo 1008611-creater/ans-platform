@@ -1189,21 +1189,21 @@
   },
   "agriHackathon": {
     "boundaryNextOpen": "查看本届独立阶段窗口",
-    "enterWorkbench": "战队报名与参赛进度",
+    "enterWorkbench": "队伍报名与参赛进度",
     "boundaryDescriptionOpen": "算力领取、阶段提交、作品墙计票与入围公示均按已发布窗口运行。",
     "navLabel": "农客松比赛",
     "eyebrow": "AGRIHACKATHON · 农客松",
     "title": "AgriHackathon｜农客松",
     "description": "中国农大首届 AI 创客马拉松（1–5 人组队），按下方 01→05 顺序依次点击即可完成参赛。",
     "createProject": "创建参赛项目",
-    "openTeams": "组建与管理战队",
+    "openTeams": "组建与管理队伍",
     "backToHub": "返回比赛中心",
     "statusTitle": "首届赛事 · 一体化通道",
     "statusDescription": "3 大赛道 · 1–5 人组队 · 作品墙 Star 占初赛 20% · 10 强会师决赛",
     "stats": {
       "tracks": "自选赛道",
       "tracksValue": "3",
-      "scale": "战队规模",
+      "scale": "队伍规模",
       "scaleValue": "1–5 人",
       "phases": "核心环节",
       "phasesValue": "5 步全流程",
@@ -1359,7 +1359,7 @@
       "frozen": "版本冻结：截止后仅可修复演示 Bug，禁改核心功能。"
     },
     "workflowTitle": "参赛算力与工具直通车",
-    "workflowDescription": "领算力、跑 AI 工作流、管战队、查入围，一站式备战。",
+    "workflowDescription": "领算力、跑 AI 工作流、管队伍、查入围，一站式备战。",
     "openProjects": "项目包",
     "openWorkflows": "工作流程",
     "openTemplates": "模板广场",
@@ -1400,14 +1400,14 @@
       "compute": {
         "step": "STEP 02",
         "title": "领算力 · 搭原型",
-        "description": "个人卡密直兑；战队补贴在 03 提交页申领。",
+        "description": "个人卡密直兑；队伍补贴在 03 提交页申领。",
         "cta": "算力中心",
         "href": "/workspace/credits"
       },
       "submit": {
         "step": "STEP 03",
         "title": "报名 · 交代码",
-        "description": "必经主通道：绑战队、领补贴、交源码包/Git 快照（默认私密参评）。",
+        "description": "必经主通道：绑队伍、领补贴、交源码包/Git 快照（默认私密参评）。",
         "cta": "代码托管与提交",
         "href": "/competitions/agrihackathon/submissions"
       },
@@ -1431,7 +1431,8 @@
       "pipeline": "闯关",
       "tracks": "赛道",
       "guide": "指南"
-    }
+    },
+    "findTeammates": "去社区找队友"
   },
   "templates": {
     "metadataTitle": "模板广场",

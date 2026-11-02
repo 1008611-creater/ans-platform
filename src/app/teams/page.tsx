@@ -47,19 +47,23 @@ export default async function TeamsPage() {
   return (
     <div className="ans-product-container ans-page-content ans-teams-page">
       <PageHeading
-        eyebrow={isEn ? "ANS Teams" : "ANS 团队"}
+        eyebrow={isEn ? "ANS Teams" : "ANS 组队"}
         title={isEn ? "Team Up & Claim Competition Compute" : "组队参赛，平台给算力"}
         description={
           isEn
             ? "Join campus AI, AIGC, and hackathon competitions across universities. Form teams, claim shared compute grants, and ship real projects."
             : "我们组织参加北京及全国高校的 AI、AIGC、黑客松赛事。平台负责组队、发放比赛算力包、展示作品。"
         }
-        actions={<Button asChild variant="outline"><Link href="/competitions">{p("nav.competitions")}</Link></Button>}
+        actions={<div className="flex flex-wrap gap-2">
+          {/* 先看谁在招人，再决定自己建队还是加入别人。 */}
+          <Button asChild variant="outline"><Link href="/community?c=team">{isEn ? "Find teammates in Community" : "去社区找队友"}</Link></Button>
+          <Button asChild variant="outline"><Link href="/competitions">{p("nav.competitions")}</Link></Button>
+        </div>}
       />
 
       <section className="mb-12">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold">{isEn ? "My Teams" : "我的团队"}</h2>
+          <h2 className="text-lg font-semibold">{isEn ? "My Teams" : "我的队伍"}</h2>
           {viewerId ? <CreateTeamForm /> : null}
         </div>
 
@@ -69,10 +73,10 @@ export default async function TeamsPage() {
               <CardContent className="flex flex-col justify-between gap-3 py-3.5 sm:flex-row sm:items-center">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
-                    {isEn ? "1–5 Members · Shared Compute" : "1–5 人跨学科组队 · 共享赛事算力池"}
+                    {isEn ? "1–5 members, shared compute" : "1–5 人组队，共享赛事算力"}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    {isEn ? "Sign in to create a team and allocate shared points." : "登录后创建战队并分配赛事算力额度"}
+                    {isEn ? "Sign in to create a team and allocate shared points." : "登录后创建队伍并分配赛事算力额度"}
                   </span>
                 </div>
                 <Button asChild size="sm" className="shrink-0 rounded-xl">
@@ -85,14 +89,14 @@ export default async function TeamsPage() {
               {[
                 {
                   name: isEn ? "Template A · Plant Protection & VLM Team" : "组队范例 A · 农情病虫害多模态识别组",
-                  track: isEn ? "AgriHackathon · Crop Disease Track" : "智耕黑客松 · 病虫害早筛赛道",
+                  track: isEn ? "AgriHackathon · AI for Discovery" : "农客松 · AI 为知",
                   roles: isEn ? "1 Agronomy + 2 CS/AI + 1 Frontend" : "农学/植保 1 人 + 算法/后端 2 人 + 前端 1 人",
                   badge: isEn ? "📖 Team Template" : "📖 组队范例",
                   lookingFor: isEn ? "Typical division: field dataset labeling, Qwen-VL fine-tuning, and mobile web UI." : "分工建议：田间病叶样本整理、多模态模型调用、移动端拍照诊断界面。",
                 },
                 {
                   name: isEn ? "Template B · Smart Greenhouse & IoT Team" : "组队范例 B · 日光温室水肥智能调控组",
-                  track: isEn ? "AgriHackathon · Smart Irrigation Track" : "智耕黑客松 · 智慧水肥赛道",
+                  track: isEn ? "AgriHackathon · AI for Action" : "农客松 · AI 为行",
                   roles: isEn ? "1 Water/Agri Eng + 1 Data + 1 Full-Stack" : "水院/农工 1 人 + 数据建模 1 人 + 全栈 1 人",
                   badge: isEn ? "📖 Team Template" : "📖 组队范例",
                   lookingFor: isEn ? "Typical division: sensor time-series modeling, agent decision rules, and dashboard." : "分工建议：温湿度传感时序分析、滴灌策略生成与可视化大屏展示。",
@@ -108,7 +112,7 @@ export default async function TeamsPage() {
                 <Card key={idx} title={sample.lookingFor} className="group border-border/70 bg-card/90 transition hover:border-primary/40">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between gap-2">
-                      <Badge variant="outline" className="text-[11px]">{sample.track}</Badge>
+                      <Badge variant="outline" className="text-xs">{sample.track}</Badge>
                       <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">{sample.badge}</span>
                     </div>
                     <CardTitle className="pt-1 text-base">{sample.name}</CardTitle>
@@ -161,7 +165,7 @@ export default async function TeamsPage() {
                 <CardContent className="py-10 text-center text-sm text-muted-foreground">
                   {isEn
                     ? "You haven't joined any team yet. Create a team to invite teammates and compete together."
-                    : "还没有加入团队。创建团队后可邀请同学一起参赛。"}
+                    : "还没有加入队伍。创建队伍后可邀请同学一起参赛。"}
                 </CardContent>
               </Card>
             ) : (
@@ -210,8 +214,7 @@ export default async function TeamsPage() {
               <img src="/competitions/agrihackathon/gitglow-hub.webp" alt="" loading="lazy" className="aspect-[16/9] w-full border-b object-cover object-top" />
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="text-base">{isEn ? "AgriHackathon · Smart Agriculture Challenge" : "智耕黑客松 · 现代农业 AI 挑战赛"}</CardTitle>
-                  <Badge>{isEn ? "Ongoing" : "进行中"}</Badge>
+                  <CardTitle className="text-base">{isEn ? "AgriHackathon · Smart Agriculture Challenge" : "农客松 · 现代农业 AI 挑战赛"}</CardTitle>
                 </div>
                 <CardDescription className="line-clamp-1 group-hover:line-clamp-none">
                   {isEn ? "Form a campus team, claim shared compute points, and build on real agricultural datasets." : "组队申领团队算力池，围绕温室传感、农情病虫害与智慧农机数据集交付真实可验证作品。"}
@@ -219,7 +222,7 @@ export default async function TeamsPage() {
               </CardHeader>
               <CardContent className="pt-0">
                 <Button asChild variant="outline" size="sm">
-                  <Link href="/competitions/agrihackathon">{isEn ? "Enter AgriHackathon →" : "进入智耕黑客松 →"}</Link>
+                  <Link href="/competitions/agrihackathon">{isEn ? "Enter AgriHackathon →" : "进入农客松 →"}</Link>
                 </Button>
               </CardContent>
             </Card>

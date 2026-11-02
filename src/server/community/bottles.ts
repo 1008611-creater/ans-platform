@@ -12,6 +12,8 @@ const PICKS_PER_DAY = 10;
 const SEA_DAYS = 30;
 /** 漂流瓶是匿名的，没法看作者主页判断，两个人举报就先收起来等复核。 */
 const REPORTS_TO_HIDE = 2;
+/** 同一个人这么短时间里扔出一模一样的话，当作连点，回原来那个瓶子。 */
+const DUPLICATE_WINDOW_MS = 2 * 60_000;
 
 function oneDayAgo() {
   return new Date(Date.now() - DAY_MS);
@@ -22,6 +24,8 @@ export async function throwBottle(userId: string, raw: unknown) {
   if (!parsed.success) throw new CommunityError(400, "INVALID_INPUT");
   await requireActiveUser(userId);
   const today = await db.communityBottle.count({ where: { authorId: userId, createdAt: { gte: oneDayAgo() } } });
+  const duplicate = await db.communityBottle.findFirst({ where: { authorId: userId, body: parsed.data.body, createdAt: { gte: new Date(Date.now() - DUPLICATE_WINDOW_MS) } }, select: { id: true } });
+  if (duplicate) return duplicate;
   if (today >= THROWS_PER_DAY) throw new CommunityError(429, "BOTTLE_THROW_LIMIT");
   const bottle = await db.communityBottle.create({ data: { authorId: userId, body: parsed.data.body }, select: { id: true } });
   await db.auditLog.create({ data: { actorId: userId, action: "COMMUNITY_BOTTLE_THROWN", resourceType: "community_bottle", resourceId: bottle.id } });
@@ -65,12 +69,23 @@ async function loadPickedBottle(userId: string, bottleId: string) {
   return bottle;
 }
 
+/** 作者收回自己的瓶子：只能在还没人回的时候收，收回后海里捞不到。 */
+async function withdrawBottle(userId: string, bottleId: string) {
+  const bottle = await db.communityBottle.findUnique({ where: { id: bottleId }, select: { authorId: true, status: true, _count: { select: { replies: true } } } });
+  if (!bottle || bottle.authorId !== userId || bottle.status === "WITHDRAWN") throw new CommunityError(404, "NOT_FOUND");
+  if (bottle._count.replies > 0) throw new CommunityError(409, "BOTTLE_HAS_REPLIES");
+  await db.communityBottle.update({ where: { id: bottleId }, data: { status: "WITHDRAWN" } });
+  await db.auditLog.create({ data: { actorId: userId, action: "COMMUNITY_BOTTLE_WITHDRAWN", resourceType: "community_bottle", resourceId: bottleId } });
+  return { withdrawn: true };
+}
+
 export async function runBottleAction(userId: string, bottleId: string, raw: unknown) {
   const parsed = bottleActionSchema.safeParse(raw);
   if (!parsed.success) throw new CommunityError(400, "INVALID_INPUT");
   await requireActiveUser(userId);
-  const bottle = await loadPickedBottle(userId, bottleId);
   const input = parsed.data;
+  if (input.action === "withdraw") return withdrawBottle(userId, bottleId);
+  const bottle = await loadPickedBottle(userId, bottleId);
 
   if (input.action === "reply") {
     try {
@@ -99,7 +114,7 @@ export async function runBottleAction(userId: string, bottleId: string, raw: unk
 /** 我扔出去的瓶子，以及别人回我的话（回复人匿名）。 */
 export async function listMyBottles(userId: string) {
   return db.communityBottle.findMany({
-    where: { authorId: userId },
+    where: { authorId: userId, status: { not: "WITHDRAWN" } },
     orderBy: { createdAt: "desc" },
     take: 20,
     select: {

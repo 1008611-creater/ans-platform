@@ -3730,7 +3730,42 @@
     "relayCount": "{count} relays",
     "remix": "Make your own",
     "remixOf": "Project: {title}",
-    "pinned": "Pinned"
+    "pinned": "Pinned",
+    "official": "Official",
+    "workBadge": "Project",
+    "guide": {
+      "all": {
+        "title": "Just opened. Say what you're building with AI lately",
+        "action": "Say something"
+      },
+      "team": {
+        "title": "Who are you missing? Post a team call and the lead gets applications",
+        "action": "Post a team call"
+      },
+      "career": {
+        "title": "Internships, interviews, résumés: share what you learned or ask",
+        "action": "Write a note"
+      },
+      "research": {
+        "title": "Papers, contests, research projects: post a note to find peers",
+        "action": "Post a note"
+      },
+      "aigc": {
+        "title": "Made something? Post it with the project so others can remix it",
+        "action": "Share your work"
+      },
+      "campus": {
+        "title": "Need something on campus or want to swap? Open a stall",
+        "action": "Open a stall"
+      },
+      "open": {
+        "title": "Nobody is waiting for help right now. Need a hand? Post a request",
+        "action": "Ask for help"
+      },
+      "competition": "Open now: {title}",
+      "teamCreate": "Create a team first"
+    },
+    "tagline": "Students talk AI, find teammates and help each other here. See a post you like? Tap \"Relay\" to add yours."
   },
   "modelPlaza": {
     "title": "Model plaza",
@@ -4142,7 +4177,11 @@
       "project": "Attach a project",
       "projectSearch": "Search projects in Explore",
       "projectEmpty": "No matching projects",
-      "removeProject": "Remove attached project"
+      "removeProject": "Remove attached project",
+      "loginToSubmit": "Sign in to post",
+      "official": "Post as official",
+      "teamGuest": "Sign in to post for your team",
+      "rolesRequired": "Add at least one role to post"
     },
     "detail": {
       "back": "Community",
@@ -4211,7 +4250,10 @@
       "remixCta": "Make your own",
       "remixCount": "Shared by {count}",
       "pin": "Pin",
-      "unpin": "Unpin"
+      "unpin": "Unpin",
+      "official": "Mark official",
+      "unofficial": "Unmark official",
+      "helpHint": "If the poster picks you as the helper, you get {xp} XP"
     },
     "errors": {
       "UNAUTHORIZED": "Please sign in",
@@ -4240,11 +4282,12 @@
       "NOT_PICKED": "You can only reply to bottles you picked up",
       "ALREADY_REPLIED": "One reply per bottle",
       "INVALID_RELAY": "This post can't be relayed. It may be hidden.",
-      "INVALID_PROJECT": "This project is no longer listed"
+      "INVALID_PROJECT": "This project is no longer listed",
+      "BOTTLE_HAS_REPLIES": "Someone already replied, so this bottle can't be taken back"
     },
     "relay": {
       "title": "Relays {count}",
-      "hint": "Everyone's version, oldest first",
+      "hint": "Newest first",
       "open": "Relay",
       "dialogTitle": "Add your version",
       "from": "Relaying {name}, {count} so far",
@@ -4254,7 +4297,9 @@
       "empty": "No relays yet. Be the first.",
       "loginToRelay": "Sign in to relay",
       "rootLink": "See the original and all relays",
-      "index": "#{n}"
+      "index": "#{n}",
+      "success": "You're in the relay",
+      "explain": "Relay = continue this post; yours joins the chain. To just say something, use the replies below."
     }
   },
   "communityBottle": {
@@ -4285,7 +4330,13 @@
     "mineEmpty": "You haven't thrown any bottles yet.",
     "pickedBy": "Picked up by {count}",
     "stillFloating": "Still drifting",
-    "hiddenNote": "This bottle was reported and is under review. Others can't pick it up for now."
+    "hiddenNote": "This bottle was reported and is under review. Others can't pick it up for now.",
+    "loginToThrow": "Sign in to throw",
+    "guestNote": "Write first and sign in when you throw it; your text stays. After signing in you can also pick up bottles.",
+    "floatingEmpty": "The sea is empty. Throw the first one",
+    "withdraw": "Take back",
+    "withdrawConfirm": "Take it back?",
+    "withdrawn": "Bottle taken back"
   },
   "communityReports": {
     "title": "Community reports",

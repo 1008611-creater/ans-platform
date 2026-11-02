@@ -48,6 +48,28 @@ describe("扔瓶子", () => {
     mocks.db.communityBottle.count.mockResolvedValue(3);
     await expectCode(throwBottle("u1", { body: "再扔一个" }), "BOTTLE_THROW_LIMIT");
   });
+
+  it("returns the bottle already thrown when the same words come again right away", async () => {
+    mocks.db.communityBottle.findFirst.mockResolvedValue({ id: "b1" });
+    await expect(throwBottle("u1", { action: "throw", body: "期末周有人一起去图书馆吗" })).resolves.toEqual({ id: "b1" });
+    expect(mocks.db.communityBottle.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("收回瓶子", () => {
+  it("lets the author take back a bottle nobody has answered", async () => {
+    mocks.db.communityBottle.findUnique.mockResolvedValue({ authorId: "u1", status: "OPEN", _count: { replies: 0 } });
+    await expect(runBottleAction("u1", "b1", { action: "withdraw" })).resolves.toEqual({ withdrawn: true });
+    expect(mocks.db.communityBottle.update).toHaveBeenCalledWith({ where: { id: "b1" }, data: { status: "WITHDRAWN" } });
+  });
+
+  it("refuses once someone replied, and never for someone else's bottle", async () => {
+    mocks.db.communityBottle.findUnique.mockResolvedValue({ authorId: "u1", status: "OPEN", _count: { replies: 1 } });
+    await expectCode(runBottleAction("u1", "b1", { action: "withdraw" }), "BOTTLE_HAS_REPLIES");
+    mocks.db.communityBottle.findUnique.mockResolvedValue({ authorId: "other", status: "OPEN", _count: { replies: 0 } });
+    await expectCode(runBottleAction("u1", "b1", { action: "withdraw" }), "NOT_FOUND");
+    expect(mocks.db.communityBottle.update).not.toHaveBeenCalled();
+  });
 });
 
 describe("捞瓶子", () => {

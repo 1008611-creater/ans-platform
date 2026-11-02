@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useCommunityRequest } from "./use-community-request";
+import { clearDraft, loadDraft, loginHref, saveDraft } from "./draft";
 import { imeBlocks, imeSubmitGuard } from "@/lib/ui/ime-enter-guard";
 
 const BOARD_CHANNEL: Record<CommunityBoardId, string> = { TEAM: "team", CAREER: "career", RESEARCH: "research", AIGC: "aigc", CAMPUS: "campus" };
@@ -39,8 +40,14 @@ function dayInput(offsetDays: number) {
 export type RelayTarget = { id: string; label: string; authorName: string; board: CommunityBoardId; count: number; cover: string | null };
 /** 「附项目」选中的项目广场项目。 */
 export type RemixPick = { slug: string; title: string };
+/** 打开弹窗时预选的板块和类型：在哪个板块点发帖，就预选哪个。 */
+export type ComposePreset = { board: CommunityBoardId; kind: CommunityPostKindId; stall?: CommunityStallKindId };
 
-export function PostCompose({ teams, competitions, defaultBoard, relay, project: initialProject, defaultOpen = false, triggerClassName }: { teams: Array<{ id: string; name: string }>; competitions: Array<{ id: string; title: string }>; defaultBoard?: CommunityBoardId; relay?: RelayTarget; project?: RemixPick; defaultOpen?: boolean; triggerClassName?: string }) {
+/**
+ * 发帖和「接一下」的弹窗。
+ * 游客也能打开、先写；点发出时把草稿存在本机，去登录，登录完回到 `returnTo`（带着打开弹窗的参数），字还在。
+ */
+export function PostCompose({ teams, competitions, preset, relay, project: initialProject, defaultOpen = false, triggerClassName, triggerLabel, guest = false, returnTo, canOfficial = false }: { teams: Array<{ id: string; name: string }>; competitions: Array<{ id: string; title: string }>; preset?: ComposePreset; relay?: RelayTarget; project?: RemixPick; defaultOpen?: boolean; triggerClassName?: string; triggerLabel?: string; guest?: boolean; returnTo?: string; canOfficial?: boolean }) {
   const t = useTranslations("product.communityPost.compose");
   const r = useTranslations("product.communityPost.relay");
   const page = useTranslations("product.communityPage");
@@ -48,9 +55,10 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
   const { send, pending } = useCommunityRequest();
   const id = useId();
   const [open, setOpen] = useState(defaultOpen);
-  const [kind, setKind] = useState<CommunityPostKindId>(relay || initialProject ? "NOTE" : "STALL");
-  const [stall, setStall] = useState<CommunityStallKindId>("SEEK");
-  const [board, setBoard] = useState<CommunityBoardId>(relay?.board ?? defaultBoard ?? "CAMPUS");
+  const [kind, setKind] = useState<CommunityPostKindId>(relay || initialProject ? "NOTE" : preset?.kind ?? "TEXT");
+  const [stall, setStall] = useState<CommunityStallKindId>(preset?.stall ?? "SEEK");
+  const [board, setBoard] = useState<CommunityBoardId>(relay?.board ?? preset?.board ?? "CAMPUS");
+  const [official, setOfficial] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [images, setImages] = useState<string[]>([]);
@@ -64,6 +72,21 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
   const [project, setProject] = useState<RemixPick | null>(initialProject ?? null);
   const [projectQuery, setProjectQuery] = useState("");
   const [projectResults, setProjectResults] = useState<RemixPick[] | null>(null);
+  // 发出后到新帖子页面之前，按钮保持不可点，弹窗不再接受修改。
+  const [leaving, setLeaving] = useState(false);
+  const draftKey = relay ? `relay:${relay.id}` : "post";
+
+  // 打开弹窗时，把登录前或去建队前写的字放回去。
+  useEffect(() => {
+    if (!open || guest) return;
+    const draft = loadDraft(draftKey);
+    if (!draft) return;
+    if (draft.kind === "NOTE" || draft.kind === "TEXT" || (draft.kind === "STALL" && !relay)) setKind(draft.kind);
+    if (draft.stall && (COMMUNITY_STALL_KINDS as readonly string[]).includes(draft.stall)) setStall(draft.stall as CommunityStallKindId);
+    if (!relay && draft.board && (COMMUNITY_BOARDS as readonly string[]).includes(draft.board)) setBoard(draft.board as CommunityBoardId);
+    if (draft.title) setTitle(draft.title);
+    if (draft.body) setBody(draft.body);
+  }, [open, guest, draftKey, relay]);
 
   useEffect(() => {
     if (!open || kind !== "NOTE") return;
@@ -119,14 +142,21 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
   const bodyMax = kind === "TEXT" ? TEXT_POST_MAX : POST_BODY_MAX;
   const ready = kind === "TEXT" ? body.trim().length >= 2
     : kind === "NOTE" ? title.trim().length >= 2 && body.trim().length >= 2
-      : title.trim().length >= 4 && Boolean(deadline) && (!isTeam || (Boolean(teamId) && roles.length > 0));
+      : title.trim().length >= 4 && Boolean(deadline) && (!isTeam || guest || (Boolean(teamId) && roles.length > 0));
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!ready || pending) return;
+    if (!ready || pending || leaving) return;
+    if (guest) {
+      saveDraft(draftKey, { kind, stall, board, title, body });
+      setLeaving(true);
+      window.location.assign(loginHref(returnTo ?? "/community"));
+      return;
+    }
     const relayOfId = relay?.id;
-    const payload = kind === "TEXT" ? { kind, board, body, relayOfId }
-      : kind === "NOTE" ? { kind, board, title, body, images, relayOfId, catalogSlug: project?.slug }
+    const asOfficial = canOfficial && !relay && official ? true : undefined;
+    const payload = kind === "TEXT" ? { kind, board, body, relayOfId, official: asOfficial }
+      : kind === "NOTE" ? { kind, board, title, body, images, relayOfId, catalogSlug: project?.slug, official: asOfficial }
         : {
           kind, stall, board, title, body,
           // 截止日当天结束前都算有效。
@@ -135,12 +165,16 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
           teamId: isTeam ? teamId : undefined,
           roles: isTeam ? roles : undefined,
         };
-    const result = await send<{ id: string }>("/api/community/posts", payload);
+    // 不先刷新当前页：刷新和跳转抢在一起时，跳转会被吞掉，弹窗就停在「发布中…」。
+    const result = await send<{ id: string }>("/api/community/posts", payload, { refresh: false });
     if (!result) return;
-    toast.success(t("success"));
+    clearDraft(draftKey);
+    setLeaving(true);
+    toast.success(relay ? r("success") : t("success"));
     setOpen(false);
     setTitle(""); setBody(""); setImages([]); setRoles([]); setProject(null); setProjectQuery("");
-    router.push(`/community/posts/${result.id}`);
+    // 接一下发出后回到原帖的接力串，马上能看到自己；新帖去新帖页面。
+    router.push(relay ? `/community/posts/${relay.id}?relayed=${result.id}#relays` : `/community/posts/${result.id}`);
   };
 
   const segment = (active: boolean) => `h-9 flex-1 rounded-md text-sm transition-colors ${active ? "bg-background font-semibold shadow-sm" : "text-muted-foreground hover:text-foreground"}`;
@@ -150,7 +184,7 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
   return <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger asChild>{relay
       ? <Button className={triggerClassName}><Repeat2 className="h-4 w-4" aria-hidden="true" />{r("open")}</Button>
-      : <Button size="sm" className={triggerClassName}><Plus className="h-4 w-4" aria-hidden="true" />{t("open")}</Button>}</DialogTrigger>
+      : <Button size="sm" className={triggerClassName}><Plus className="h-4 w-4" aria-hidden="true" />{triggerLabel ?? t("open")}</Button>}</DialogTrigger>
     {/* 弹窗里有表单，点遮罩不关，免得写了一半的内容丢掉；Esc 和取消按钮照常关闭。 */}
     <DialogContent onInteractOutside={(event) => event.preventDefault()} className="max-h-[90vh] gap-0 overflow-y-auto p-0 sm:max-w-xl">
       <form onSubmit={submit} className="flex flex-col">
@@ -186,8 +220,10 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
           </div>}
 
           {isTeam && <>
-            {teams.length === 0
-              ? <p className="rounded-lg bg-muted px-3 py-2.5 text-sm">{t("teamNone")} <Link href="/teams" className="font-semibold underline underline-offset-2">{t("createTeam")}</Link></p>
+            {guest
+              ? <p className="rounded-lg bg-muted px-3 py-2.5 text-sm">{t("teamGuest")}</p>
+              : teams.length === 0
+              ? <p className="rounded-lg bg-muted px-3 py-2.5 text-sm">{t("teamNone")} <Link href="/teams" onClick={() => saveDraft(draftKey, { kind, stall, board, title, body })} className="font-semibold underline underline-offset-2">{t("createTeam")}</Link></p>
               : <div className="grid gap-3 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor={`${id}-competition`} className={LABEL}>{t("competition")}</label>
@@ -217,6 +253,7 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
                 <input id={`${id}-role`} value={roleDraft} maxLength={20} placeholder={t("roleName")} onChange={(event) => setRoleDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); if (!imeBlocks(event)) addRole(); } }} className={FIELD} />
                 <Button type="button" variant="outline" onClick={addRole} disabled={!roleDraft.trim()}><Plus className="h-4 w-4" aria-hidden="true" />{t("addRole")}</Button>
               </div>}
+              {!guest && teams.length > 0 && roles.length === 0 && <p className="text-xs text-muted-foreground">{t("rolesRequired")}</p>}
             </fieldset>
           </>}
 
@@ -266,11 +303,15 @@ export function PostCompose({ teams, competitions, defaultBoard, relay, project:
             <input id={`${id}-deadline`} type="date" value={deadline} min={dayInput(0)} max={dayInput(STALL_MAX_DAYS - 1)} onChange={(event) => setDeadline(event.target.value)} className={FIELD} />
           </div>}
 
+          {canOfficial && !relay && kind !== "STALL" && <label className="flex min-h-11 items-center gap-2 text-sm">
+            <input type="checkbox" checked={official} onChange={(event) => setOfficial(event.target.checked)} className="h-4 w-4" />{t("official")}
+          </label>}
+
           {relay && <p className="text-xs text-muted-foreground text-pretty">{r("boardNote", { board: page(`channels.${BOARD_CHANNEL[relay.board]}`) })}</p>}
         </div>
         <DialogFooter className="border-t px-5 py-3.5">
           <Button type="button" variant="outline" onClick={() => setOpen(false)}>{t("cancel")}</Button>
-          <Button type="submit" disabled={!ready || pending || uploading}>{pending ? t("submitting") : relay ? r("submit") : t("submit")}</Button>
+          <Button type="submit" disabled={!ready || pending || uploading || leaving}>{pending || leaving ? t("submitting") : guest ? t("loginToSubmit") : relay ? r("submit") : t("submit")}</Button>
         </DialogFooter>
       </form>
     </DialogContent>

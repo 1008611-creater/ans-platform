@@ -3431,6 +3431,8 @@ model CommunityPost {
   relays        CommunityPost[]     @relation("CommunityRelay")
   /// 管理员置顶的时间。推荐频道最上面放最近置顶的两条，用来放每天的官方挑战帖。
   pinnedAt      DateTime?
+  /// 官方帖：管理员发的活动和公告帖，信息流和详情页带「官方」标记，置顶区排在前面。
+  officialAt    DateTime?
   /// 做同款：帖子附的项目广场项目（catalog slug），看帖的人点「做同款」从这个项目开始做。
   catalogSlug   String?             @db.VarChar(80)
   createdAt     DateTime            @default(now())
@@ -3540,6 +3542,8 @@ model CommunityPostReport {
 enum CommunityBottleStatus {
   OPEN
   HIDDEN
+  /// 作者在没人回之前自己收回了，海里捞不到，自己的列表里也不再显示。
+  WITHDRAWN
 }
 
 /// 漂流瓶：匿名的一段话，被随机捞到的人可以回一句，回复只有扔瓶子的人看得到。

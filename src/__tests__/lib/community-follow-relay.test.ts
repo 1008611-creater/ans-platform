@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 const mocks = vi.hoisted(() => ({
   db: {
     user: { findFirst: vi.fn(), findMany: vi.fn() },
-    communityPost: { count: vi.fn(), create: vi.fn(), findUnique: vi.fn(), groupBy: vi.fn() },
+    communityPost: { count: vi.fn(), create: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), groupBy: vi.fn() },
     communityFollow: { findUnique: vi.fn(), findMany: vi.fn(), count: vi.fn(), create: vi.fn(), deleteMany: vi.fn() },
     notification: { findFirst: vi.fn(), findMany: vi.fn(), create: vi.fn(), createMany: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
     auditLog: { create: vi.fn() },

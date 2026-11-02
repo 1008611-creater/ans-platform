@@ -48,7 +48,7 @@ export function CreateTeamForm() {
   if (!open) {
     return (
       <Button size="sm" onClick={() => setOpen(true)}>
-        创建团队
+        创建队伍
       </Button>
     );
   }
@@ -56,7 +56,7 @@ export function CreateTeamForm() {
   return (
     <form onSubmit={submit} className="w-full space-y-3 rounded-lg border p-4 text-start">
       <div className="space-y-1.5">
-        <Label htmlFor="team-name">团队名称</Label>
+        <Label htmlFor="team-name">队伍名称</Label>
         <Input
           id="team-name"
           value={name}
@@ -67,14 +67,14 @@ export function CreateTeamForm() {
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="team-description">团队简介（选填）</Label>
+        <Label htmlFor="team-description">队伍简介（选填）</Label>
         <Textarea
           id="team-description"
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           maxLength={DESCRIPTION_MAX}
           rows={3}
-          placeholder="一句话说明团队方向、参赛目标"
+          placeholder="一句话说明队伍方向、参赛目标"
         />
       </div>
       {error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}

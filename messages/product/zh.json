@@ -1050,7 +1050,7 @@
     "officialRosterLocked": "初、决赛共用这份已确认名单。队伍后续的成员变动不会改写历史名单。",
     "preliminaryBaseline": "初赛冻结提交：{id}",
     "title": "本队阶段提交",
-    "description": "STEP 03 正式参评主通道（默认私密参评）：选战队 → 领 20 算力补贴 → 交源码包/Git 快照与材料。",
+    "description": "STEP 03 正式参评主通道（默认私密参评）：选队伍 → 领 20 算力补贴 → 交源码包/Git 快照与材料。",
     "back": "返回农客松",
     "loading": "正在读取…",
     "login": "登录后准备提交",
@@ -3603,7 +3603,7 @@
       "AGRI_EVIDENCE_STORAGE_NOT_DURABLE": "代码托管持久卷尚未挂载（需挂载独立数据卷）。",
       "AGRI_EVIDENCE_STORAGE_UNSAFE": "代码托管存储目录权限不安全（须为当前进程独享 0700 权限）。",
       "AGRI_EVIDENCE_STORAGE_CAPACITY_REQUIRED": "代码托管存储可用空间不足，请联系组委会扩容。",
-      "AGRI_EVIDENCE_QUOTA_REQUIRED": "已达到当前战队或阶段的托管容量上限。",
+      "AGRI_EVIDENCE_QUOTA_REQUIRED": "已达到当前队伍或阶段的托管容量上限。",
       "AGRI_EVIDENCE_MEDIA_INVALID": "文件格式不匹配：源码包请上传 .zip 或 .tar.gz（.tgz），演示视频请上传 .mp4 或 .webm。",
       "AGRI_EVIDENCE_EMPTY": "上传的文件内容为空，请选择有效的非空文件。"
     },
@@ -3677,7 +3677,7 @@
       "career": "求职就业",
       "research": "论文科创",
       "aigc": "AIGC 与作品",
-      "campus": "吃瓜求助"
+      "campus": "校园求助"
     },
     "likes": "赞",
     "comments": "评论",
@@ -3694,7 +3694,7 @@
     "register": "注册",
     "sortLabel": "排序",
     "sortLatest": "最新",
-    "sortOpen": "等人帮忙",
+    "sortOpen": "待解决求助",
     "stall": {
       "SEEK": "求",
       "OFFER": "出",
@@ -3730,7 +3730,42 @@
     "relayCount": "{count} 人接力",
     "remix": "做同款",
     "remixOf": "附项目：{title}",
-    "pinned": "置顶"
+    "pinned": "置顶",
+    "official": "官方",
+    "workBadge": "作品",
+    "guide": {
+      "all": {
+        "title": "这里刚开张。说一句你最近在用 AI 做什么",
+        "action": "说一句"
+      },
+      "team": {
+        "title": "你缺什么人？发一条组队帖，队长会收到申请。还没有队伍就先建一个",
+        "action": "发组队帖"
+      },
+      "career": {
+        "title": "实习、面试、简历，写下你的经验或问题",
+        "action": "写一篇"
+      },
+      "research": {
+        "title": "论文、竞赛、科创项目，发一篇笔记找同路人",
+        "action": "发笔记"
+      },
+      "aigc": {
+        "title": "做了什么作品？发出来，附上项目，别人能做同款",
+        "action": "晒作品"
+      },
+      "campus": {
+        "title": "校园里缺什么、想换什么，挂一个摊位",
+        "action": "挂摊位"
+      },
+      "open": {
+        "title": "现在没有待解决的求助。需要人帮忙，就发一条求助",
+        "action": "发求助"
+      },
+      "competition": "正在报名：{title}",
+      "teamCreate": "先去建队"
+    },
+    "tagline": "同学们在这里聊 AI、找队友、互相帮忙。看到感兴趣的帖子，点「接一下」就能接上"
   },
   "modelPlaza": {
     "title": "模型广场",
@@ -3983,7 +4018,7 @@
     "title": "参赛算力包",
     "loading": "正在查询…",
     "unconfigured": "主办方尚未配置参赛算力，当前不会发放。",
-    "available": "队长可领取本届战队算力。",
+    "available": "队长可领取本届队伍算力。",
     "waiting": "等待队长领取，或赛事进入已确认的使用周期。",
     "amount": "总额度",
     "used": "已使用",
@@ -4142,7 +4177,11 @@
       "project": "附项目",
       "projectSearch": "搜项目广场里的项目",
       "projectEmpty": "没找到相关项目",
-      "removeProject": "去掉附的项目"
+      "removeProject": "去掉附的项目",
+      "loginToSubmit": "登录后发出",
+      "official": "发成官方帖",
+      "teamGuest": "登录后，用你的队伍发组队帖",
+      "rolesRequired": "至少加一个要招的角色，才能发出"
     },
     "detail": {
       "back": "社区",
@@ -4211,7 +4250,10 @@
       "remixCta": "做同款",
       "remixCount": "{count} 人晒了同款",
       "pin": "置顶",
-      "unpin": "取消置顶"
+      "unpin": "取消置顶",
+      "official": "设为官方",
+      "unofficial": "取消官方",
+      "helpHint": "发帖人选你「帮到了」，你得 {xp} XP"
     },
     "errors": {
       "UNAUTHORIZED": "请先登录",
@@ -4240,11 +4282,12 @@
       "NOT_PICKED": "只能回自己捞到的瓶子",
       "ALREADY_REPLIED": "每个瓶子只能回一句",
       "INVALID_RELAY": "这条帖子不能接力，可能已被隐藏",
-      "INVALID_PROJECT": "这个项目已下架或不存在"
+      "INVALID_PROJECT": "这个项目已下架或不存在",
+      "BOTTLE_HAS_REPLIES": "已经有人回了，这个瓶子收不回来了"
     },
     "relay": {
       "title": "接力 {count}",
-      "hint": "每个人的版本按时间排开，最早的在前",
+      "hint": "新接的在前",
       "open": "接一下",
       "dialogTitle": "接一下",
       "from": "接力自 {name}，已有 {count} 人接",
@@ -4254,7 +4297,9 @@
       "empty": "还没有人接，做第一个吧。",
       "loginToRelay": "登录后接一下",
       "rootLink": "看原帖和整串接力",
-      "index": "#{n}"
+      "index": "#{n}",
+      "success": "接上了",
+      "explain": "接一下＝接着这条往下写，你的帖子会排进这串接力。只想说句话，用下面的回复。"
     }
   },
   "communityBottle": {
@@ -4285,7 +4330,13 @@
     "mineEmpty": "还没扔过瓶子。",
     "pickedBy": "{count} 人捞到",
     "stillFloating": "还在漂",
-    "hiddenNote": "这个瓶子被举报，正在复核，别人暂时捞不到。"
+    "hiddenNote": "这个瓶子被举报，正在复核，别人暂时捞不到。",
+    "loginToThrow": "登录后扔进海里",
+    "guestNote": "先写，点扔进海里时再登录，写的字不会丢。登录后还能捞别人的瓶子。",
+    "floatingEmpty": "海里还空着，扔第一个吧",
+    "withdraw": "收回",
+    "withdrawConfirm": "确定收回？",
+    "withdrawn": "瓶子收回来了"
   },
   "communityReports": {
     "title": "社区举报复核",

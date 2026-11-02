@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
     user: { findFirst: vi.fn(), findUnique: vi.fn() },
     competition: { findUnique: vi.fn() },
     teamMember: { findFirst: vi.fn(), findUnique: vi.fn(), count: vi.fn(), create: vi.fn(), update: vi.fn() },
-    communityPost: { count: vi.fn(), create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
+    communityPost: { count: vi.fn(), create: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
     communityPostLike: { findUnique: vi.fn() },
     communityReply: { count: vi.fn(), create: vi.fn() },
     communityHelpOffer: { create: vi.fn(), findUnique: vi.fn() },
@@ -66,6 +66,15 @@ describe("发帖", () => {
     await expectCode(createCommunityPost("u1", { ...teamStall, roles: [] }), "INVALID_INPUT");
     await expectCode(createCommunityPost("u1", { ...teamStall, stall: "SEEK", teamId: undefined, expiresAt: inDays(61).toISOString() }), "INVALID_DEADLINE");
     await expectCode(createCommunityPost("u1", { ...teamStall, stall: "SEEK", teamId: undefined, expiresAt: inDays(-1).toISOString() }), "INVALID_DEADLINE");
+  });
+
+  it("treats the same post sent again within two minutes as a double click", async () => {
+    mocks.db.communityPost.findFirst.mockResolvedValue({ id: "first" });
+    await expect(createCommunityPost("u1", { kind: "TEXT", board: "CAMPUS", body: "插座修好了" })).resolves.toEqual({ id: "first" });
+    expect(mocks.db.communityPost.create).not.toHaveBeenCalled();
+    expect(mocks.db.communityPost.findFirst).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ authorId: "u1", kind: "TEXT", body: "插座修好了", relayOfId: null, createdAt: { gte: expect.any(Date) } }),
+    }));
   });
 
   it("caps quick lines at 140 characters and posts per day", async () => {
@@ -200,6 +209,32 @@ describe("置顶", () => {
     mocks.db.communityPost.findUnique.mockResolvedValue(openPost());
     mocks.db.user.findUnique.mockResolvedValue({ role: "ADMIN" });
     await expectCode(runCommunityPostAction("u1", "post1", { action: "pin", pinned: true }), "INVALID_ACTION");
+  });
+});
+
+describe("官方帖", () => {
+  it("only lets admins mark a post official, so Day posts can move out of a regular board", async () => {
+    mocks.db.communityPost.findUnique.mockResolvedValue(openPost({ kind: "NOTE", stall: null, expiresAt: null }));
+    mocks.db.user.findUnique.mockResolvedValue({ role: "USER" });
+    await expectCode(runCommunityPostAction("u1", "post1", { action: "official", official: true }), "FORBIDDEN");
+    mocks.db.user.findUnique.mockResolvedValue({ role: "ADMIN" });
+    await expect(runCommunityPostAction("u1", "post1", { action: "official", official: true })).resolves.toEqual({ official: true });
+    expect(mocks.db.communityPost.update).toHaveBeenCalledWith({ where: { id: "post1" }, data: { officialAt: expect.any(Date) } });
+    expect(mocks.db.auditLog.create).toHaveBeenCalledWith({ data: expect.objectContaining({ action: "COMMUNITY_POST_OFFICIAL", resourceId: "post1" }) });
+  });
+
+  it("lets only admins post as official", async () => {
+    mocks.db.user.findUnique.mockResolvedValue({ role: "USER" });
+    await expectCode(createCommunityPost("u1", { kind: "TEXT", board: "CAMPUS", body: "今天的挑战", official: true }), "FORBIDDEN");
+    mocks.db.user.findUnique.mockResolvedValue({ role: "ADMIN" });
+    await createCommunityPost("u1", { kind: "TEXT", board: "CAMPUS", body: "今天的挑战", official: true });
+    expect(mocks.db.communityPost.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ officialAt: expect.any(Date) }) }));
+  });
+
+  it("puts official posts first in the pinned row", async () => {
+    mocks.db.communityPost.findMany.mockResolvedValue([]);
+    await listCommunityPosts({ pinned: true, take: 2 });
+    expect(mocks.db.communityPost.findMany).toHaveBeenCalledWith(expect.objectContaining({ orderBy: [{ officialAt: { sort: "desc", nulls: "last" } }, { pinnedAt: "desc" }] }));
   });
 });
 

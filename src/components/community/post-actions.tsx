@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Check, Flag, Heart, Pin, PinOff } from "lucide-react";
+import { BadgeCheck, Check, Flag, Heart, Pin, PinOff } from "lucide-react";
 import { toast } from "sonner";
 import { COMMUNITY_REPORT_REASONS, HELP_REWARD_XP } from "@/contracts/community-posts";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,7 @@ export function HelpForm({ postId, verb, done }: { postId: string; verb: "help" 
       <input onKeyDown={imeSubmitGuard} id={id} value={message} maxLength={200} onChange={(event) => setMessage(event.target.value)} className={FIELD} />
     </div>
     <Button type="submit" disabled={pending}>{t(verb === "want" ? "wantSubmit" : "helpSubmit")}</Button>
+    {verb === "help" && <p className="text-xs text-muted-foreground text-pretty sm:basis-full">{t("helpHint", { xp: HELP_REWARD_XP })}</p>}
   </form>;
 }
 
@@ -161,6 +162,14 @@ export function ReportPost({ postId }: { postId: string }) {
 }
 
 /** 管理员置顶 / 取消置顶。只在管理员看帖子详情时出现。 */
+export function OfficialPostButton({ postId, official }: { postId: string; official: boolean }) {
+  const t = useTranslations("product.communityPost.detail");
+  const { run, pending } = usePostAction(postId);
+  return <Button type="button" variant="ghost" size="sm" aria-pressed={official} disabled={pending} onClick={() => void run({ action: "official", official: !official })}>
+    <BadgeCheck className="h-4 w-4" aria-hidden="true" />{official ? t("unofficial") : t("official")}
+  </Button>;
+}
+
 export function PinPostButton({ postId, pinned }: { postId: string; pinned: boolean }) {
   const t = useTranslations("product.communityPost.detail");
   const { run, pending } = usePostAction(postId);

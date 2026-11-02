@@ -59,6 +59,12 @@ export function plainExcerpt(markdown: string, max = 90) {
   return text.length > max ? `${text.slice(0, max)}…` : text;
 }
 
+/** 验收、测试类的作品不进公开信息流。标题里带这些词的跳过；别的用环境变量按作品 ID 补充，逗号分隔。 */
+const SAMPLE_WORK_PATTERN = /验收|测试|冒烟|smoke|e2e|\btest\b/i;
+export function isSampleWork(work: { id: string; title: string; projectTitle: string }, hiddenIds = (process.env.COMMUNITY_FEED_HIDDEN_WORKS ?? "").split(",").map((id) => id.trim()).filter(Boolean)) {
+  return hiddenIds.includes(work.id) || SAMPLE_WORK_PATTERN.test(work.title) || SAMPLE_WORK_PATTERN.test(work.projectTitle);
+}
+
 /**
  * 社区信息流：帖子和已审核公开的作品按时间排在一起；作品归在「AIGC 与作品」。
  * 「关注」频道只放关注的人发的帖子，不混作品；还没关注任何人时 followingCount 为 0。
@@ -79,7 +85,7 @@ export async function listCommunityFeed(channel: CommunityChannel, sort: Communi
   ]);
   const feed: CommunityFeedItem[] = [
     ...posts.map((post) => ({ type: "post" as const, id: post.id, createdAt: post.createdAt, post })),
-    ...artifacts.map((artifact) => ({
+    ...artifacts.filter((artifact) => !isSampleWork({ id: artifact.id, title: artifact.title, projectTitle: artifact.project.title })).map((artifact) => ({
       type: "work" as const,
       id: artifact.id,
       createdAt: artifact.publishedAt ?? artifact.createdAt,

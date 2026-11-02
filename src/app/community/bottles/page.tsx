@@ -4,8 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { countFloatingBottles, listMyBottles, listMyPicks } from "@/server/community/bottles";
 import { AccountContentBoundary } from "@/components/auth/account-content-boundary";
-import { BottleReplyForm, PickBottleButton, ReportBottle, ThrowBottleForm } from "@/components/community/bottle-actions";
-import { Button } from "@/components/ui/button";
+import { BottleReplyForm, PickBottleButton, ReportBottle, ThrowBottleForm, WithdrawBottleButton } from "@/components/community/bottle-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -35,10 +34,14 @@ export default async function CommunityBottlesPage() {
     </header>
 
     {!userId ? (
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-5">
-        <p className="text-sm text-muted-foreground">{t("floating", { count: floating })}</p>
-        <Button asChild><Link href="/login?callbackUrl=/community/bottles">{t("loginToPlay")}</Link></Button>
-      </div>
+      <section aria-labelledby="bottle-throw" className="space-y-3 rounded-2xl border bg-card p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="bottle-throw" className="font-semibold">{t("throwTitle")}</h2>
+          <p className="text-sm text-muted-foreground ans-num">{floating > 0 ? t("floating", { count: floating }) : t("floatingEmpty")}</p>
+        </div>
+        <ThrowBottleForm guest />
+        <p className="text-xs text-muted-foreground">{t("guestNote")}</p>
+      </section>
     ) : <AccountContentBoundary actorId={userId}>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-6">
@@ -51,7 +54,7 @@ export default async function CommunityBottlesPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 id="bottle-picked" className="font-semibold">{t("pickedTitle")}</h2>
-                <p className="text-sm text-muted-foreground">{t("floating", { count: floating })}</p>
+                <p className="text-sm text-muted-foreground">{floating > 0 ? t("floating", { count: floating }) : t("floatingEmpty")}</p>
               </div>
               <PickBottleButton />
             </div>
@@ -76,9 +79,12 @@ export default async function CommunityBottlesPage() {
             <ul className="space-y-3">
               {mine.map((bottle) => <li key={bottle.id} className="space-y-3 rounded-2xl border bg-card p-4" data-testid="my-bottle">
                 <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{bottle.body}</p>
-                <p className="text-xs text-muted-foreground">
-                  {date.format(bottle.createdAt)} {bottle._count.picks > 0 ? t("pickedBy", { count: bottle._count.picks }) : t("stillFloating")}
-                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    {date.format(bottle.createdAt)} {bottle._count.picks > 0 ? t("pickedBy", { count: bottle._count.picks }) : t("stillFloating")}
+                  </p>
+                  {bottle.status === "OPEN" && bottle.replies.length === 0 && <WithdrawBottleButton bottleId={bottle.id} />}
+                </div>
                 {bottle.status === "HIDDEN" && <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-100">{t("hiddenNote")}</p>}
                 {bottle.replies.length > 0 && <ul className="space-y-2 border-t pt-3">
                   {bottle.replies.map((reply) => <li key={reply.id} className={`${NOTE} px-3 py-2 text-sm`}>{reply.body}</li>)}

@@ -46,12 +46,14 @@ export const createCommunityPostSchema = z.discriminatedUnion("kind", [
     images: z.array(imageUrl).max(POST_IMAGE_MAX).default([]),
     relayOfId: optionalId,
     catalogSlug: catalogSlugSchema.optional(),
+    official: z.boolean().optional(),
   }),
   z.object({
     kind: z.literal("TEXT"),
     board,
     body: z.string().trim().min(2).max(TEXT_POST_MAX),
     relayOfId: optionalId,
+    official: z.boolean().optional(),
   }),
   z.object({
     kind: z.literal("STALL"),
@@ -83,6 +85,7 @@ export const communityPostActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("decide"), applicationId: z.string().trim().min(1).max(40), decision: z.enum(["ACCEPT", "DECLINE"]) }),
   z.object({ action: z.literal("report"), reason: z.enum(COMMUNITY_REPORT_REASONS), details: z.string().trim().max(500).optional() }),
   z.object({ action: z.literal("pin"), pinned: z.boolean() }),
+  z.object({ action: z.literal("official"), official: z.boolean() }),
 ]);
 export type CommunityPostAction = z.input<typeof communityPostActionSchema>;
 
@@ -107,4 +110,5 @@ export const throwBottleSchema = z.object({ body: z.string().trim().min(2).max(B
 export const bottleActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("reply"), body: z.string().trim().min(1).max(BOTTLE_REPLY_MAX) }),
   z.object({ action: z.literal("report"), reason: z.enum(COMMUNITY_REPORT_REASONS) }),
+  z.object({ action: z.literal("withdraw") }),
 ]);
