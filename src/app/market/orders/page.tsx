@@ -36,7 +36,7 @@ const SAMPLE_ORDERS = [
     price: "+16 积分",
     cover: "/catalog/ans-pro-v1/magic-resume.webp",
     href: "/market/resume-website",
-    desc: "学生与科研团队零代码生成响应式双语主页，每次被复用自动向作者结算 80% 算力分成。",
+    desc: "学生与科研团队零代码生成响应式双语主页，免费编辑与导出。",
   },
 ];
 

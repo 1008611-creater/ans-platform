@@ -364,7 +364,7 @@ export function ListingEditor({ offer, share = false, agri = false }: { offer?: 
               三要素极速发布
             </span>
             <span className="text-xs font-medium text-foreground">
-              做好 <strong>① 封面</strong> · <strong>② 三句文案</strong> · <strong>③ 跳转链接</strong>，同时展示在项目广场与积分市场
+              做好 <strong>① 封面</strong> · <strong>② 三句文案</strong> · <strong>③ 跳转链接</strong>
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">

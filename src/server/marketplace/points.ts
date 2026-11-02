@@ -5,12 +5,13 @@ import { debitQuota, refundQuota } from "@/server/quota/service";
 import { MarketRuleError } from "@/domain/marketplace/order";
 import { marketTransaction, requireMarketActor, requireMarketModerator, marketHash } from "./shared";
 import { OFFICIAL_MARKET_DELIVERIES, getOfficialDeliveryMarkdown } from "./official-deliveries";
+import { marketCommissionBpsForTier, type MarketSellerTier } from "@/domain/billing/plan-catalog";
 
 const paySchema = z.object({ expectedRevision: z.number().int().nonnegative(), operationKey: z.string().regex(/^[A-Za-z0-9_-]{8,80}$/) }).strict();
-export function pointsPricingPolicy() {
-  const configured = process.env.ANS_MARKET_COMMISSION_BPS;
-  if (!configured || !/^\d{1,5}$/.test(configured) || Number(configured) > 10000) throw new MarketRuleError("PRICING_NOT_CONFIGURED", 503);
-  return { commissionBps: Number(configured) };
+/** The fee follows the seller's plan. Plan and Pro are not sold yet (see
+ * plan-readiness), so every seller currently settles at the free-tier rate. */
+export function pointsPricingPolicy(sellerTier: MarketSellerTier = "free") {
+  return { commissionBps: marketCommissionBpsForTier(sellerTier) };
 }
 export async function payMarketOrderPoints(orderId: string, buyerId: string, raw: unknown) {
   const input = paySchema.parse(raw);
