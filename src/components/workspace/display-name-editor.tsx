@@ -42,7 +42,8 @@ import { ResizableSplit } from "@/lib/ui/resizable-split";
 import { MiddleEllipsis } from "@/lib/ui/middle-ellipsis";
 import { useCopyFeedback } from "@/lib/ui/copy-feedback";
 import { useFollowBottom } from "@/lib/ui/follow-bottom";
-import { useDismiss } from "@/lib/ui/use-dismiss";
+import { useDismiss, useMenuKeyboard } from "@/lib/ui/use-dismiss";
+import { useSwipeDismiss } from "@/lib/ui/use-swipe-dismiss";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 
 export function DisplayNameEditor(props: CodexWorkbenchProps) {
@@ -378,7 +379,9 @@ function PiCodexWorkbench({
   const guideRef = useRef<HTMLDivElement>(null);
   const toolsButtonRef = useRef<HTMLButtonElement>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
-  const navSwipeRef = useRef<{ x: number; y: number } | null>(null);
+  // 手机抽屉跟手关闭：任务列表向左拖，预览面板从左边缘向右拖
+  const navSwipe = useSwipeDismiss("left", () => setNavOpen(false));
+  const panelSwipe = useSwipeDismiss("right", () => setPanelOpen(false), { edgeOnly: true });
   const gripDownRef = useRef<{ at: number; x: number }>({ at: 0, x: 0 });
   const wide = useMediaQuery("(min-width: 1024px)");
   const [viewportMode, setViewportMode] = useState<"desktop" | "mobile">("desktop");
@@ -396,6 +399,30 @@ function PiCodexWorkbench({
   // 首页是空状态，不跟随底部；进入任务对话后才按 40/120 规则跟随
   const { showJump, jumpToLatest } = useFollowBottom(threadRef, !home);
   useDismiss(toolsOpen, () => setToolsOpen(false), [toolsRef, toolsButtonRef], toolsButtonRef);
+  useMenuKeyboard(toolsOpen, () => setToolsOpen(false), toolsRef);
+  // 上手说明打开后焦点进面板，读屏能读到内容；Tab 走出面板时收起
+  useEffect(() => {
+    if (!showOnboardingGuide) return;
+    const panel = guideRef.current;
+    const frame = requestAnimationFrame(() => panel?.focus({ preventScroll: true }));
+    const onFocusOut = (event: FocusEvent) => {
+      const next = event.relatedTarget as Node | null;
+      if (next && !panel?.contains(next) && !guideButtonRef.current?.contains(next)) setShowOnboardingGuide(false);
+    };
+    panel?.addEventListener("focusout", onFocusOut);
+    return () => {
+      cancelAnimationFrame(frame);
+      panel?.removeEventListener("focusout", onFocusOut);
+    };
+  }, [showOnboardingGuide]);
+  // 从首页发出第一条后会换成对话视图，输入框是新挂上的；有实体键盘时把焦点交给它，方便接着说
+  const wasHomeRef = useRef(home);
+  useEffect(() => {
+    if (wasHomeRef.current && !home && window.matchMedia?.("(pointer: fine)").matches) {
+      requestAnimationFrame(() => document.getElementById("codex-composer-input")?.focus({ preventScroll: true }));
+    }
+    wasHomeRef.current = home;
+  }, [home]);
   useDismiss(showOnboardingGuide, () => setShowOnboardingGuide(false), [guideRef, guideButtonRef], guideButtonRef);
   const [sidebarWidth, setSidebarWidth] = useState<number>(SIDEBAR_DEFAULT);
   const gripRef = useRef<{ startX: number; startWidth: number } | null>(null);
@@ -813,8 +840,10 @@ function PiCodexWorkbench({
       `[${new Date().toLocaleTimeString()}] [${runMode.toUpperCase()}] ${shortTitle} (${model})`,
     ]);
 
+    // 访客不会调用模型：直接出本地草稿，不先摆一段「运行中」再改口
+    const isGuest = !actorId || actorId === "guest" || actorId === "guest-preview";
     try {
-      const res = await fetch("/api/mascot/agent", {
+      const res = isGuest ? new Response(null, { status: 401 }) : await fetch("/api/mascot/agent", {
         method: "POST",
         headers: buildAuthHeaders(),
         body: JSON.stringify({
@@ -991,7 +1020,7 @@ function PiCodexWorkbench({
       abortRef.current = null;
       setRunStartedAt(null);
       setRunning(false);
-      setFreshId(taskId);
+      if (!isGuest) setFreshId(taskId);
       noteDone(taskId);
     }
   }
@@ -1113,6 +1142,10 @@ function PiCodexWorkbench({
 
   function toggleSidebar(collapsed: boolean) {
     setSideCollapsed(collapsed);
+    // 按下的按钮会随侧栏卸载，焦点交给对面那颗按钮，不掉到 body
+    requestAnimationFrame(() =>
+      document.querySelector<HTMLElement>(collapsed ? "[data-sidebar-expand]" : "[data-sidebar-collapse]")?.focus({ preventScroll: true }),
+    );
     try {
       window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? "1" : "0");
     } catch {
@@ -1203,7 +1236,7 @@ function PiCodexWorkbench({
           {w("label.newTask")}
         </button>
         {wide ? (
-          <button type="button" onClick={() => toggleSidebar(true)} aria-label={w("label.collapseSidebar")} title={w("label.collapseSidebar")} className="ans-wb-icon">
+          <button type="button" data-sidebar-collapse onClick={() => toggleSidebar(true)} aria-label={w("label.collapseSidebar")} title={w("label.collapseSidebar")} className="ans-wb-icon">
             <PanelLeftClose className="size-4" aria-hidden="true" />
           </button>
         ) : (
@@ -1224,7 +1257,7 @@ function PiCodexWorkbench({
                 type="button"
                 onClick={handleClearUserTasks}
                 title={w("title.clearTasks")}
-                className="rounded-md px-1.5 py-0.5 opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/head:opacity-100"
+                className="ans-hit rounded-md px-1.5 py-0.5 opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover/head:opacity-100 [@media(pointer:coarse)]:opacity-100"
               >
                 {w("label.clear")}
               </button>
@@ -1359,6 +1392,19 @@ function PiCodexWorkbench({
   // 底部输入框：一个大框；「+」里收纳补齐细节、意图词、快捷指令和新建空白
   const seedText = (promptInput || (home ? "" : activeTask.prompt) || "").trim();
   const cluster = detectIntentAndMatchTerms(seedText);
+  const paramChips = getWorkflow(workflowId).params.map((param, idx) => (
+    <button
+      key={`${workflowId}-${param.key}`}
+      type="button"
+      onClick={() => cycleParam(param.key)}
+      title="点一下换一个"
+      style={{ animationDelay: `${(idx + 1) * 40}ms` }}
+      className="ans-wb-chip-in ans-hit inline-flex h-8 shrink-0 items-center rounded-full px-3 text-xs text-muted-foreground shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-colors hover:bg-muted hover:text-foreground"
+    >
+      {wfParams[param.key] ?? param.options[0]}
+    </button>
+  ));
+
   const composerCard = (
     <form
       onSubmit={e => {
@@ -1395,7 +1441,7 @@ function PiCodexWorkbench({
         inert={!toolsOpen}
         className={`ans-menu absolute left-0 z-30 w-[min(320px,100%)] ${home ? "top-full mt-2 origin-top-left" : "bottom-full mb-2 origin-bottom-left"}`}
       >
-          <div className="flex flex-col gap-px p-1" data-testid="codex-intent-bridge">
+          <div role="menu" aria-label={w("label.moreTools")} className="flex flex-col gap-px p-1" data-testid="codex-intent-bridge">
             <button
               type="button"
               title={w("title.expandIdea")}
@@ -1409,6 +1455,7 @@ function PiCodexWorkbench({
                 setPromptInput(upgradeToStructuredBrief(rawIdea, "zh"));
                 toast.success(w("toast.detailsExpanded"));
               }}
+              role="menuitem"
               className="ans-menu-item"
             >
               <Wand2 className="size-3.5" aria-hidden="true" />
@@ -1426,6 +1473,7 @@ function PiCodexWorkbench({
                     return base.includes(term.appendText.zh) ? base : `${base}\n- ${term.appendText.zh}`;
                   });
                 }}
+                role="menuitem"
                 className="ans-menu-item text-muted-foreground"
               >
                 <Plus className="size-3.5" aria-hidden="true" />
@@ -1438,6 +1486,7 @@ function PiCodexWorkbench({
                 setToolsOpen(false);
                 handleStartBlankTask();
               }}
+              role="menuitem"
               className="ans-menu-item text-muted-foreground"
             >
               <FileText className="size-3.5" aria-hidden="true" />
@@ -1446,13 +1495,16 @@ function PiCodexWorkbench({
           </div>
       </div>
 
+      {home && getWorkflow(workflowId).params.length > 0 && (
+        <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] sm:hidden">{paramChips}</div>
+      )}
       <div className="flex items-center justify-between gap-1">
-        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+        <div className="flex min-w-0 items-center gap-1.5">
           <button
             ref={toolsButtonRef}
             type="button"
             aria-expanded={toolsOpen}
-            aria-haspopup="true"
+            aria-haspopup="menu"
             aria-label={w("label.moreTools")}
             title={w("label.moreTools")}
             onClick={() => setToolsOpen(v => !v)}
@@ -1473,20 +1525,8 @@ function PiCodexWorkbench({
               <X className="size-3 opacity-70" aria-hidden="true" />
             </button>
           )}
-          <div className="contents">
-            {home && getWorkflow(workflowId).params.map((param, idx) => (
-              <button
-                key={`${workflowId}-${param.key}`}
-                type="button"
-                onClick={() => cycleParam(param.key)}
-                title="点一下换一个"
-                style={{ animationDelay: `${(idx + 1) * 40}ms` }}
-                className="ans-wb-chip-in inline-flex h-8 shrink-0 items-center rounded-full px-3 text-xs text-muted-foreground shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-colors hover:bg-muted hover:text-foreground"
-              >
-                {wfParams[param.key] ?? param.options[0]}
-              </button>
-            ))}
-          </div>
+          {/* 宽屏参数胶囊跟在「+」后面；窄屏挪到输入框上方单独一行，不把工具栏挤成好几行 */}
+          <div className="hidden sm:contents">{home && paramChips}</div>
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
@@ -1513,7 +1553,7 @@ function PiCodexWorkbench({
               onClick={stopRun}
               aria-label={w("label.stopRun")}
               title={w("label.stopRun")}
-              className="inline-flex size-8 items-center justify-center rounded-full bg-muted text-foreground transition-colors hover:bg-surface-raised"
+              className="ans-hit inline-flex size-8 items-center justify-center rounded-full bg-muted text-foreground transition-colors hover:bg-surface-raised"
             >
               <Square className="size-3 fill-current" aria-hidden="true" />
             </button>
@@ -1526,7 +1566,7 @@ function PiCodexWorkbench({
             disabled={!promptInput.trim()}
             aria-label={running ? w("label.queued") : w("label.send")}
             title={getWorkflow(workflowId).name}
-            className="inline-flex size-8 items-center justify-center rounded-full bg-foreground text-background transition-opacity hover:opacity-90 disabled:opacity-30"
+            className="ans-hit inline-flex size-8 items-center justify-center rounded-full bg-foreground text-background transition-opacity hover:opacity-90 disabled:opacity-30"
           >
             <ArrowUp className="size-4" aria-hidden="true" />
           </button>
@@ -1633,7 +1673,7 @@ function PiCodexWorkbench({
             setPanelOpen(true);
           }}
           title={w("label.viewDiff")}
-          className="flex w-full max-w-[420px] items-center justify-between gap-3 rounded-[12px] bg-card px-3 py-2 font-mono text-xs shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-colors hover:bg-muted"
+          className="flex w-full max-w-[420px] items-center justify-between gap-3 rounded-[12px] bg-card px-3 py-2 font-mono text-xs [@media(pointer:coarse)]:min-h-11 shadow-[inset_0_0_0_0.5px_var(--hairline)] transition-colors hover:bg-muted"
         >
           <span className="flex min-w-0 items-center gap-2">
             <FileCode2 className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -1720,7 +1760,7 @@ function PiCodexWorkbench({
       )}
       <div className="ans-wb-rule-b flex h-11 shrink-0 items-center justify-between gap-2 px-2">
         <div
-          className="flex min-w-0 items-center gap-0.5 overflow-x-auto"
+          className="flex min-w-0 items-center gap-0.5"
           role="tablist"
           aria-orientation="horizontal"
           onKeyDown={e => {
@@ -1763,7 +1803,8 @@ function PiCodexWorkbench({
           })}
         </div>
         <div className="flex shrink-0 items-center gap-0.5">
-          {canvasTab === "preview" && activeTask.artifactType === "html" && (
+          {/* 手机本身就是窄屏，不需要桌面/手机预览切换和新窗口，工具栏只留刷新和复制，四个标签才放得下 */}
+          {wide && canvasTab === "preview" && activeTask.artifactType === "html" && (
             <>
               <button
                 type="button"
@@ -1805,7 +1846,7 @@ function PiCodexWorkbench({
               <Copy className="size-3.5" aria-hidden="true" />
             )}
           </button>
-          {activeTask.artifactType === "html" && (
+          {wide && activeTask.artifactType === "html" && (
             <button type="button" onClick={openFullscreenPreview} title={w("label.newWindow")} aria-label={w("label.newWindow")} className="ans-wb-icon">
               <ExternalLink className="size-3.5" aria-hidden="true" />
             </button>
@@ -1956,9 +1997,26 @@ function PiCodexWorkbench({
               document.getElementById("codex-composer-input")?.focus();
             }}
             onPickTemplate={tpl => {
+              const draft = promptInput.trim();
+              const prevWorkflow = workflowId;
+              const prevParams = wfParams;
               if (tpl.workflow && tpl.workflow !== workflowId) pickWorkflow(tpl.workflow);
               setPromptInput(tpl.prompt);
               document.getElementById("codex-composer-input")?.focus();
+              // 输入框里原本有自己写的内容时，换成模板后给一次撤销机会
+              if (draft && draft !== tpl.prompt) {
+                toast("已换成模板「" + tpl.title + "」", {
+                  action: {
+                    label: "撤销",
+                    onClick: () => {
+                      setWorkflowId(prevWorkflow);
+                      setWfParams(prevParams);
+                      setPromptInput(draft);
+                      document.getElementById("codex-composer-input")?.focus();
+                    },
+                  },
+                });
+              }
             }}
           />
         ) : (
@@ -2060,18 +2118,7 @@ function PiCodexWorkbench({
               navButtonRef.current?.focus({ preventScroll: true });
             }}
             className="w-[min(300px,85vw)] gap-0 border-0 p-0 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] sm:max-w-none"
-            onTouchStart={e => {
-              const t = e.touches[0];
-              navSwipeRef.current = { x: t.clientX, y: t.clientY };
-            }}
-            onTouchEnd={e => {
-              const start = navSwipeRef.current;
-              navSwipeRef.current = null;
-              const t = e.changedTouches[0];
-              if (!start || !t) return;
-              const dx = t.clientX - start.x;
-              if (dx < -56 && Math.abs(dx) > Math.abs(t.clientY - start.y) * 1.5) setNavOpen(false);
-            }}
+            {...navSwipe}
           >
             <SheetTitle className="sr-only">{w("label.myTasks")}</SheetTitle>
             {sidebar}
@@ -2087,6 +2134,7 @@ function PiCodexWorkbench({
               <button
                 ref={navButtonRef}
                 type="button"
+                data-sidebar-expand
                 onClick={() => (wide ? toggleSidebar(false) : setNavOpen(true))}
                 aria-label={wide ? w("label.expandSidebar") : w("label.openMenu")}
                 title={wide ? w("label.expandSidebar") : undefined}
@@ -2126,7 +2174,7 @@ function PiCodexWorkbench({
                 onClick={() => setShowOnboardingGuide(v => !v)}
                 title={w("title.threeStepGuide")}
                 aria-expanded={showOnboardingGuide}
-                aria-haspopup="true"
+                aria-haspopup="dialog"
                 className="ans-wb-icon"
               >
                 <BookOpen className="size-4" aria-hidden="true" />
@@ -2135,6 +2183,9 @@ function PiCodexWorkbench({
               {/* 三步上手说明：浮在顶栏下面，不推挤主区；Esc 或点外面关闭 */}
               <div
                 ref={guideRef}
+                tabIndex={-1}
+                role="dialog"
+                aria-label={w("title.threeStepGuide")}
                 data-open={showOnboardingGuide}
                 inert={!showOnboardingGuide}
                 data-testid={showOnboardingGuide ? "workbench-onboarding-guide" : undefined}
@@ -2204,6 +2255,7 @@ function PiCodexWorkbench({
             showClose={false}
             aria-describedby={undefined}
             className="w-full gap-0 border-0 bg-background p-0 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] sm:max-w-none"
+            {...panelSwipe}
             onCloseAutoFocus={e => {
               e.preventDefault();
               panelToggleRef.current?.focus({ preventScroll: true });

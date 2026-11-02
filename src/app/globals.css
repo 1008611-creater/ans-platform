@@ -1155,7 +1155,10 @@
   /* 手指操作时可点区域至少 44px */
   @media (pointer: coarse) {
     .ans-wb-icon { min-height: 44px; min-width: 44px; }
-    .ans-menu-item { min-height: 44px; }
+    .ans-menu-item, .ans-wb-row { min-height: 44px; }
+    /* 外观保持小尺寸的按钮：用透明的外扩区域把可点范围补到 44px 以上 */
+    .ans-hit { position: relative; }
+    .ans-hit::after { content: ""; position: absolute; inset: -12px -6px; }
   }
 }
 @keyframes ans-wb-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
