@@ -34,6 +34,7 @@ describe("mobile tab bar only on tab pages", () => {
     route.pathname = pathname;
     render(view());
     expect(!!screen.queryByRole("navigation", { name: "Mobile navigation" })).toBe(visible);
-    expect(screen.getByRole("contentinfo")).toBeInTheDocument();
+    // 工作台占满一屏，不渲染全站页脚
+    expect(!!screen.queryByRole("contentinfo")).toBe(!pathname.startsWith("/workspace"));
   });
 });
