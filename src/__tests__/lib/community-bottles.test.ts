@@ -48,6 +48,12 @@ describe("扔瓶子", () => {
     mocks.db.communityBottle.count.mockResolvedValue(3);
     await expectCode(throwBottle("u1", { body: "再扔一个" }), "BOTTLE_THROW_LIMIT");
   });
+
+  it("returns the bottle already thrown when the same words come again right away", async () => {
+    mocks.db.communityBottle.findFirst.mockResolvedValue({ id: "b1" });
+    await expect(throwBottle("u1", { action: "throw", body: "期末周有人一起去图书馆吗" })).resolves.toEqual({ id: "b1" });
+    expect(mocks.db.communityBottle.create).not.toHaveBeenCalled();
+  });
 });
 
 describe("捞瓶子", () => {
