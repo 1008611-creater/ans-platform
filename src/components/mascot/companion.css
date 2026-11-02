@@ -1528,3 +1528,73 @@ body.ans-sanctuary-open #ans-dino-macro-backdrop {
   .ans-companion-panel[data-sheet][data-state] { animation: none !important; }
   .ans-companion-scrim { animation: none; }
 }
+
+/* 长按 / 右键兔兔龙弹出的快捷设置 */
+.ans-companion-v2 .ans-dino-trigger { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+.ans-dino-quick-menu {
+  position: absolute;
+  inset-inline-end: 0;
+  bottom: calc(100% + 8px);
+  z-index: 2;
+  min-width: 208px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 0 0 0.5px var(--hairline, var(--border)), 0 12px 32px rgba(0, 0, 0, 0.16);
+  display: flex;
+  flex-direction: column;
+  animation: ans-dino-quick-in 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ans-dino-quick-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 9px;
+  font-size: 13px;
+  text-align: start;
+  color: inherit;
+  cursor: pointer;
+}
+.ans-dino-quick-menu button:hover, .ans-dino-quick-menu button:focus-visible { background: var(--muted); outline: none; }
+.ans-dino-quick-menu button:disabled { opacity: 0.45; cursor: not-allowed; }
+.ans-dino-quick-menu button > svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--muted-foreground); }
+.ans-dino-quick-menu button > span { flex: 1; }
+.ans-dino-quick-menu .ans-dino-quick-check { color: var(--primary); }
+.ans-dino-quick-menu hr { margin: 4px 6px; border: 0; border-top: 1px solid var(--border); }
+@keyframes ans-dino-quick-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (pointer: coarse) { .ans-dino-quick-menu button { min-height: 44px; } }
+@media (prefers-reduced-motion: reduce) { .ans-dino-quick-menu { animation: none; } }
+
+/* 互动舞台右侧：从 Agent 面板搬过来的其余功能 */
+#ans-dino-stage-extras {
+  position: fixed;
+  top: 76px;
+  inset-inline-end: 20px;
+  z-index: 95;
+  width: min(360px, calc(100vw - 40px));
+  max-height: calc(100vh - 260px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  border-radius: 16px;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 0 0 0.5px var(--hairline, var(--border)), 0 18px 48px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1), transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#ans-dino-stage-extras.is-active { opacity: 1; pointer-events: auto; transform: none; }
+#ans-dino-stage-extras > h2 { padding: 12px 14px 4px; font-size: 13px; font-weight: 600; color: var(--muted-foreground); }
+@media (max-width: 767px) {
+  #ans-dino-stage-extras {
+    top: calc(env(safe-area-inset-top) + 12px);
+    inset-inline: 12px;
+    width: auto;
+    max-height: 30vh;
+  }
+}
+@media (prefers-reduced-motion: reduce) { #ans-dino-stage-extras { transition: none; transform: none; } }

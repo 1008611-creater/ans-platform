@@ -2,15 +2,15 @@
 
 import { useSyncExternalStore } from "react";
 
-export type SitePreferences = { voice: boolean; volume: number; motion: "auto" | "calm"; suggestions: boolean };
+export type SitePreferences = { voice: boolean; volume: number; motion: "auto" | "calm"; suggestions: boolean; bubbles: boolean };
 export const PREFERENCES_KEY = "ans.site-preferences.v2";
-const defaults: SitePreferences = Object.freeze({ voice: false, volume: 65, motion: "auto", suggestions: true });
+const defaults: SitePreferences = Object.freeze({ voice: false, volume: 65, motion: "auto", suggestions: true, bubbles: true });
 let snapshot: SitePreferences = defaults;
 let initialized = false;
 const listeners = new Set<() => void>();
 function normalize(value: unknown): SitePreferences {
   const p = value && typeof value === "object" ? value as Partial<SitePreferences> : {};
-  return { voice: p.voice === true, volume: typeof p.volume === "number" && Number.isFinite(p.volume) ? Math.max(0, Math.min(100, Math.round(p.volume))) : 65, motion: p.motion === "calm" ? "calm" : "auto", suggestions: p.suggestions !== false };
+  return { voice: p.voice === true, volume: typeof p.volume === "number" && Number.isFinite(p.volume) ? Math.max(0, Math.min(100, Math.round(p.volume))) : 65, motion: p.motion === "calm" ? "calm" : "auto", suggestions: p.suggestions !== false, bubbles: p.bubbles !== false };
 }
 function notify() { for (const listener of listeners) listener(); }
 function load() {

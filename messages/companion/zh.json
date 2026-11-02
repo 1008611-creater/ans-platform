@@ -27,7 +27,7 @@
   "defaultsRestored": "已恢复默认偏好设置",
   "preferencesSaveAutomatically": "偏好设置会自动保存",
   "resetDefaults": "恢复默认",
-  "whatWouldYouLikeToMakeTell": "直接输入需求，或点上方快捷按钮交由 Agent 执行。",
+  "whatWouldYouLikeToMakeTell": "直接说你想做什么，Agent 帮你找路或动手。",
   "byYOURSIDE": "ANS Agent",
   "openSiteSettings": "打开网站设置",
   "currentTask": "当前任务",
@@ -73,7 +73,7 @@
   "reply7": "去项目页填好名称和目标即可立项，也可切到「工作模式」在线生成网页与代码。",
   "reply8": "想生成网页代码、做 AI 视频，还是立项参赛？直接发指令或切到「工作模式」即可开工。",
   "reply9": "你可以直接让我帮你：签到领分、新建项目、检索市场工具，或切到「工作模式」写代码。",
-  "agentGreeting": "直接输入需求，或点上方快捷按钮交由 Agent 执行。",
+  "agentGreeting": "直接说你想做什么，Agent 帮你找路或动手。",
   "agentSpokenReady": "结果已生成，请查看对话窗。",
   "newConversation": "新对话",
   "conversationMode": "模式切换",
@@ -380,5 +380,12 @@
     "defaultTrainer": "准 ANS 创作者"
   },
   "guideWorkMode": "🛠️ 工作模式 ↗",
-  "agentModelUnavailable": "暂不可用"
+  "agentModelUnavailable": "暂不可用",
+  "dinoQuickMenu": "兔兔龙快捷设置",
+  "speechBubbles": "气泡提示",
+  "enterStage": "进入互动舞台",
+  "dismissBubble": "收起气泡",
+  "stageMore": "更多功能",
+  "dinoTriggerHint": "单击打开 Agent，快速连点三下进入互动舞台，长按或右键打开快捷设置",
+  "speechBubblesHint": "点一下气泡就能收起；关掉后兔兔龙不再冒气泡"
 }

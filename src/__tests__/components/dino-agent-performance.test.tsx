@@ -37,7 +37,7 @@ it("does not download the 3D frame on mount even when WebGL is available, and lo
   expect(view.container.querySelector("iframe")).not.toBeNull();
 });
 
-it("keeps the bottom-right speech bubble keyboard operable and never polls every 90ms", () => {
+it("keeps the bottom-right speech bubble keyboard operable, dismisses it on click and never polls every 90ms", () => {
   const intervals = vi.spyOn(window, "setInterval");
   render(<DinoGuide />);
   expect(intervals.mock.calls.filter(([, delay]) => delay === 90)).toHaveLength(0);
@@ -46,5 +46,5 @@ it("keeps the bottom-right speech bubble keyboard operable and never polls every
   expect(bubble?.getAttribute("aria-label")).toBeTruthy();
   expect(bubble?.getAttribute("data-bubble-state")).toBe("alert");
   fireEvent.click(bubble as HTMLElement);
-  expect(bubble?.getAttribute("data-bubble-state")).toBe("expanded");
+  expect(document.getElementById("ans-dino-live-bubble")).toBeNull();
 });
